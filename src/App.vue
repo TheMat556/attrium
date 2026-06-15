@@ -12,7 +12,7 @@ import SiteHeader from '@/components/SiteHeader.vue'
     }"
   >
     <AppSidebar variant="inset" />
-    <SidebarInset>
+    <SidebarInset class="shadow-lg">
       <SiteHeader />
       <div class="flex flex-1 flex-col">
         <div class="@container/main flex flex-1 flex-col gap-2">
