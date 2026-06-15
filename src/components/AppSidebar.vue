@@ -60,7 +60,7 @@ const navSecondary = [
               <div class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
                 A
               </div>
-              <span class="text-base font-semibold">Attrium</span>
+              <span class="text-base font-semibold group-data-[collapsible=icon]:hidden">Attrium</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
