@@ -48,7 +48,7 @@ const navSecondary = [
 </script>
 
 <template>
-  <Sidebar collapsible="offcanvas" variant="inset">
+  <Sidebar collapsible="icon" variant="inset">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>

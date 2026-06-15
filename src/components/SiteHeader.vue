@@ -14,7 +14,7 @@ const { isDark, toggle } = useTheme()
       <SidebarTrigger class="-ml-1" />
       <Separator
         orientation="vertical"
-        class="mr-2 data-[orientation=vertical]:h-6"
+        class="data-[orientation=vertical]:h-6"
       />
       <Button variant="ghost" size="icon-sm">
         <Plus />
