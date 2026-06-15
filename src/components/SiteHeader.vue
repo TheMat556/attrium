@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { Search, ExternalLink, Plus } from '@lucide/vue'
+import { Search, ExternalLink, Plus, Sun, Moon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { useTheme } from '@/composables/useTheme'
+
+const { isDark, toggle } = useTheme()
 </script>
 
 <template>
@@ -16,7 +19,16 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
       <Button variant="ghost" size="icon-sm">
         <Plus />
       </Button>
+
       <div class="ml-auto flex items-center gap-2">
+        <Button variant="ghost" size="icon-sm" @click="toggle">
+          <Sun v-if="!isDark()" />
+          <Moon v-else />
+        </Button>
+        <Separator
+          orientation="vertical"
+          class="mx-1 data-[orientation=vertical]:h-4"
+        />
         <Button variant="ghost" size="icon-sm">
           <Search />
         </Button>
