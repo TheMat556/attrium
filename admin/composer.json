@@ -1,0 +1,13 @@
+{
+    "name": "hader/attrium",
+    "description": "Modern WordPress admin theme built with Vue 3, Tailwind CSS and DaisyUI",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "Attrium\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    }
+}
