@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
+  UserCircle,
   CreditCard,
+  Bell,
   LogOut,
-  Sparkles,
+  MoreVertical,
 } from '@lucide/vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -48,14 +47,14 @@ const initials = computed(() => {
             size="lg"
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
-            <Avatar class="h-8 w-8 rounded-lg">
+            <Avatar class="h-8 w-8 rounded-lg grayscale">
               <AvatarFallback class="rounded-lg">{{ initials }}</AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">{{ userName }}</span>
-              <span class="truncate text-xs">{{ userEmail }}</span>
+              <span class="truncate text-xs text-muted-foreground">{{ userEmail }}</span>
             </div>
-            <ChevronsUpDown class="ml-auto size-4" />
+            <MoreVertical class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -71,21 +70,14 @@ const initials = computed(() => {
               </Avatar>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-medium">{{ userName }}</span>
-                <span class="truncate text-xs">{{ userEmail }}</span>
+                <span class="truncate text-xs text-muted-foreground">{{ userEmail }}</span>
               </div>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <Sparkles />
-              Upgrade to Pro
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <BadgeCheck />
+              <UserCircle />
               Account
             </DropdownMenuItem>
             <DropdownMenuItem>
