@@ -9,12 +9,12 @@ const { isDark, toggle } = useTheme()
 </script>
 
 <template>
-  <header class="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+  <header class="flex h-(--header-height) shrink-0 items-center gap-2 bg-transparent transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
     <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
       <SidebarTrigger class="-ml-1" />
       <Separator
         orientation="vertical"
-        class="mx-2 data-[orientation=vertical]:h-4"
+        class="mr-2 data-[orientation=vertical]:h-6"
       />
       <Button variant="ghost" size="icon-sm">
         <Plus />
@@ -27,7 +27,7 @@ const { isDark, toggle } = useTheme()
         </Button>
         <Separator
           orientation="vertical"
-          class="mx-1 data-[orientation=vertical]:h-4"
+          class="mx-1 data-[orientation=vertical]:h-6"
         />
         <Button variant="ghost" size="icon-sm">
           <Search />
