@@ -3,9 +3,7 @@ import { Search, ExternalLink, Plus, Sun, Moon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { useTheme } from '@/composables/useTheme'
-
-const { isDark, toggle } = useTheme()
+import { isDark, toggle } from '@/composables/useTheme'
 </script>
 
 <template>
@@ -22,7 +20,7 @@ const { isDark, toggle } = useTheme()
 
       <div class="ml-auto flex items-center gap-2">
         <Button variant="ghost" size="icon-sm" @click="toggle">
-          <Sun v-if="!isDark()" />
+          <Sun v-if="isDark" />
           <Moon v-else />
         </Button>
         <Separator

@@ -1,31 +1,24 @@
-export function useTheme() {
-  const isDark = (): boolean => {
-    return (
-      localStorage.getItem('attrium-theme') === 'dark' ||
-      (!localStorage.getItem('attrium-theme') &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    )
+import { computed } from 'vue'
+  import { useColorMode } from '@vueuse/core'
+
+  export const mode = useColorMode({
+    selector: '#attrium-host',
+    attribute: 'class',
+    modes: { light: '', dark: 'dark' },
+    storageKey: 'attrium-theme',
+    onChanged() {
+      applyThemeToHost()
+    },
+  })
+
+  export const isDark = computed(() => mode.value === 'dark')
+  export const toggle = () => {
+    mode.value = mode.value === 'dark' ? 'light' : 'dark'
   }
 
-  const toggle = (): void => {
-    const newTheme = isDark() ? 'light' : 'dark'
-    localStorage.setItem('attrium-theme', newTheme)
-    applyDark(newTheme === 'dark')
+  // Call this after #attrium-host exists to sync the initial state
+  export function applyThemeToHost() {
+    const host = document.getElementById('attrium-host')
+    if (!host) return
+    host.classList.toggle('dark', mode.value === 'dark')
   }
-
-  return { isDark, toggle }
-}
-
-export function applyDark(dark: boolean): void {
-  const host = document.getElementById('attrium-host')
-  if (!host) return
-
-  const shadow = host.shadowRoot
-  if (!shadow) return
-
-  if (dark) {
-    shadow.host.classList.add('dark')
-  } else {
-    shadow.host.classList.remove('dark')
-  }
-}
