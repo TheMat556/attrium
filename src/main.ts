@@ -27,7 +27,7 @@ const portal = document.createElement('div')
 portal.id = 'attrium-portal'
 shadow.appendChild(portal)
 
-// @ts-expect-error — global reference for portal components
+// Global reference consumed by the reka-ui portal shim (src/lib/reka-ui.ts)
 window.__ATTRIUM_PORTAL__ = portal
 
 createApp(App).use(createPinia()).use(router).mount(mount)
