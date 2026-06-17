@@ -1,45 +1,86 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { Plus } from '@lucide/vue'
+import { ref } from 'vue'
+import { ChevronRight } from '@lucide/vue'
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+
+interface NavChild {
+  title: string
+  url: string
+  badge?: string
+}
 
 interface NavItem {
   title: string
   url: string
   icon?: Component
+  badge?: string
+  children?: NavChild[]
 }
 
 defineProps<{
   items: NavItem[]
 }>()
+
+const openMap = ref<Record<string, boolean>>({})
+
+function toggle(title: string) {
+  openMap.value[title] = !openMap.value[title]
+}
+
+function isOpen(title: string) {
+  return !!openMap.value[title]
+}
 </script>
 
 <template>
   <SidebarGroup>
     <SidebarGroupContent class="flex flex-col gap-2">
       <SidebarMenu>
-        <SidebarMenuItem class="flex items-center gap-2">
-          <SidebarMenuButton
-            tooltip="Quick Create"
-            class="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-          >
-            <Plus />
-            <span>Quick Create</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-      <SidebarMenu>
         <SidebarMenuItem v-for="item in items" :key="item.title">
-          <SidebarMenuButton :tooltip="item.title">
+          <SidebarMenuButton
+            :tooltip="item.title"
+            @click="item.children?.length && toggle(item.title)"
+          >
             <component :is="item.icon" v-if="item.icon" />
             <span>{{ item.title }}</span>
+            <SidebarMenuBadge
+              v-if="item.badge"
+              class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+            >
+              {{ item.badge }}
+            </SidebarMenuBadge>
+            <ChevronRight
+              v-if="item.children?.length"
+              class="h-4 w-4 transition-transform duration-200"
+              :class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
+            />
           </SidebarMenuButton>
+          <SidebarMenuSub v-if="item.children?.length" v-show="isOpen(item.title)">
+            <SidebarMenuSubItem v-for="child in item.children" :key="child.title">
+              <SidebarMenuSubButton asChild>
+                <a :href="child.url">
+                  <span>{{ child.title }}</span>
+                  <SidebarMenuBadge
+                    v-if="child.badge"
+                    class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+                  >
+                    {{ child.badge }}
+                  </SidebarMenuBadge>
+                </a>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          </SidebarMenuSub>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroupContent>

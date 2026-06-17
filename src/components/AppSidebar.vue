@@ -1,20 +1,7 @@
 <script setup lang="ts">
-import {
-  LayoutDashboard,
-  List,
-  BarChart3,
-  FolderKanban,
-  Users,
-  Database,
-  FileText,
-  Settings,
-  LifeBuoy,
-  Search,
-  FileAxis3d,
-} from '@lucide/vue'
+import { computed } from 'vue'
+import { LifeBuoy, Settings } from '@lucide/vue'
 import NavMain from '@/components/NavMain.vue'
-import NavDocuments from '@/components/NavDocuments.vue'
-import NavSecondary from '@/components/NavSecondary.vue'
 import NavUser from '@/components/NavUser.vue'
 import {
   Sidebar,
@@ -25,26 +12,29 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useServerData } from '@/composables/useServerData'
+import { getIcon } from '@/lib/iconMap'
 
-const navMain = [
-  { title: 'Dashboard', url: '#', icon: LayoutDashboard },
-  { title: 'Lifecycle', url: '#', icon: List },
-  { title: 'Analytics', url: '#', icon: BarChart3 },
-  { title: 'Projects', url: '#', icon: FolderKanban },
-  { title: 'Team', url: '#', icon: Users },
-]
+const { menu, adminUrl } = useServerData()
 
-const documents = [
-  { name: 'Data Library', url: '#', icon: Database },
-  { name: 'Reports', url: '#', icon: FileText },
-  { name: 'Word Assistant', url: '#', icon: FileAxis3d },
-]
+const navMain = computed(() => {
+  return menu.map((item) => ({
+    title: item.title,
+    url: item.url,
+    icon: getIcon(item.icon),
+    badge: item.badge,
+    children: item.children.map((child) => ({
+      title: child.title,
+      url: child.url,
+      badge: child.badge,
+    })),
+  }))
+})
 
-const navSecondary = [
-  { title: 'Settings', url: '#', icon: Settings },
-  { title: 'Get Help', url: '#', icon: LifeBuoy },
-  { title: 'Search', url: '#', icon: Search },
-]
+const footerItems = computed(() => [
+  { title: 'Settings', url: adminUrl + 'options-general.php', icon: Settings },
+  { title: 'Get Help', url: 'https://wordpress.org/support', icon: LifeBuoy },
+])
 </script>
 
 <template>
@@ -57,10 +47,14 @@ const navSecondary = [
             class="data-[slot=sidebar-menu-button]:p-1.5!"
           >
             <a href="#">
-              <div class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+              <div
+                class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold"
+              >
                 A
               </div>
-              <span class="text-base font-semibold group-data-[collapsible=icon]:hidden">Attrium</span>
+              <span class="text-base font-semibold group-data-[collapsible=icon]:hidden"
+                >Attrium</span
+              >
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -68,10 +62,9 @@ const navSecondary = [
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="navMain" />
-      <NavDocuments :items="documents" />
-      <NavSecondary :items="navSecondary" class="mt-auto" />
     </SidebarContent>
     <SidebarFooter>
+      <NavMain :items="footerItems" />
       <NavUser />
     </SidebarFooter>
   </Sidebar>

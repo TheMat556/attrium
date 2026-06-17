@@ -39,23 +39,48 @@ class Menu {
                     }
 
                     $children[] = [
-                        'title' => preg_replace('/<[^>]*>/', '', $sub_item[0]),
+                        'title' => self::clean_title($sub_item[0]),
                         'slug'  => $sub_item[2],
                         'url'   => self::get_admin_url($sub_item[2]),
+                        'badge' => self::extract_badge($sub_item[0]),
                     ];
                 }
             }
 
             $menu_items[] = [
-                'title'    => preg_replace('/<[^>]*>/', '', $item[0]),
+                'title'    => self::clean_title($item[0]),
                 'slug'     => $menu_slug,
                 'url'      => self::get_admin_url($menu_slug),
                 'icon'     => self::get_icon($item),
+                'badge'    => self::extract_badge($item[0]),
                 'children' => $children,
             ];
         }
 
         return $menu_items;
+    }
+
+    private static function clean_title($raw) {
+        $title = $raw;
+
+        $tag_pos = strpos($raw, '<');
+        if ($tag_pos !== false) {
+            $title = substr($raw, 0, $tag_pos);
+        }
+
+        $title = preg_replace('/<[^>]*>/', '', $title);
+
+        return trim(html_entity_decode($title, ENT_QUOTES));
+    }
+
+    private static function extract_badge($raw) {
+        if (preg_match('/\bcount-(\d+)\b/', $raw, $matches)) {
+            $count = (int) $matches[1];
+
+            return $count > 0 ? (string) $count : '';
+        }
+
+        return '';
     }
 
     private static function get_admin_url($slug) {

@@ -1,6 +1,7 @@
 <?php
 
 namespace Attrium\App;
+use Attrium\Utility\Menu;
 use Attrium\Utility\Scripts;
 
 defined("ABSPATH") || exit();
@@ -66,6 +67,8 @@ class Attrium {
             ];
         }
 
+        $menu_items = Menu::get_items();
+
         $scripts_tag = [
             'id'            => 'attrium-data',
             'type'          => 'module',
@@ -77,6 +80,7 @@ class Attrium {
             'user-email'    => esc_attr($user_mail),
             'can-manage'    => esc_attr($can_manage),
             'current-screen'=> $screen_data ? wp_json_encode($screen_data) : '',
+            'menu'          => wp_json_encode($menu_items),
             'plugin-version'=> esc_attr(ATTRIUM_VERSION),
             'plugin-base'   => esc_url(ATTRIUM_URL),
         ];

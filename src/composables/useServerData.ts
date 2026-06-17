@@ -1,3 +1,19 @@
+export interface MenuChild {
+  title: string
+  slug: string
+  url: string
+  badge?: string
+}
+
+export interface MenuItem {
+  title: string
+  slug: string
+  url: string
+  icon: string
+  badge?: string
+  children: MenuChild[]
+}
+
 export interface ServerData {
   restBase: string
   restNonce: string
@@ -9,6 +25,7 @@ export interface ServerData {
   currentScreen: Record<string, string> | null
   pluginVersion: string
   pluginBase: string
+  menu: MenuItem[]
 }
 
 export function useServerData(): ServerData {
@@ -27,8 +44,18 @@ export function useServerData(): ServerData {
     userEmail: get('user-email'),
     canManage: get('can-manage') === 'true',
     currentScreen: parseJson(get('current-screen')),
+    menu: parseMenu(get('menu')),
     pluginVersion: get('plugin-version'),
     pluginBase: get('plugin-base'),
+  }
+}
+
+function parseMenu(str: string): MenuItem[] {
+  if (!str) return []
+  try {
+    return JSON.parse(str)
+  } catch {
+    return []
   }
 }
 
