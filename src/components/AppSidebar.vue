@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { LifeBuoy, Settings } from '@lucide/vue'
+import { computed } from 'vue'
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 import { getIcon } from '@/lib/iconMap'
@@ -18,22 +18,22 @@ import { getIcon } from '@/lib/iconMap'
 const { menu, adminUrl } = useServerData()
 
 const navMain = computed(() => {
-  return menu.map((item) => ({
-    title: item.title,
-    url: item.url,
-    icon: getIcon(item.icon),
-    badge: item.badge,
-    children: item.children.map((child) => ({
-      title: child.title,
-      url: child.url,
-      badge: child.badge,
-    })),
-  }))
+	return menu.map((item) => ({
+		title: item.title,
+		url: item.url,
+		icon: getIcon(item.icon),
+		badge: item.badge,
+		children: item.children.map((child) => ({
+			title: child.title,
+			url: child.url,
+			badge: child.badge,
+		})),
+	}))
 })
 
 const footerItems = computed(() => [
-  { title: 'Settings', url: adminUrl + 'options-general.php', icon: Settings },
-  { title: 'Get Help', url: 'https://wordpress.org/support', icon: LifeBuoy },
+	{ title: 'Settings', url: `${adminUrl}options-general.php`, icon: Settings },
+	{ title: 'Get Help', url: 'https://wordpress.org/support', icon: LifeBuoy },
 ])
 </script>
 

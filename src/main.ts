@@ -1,9 +1,9 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import App from './App.vue'
-import styles from './style.css?inline'
-import router from './router'
 import { applyThemeToHost } from './composables/useTheme'
+import router from './router'
+import styles from './style.css?inline'
 
 const host = document.createElement('div')
 host.id = 'attrium-host'

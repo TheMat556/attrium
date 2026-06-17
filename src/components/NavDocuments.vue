@@ -1,31 +1,31 @@
 <script setup lang="ts">
+import { FolderOpen, MoreHorizontal, Share2, Trash2 } from '@lucide/vue'
 import type { Component } from 'vue'
-import { MoreHorizontal, FolderOpen, Share2, Trash2 } from '@lucide/vue'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+	SidebarGroup,
+	SidebarGroupLabel,
+	SidebarMenu,
+	SidebarMenuAction,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
 } from '@/components/ui/sidebar'
 
 interface DocumentItem {
-  name: string
-  url: string
-  icon: Component
+	name: string
+	url: string
+	icon: Component
 }
 
 defineProps<{
-  items: DocumentItem[]
+	items: DocumentItem[]
 }>()
 
 const { isMobile } = useSidebar()

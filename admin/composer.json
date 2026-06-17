@@ -1,13 +1,27 @@
 {
-    "name": "hader/attrium",
-    "description": "Modern WordPress admin theme built with Vue 3, Tailwind CSS and DaisyUI",
-    "type": "wordpress-plugin",
-    "autoload": {
-        "psr-4": {
-            "Attrium\\": "src/"
-        }
-    },
-    "require": {
-        "php": ">=7.4"
-    }
+	"name": "hader/attrium",
+	"description": "Modern WordPress admin theme built with Vue 3, Tailwind CSS and DaisyUI",
+	"type": "wordpress-plugin",
+	"autoload": {
+		"psr-4": {
+			"Attrium\\": "src/"
+		}
+	},
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"squizlabs/php_codesniffer": "^3.10",
+		"wp-coding-standards/wpcs": "^3.1"
+	},
+	"scripts": {
+		"lint": "phpcs",
+		"format": "phpcbf",
+		"lint:check": "@lint"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
 }

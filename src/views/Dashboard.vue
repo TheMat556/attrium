@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useServerData } from '@/composables/useServerData'
 
 const { userName, siteUrl } = useServerData()
 const wpVersion = ref('')
 
 onMounted(async () => {
-  try {
-    const res = await fetch('/wp-json/')
-    const data = await res.json()
-    wpVersion.value = data?.offers?.[0]?.version || ''
-  } catch {
-    wpVersion.value = ''
-  }
+	try {
+		const res = await fetch('/wp-json/')
+		const data = await res.json()
+		wpVersion.value = data?.offers?.[0]?.version || ''
+	} catch {
+		wpVersion.value = ''
+	}
 })
 </script>
 

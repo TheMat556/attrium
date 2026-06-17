@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<ruleset name="Attrium">
+	<description>PHPCS ruleset for Attrium WordPress plugin</description>
+
+	<!-- Scan PHP files in src/ -->
+	<file>src/</file>
+	<arg name="extensions" value="php"/>
+
+	<!-- Use colors in output -->
+	<arg name="colors"/>
+
+	<!-- Show progress -->
+	<arg value="p"/>
+
+	<rule ref="WordPress-Extra">
+		<!-- Allow short array syntax (modern PHP 7.4+) -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+
+		<!-- Allow namespaced PSR-4 class/file naming -->
+		<exclude name="WordPress.Files.FileName"/>
+
+		<!-- Allow non-Yoda conditions -->
+		<exclude name="WordPress.PHP.YodaConditions"/>
+
+		<!-- Allow spaces for indentation (the project uses 4 spaces) -->
+		<exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+
+		<!-- Allow comments on same line as code -->
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+
+		<!-- Allow `elseif` (not just `else if`) -->
+		<exclude name="PSR2.ControlStructures.ElseIfDeclaration"/>
+
+		<!-- Allow single-line arrays -->
+		<exclude name="WordPress.Arrays.ArrayDeclarationSpacing"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration"/>
+
+		<!-- Allow flexible parenthesis spacing -->
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceAfterOpenBracket"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceBeforeCloseBracket"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceBeforeOpenBracket"/>
+
+		<!-- Allow loose comparison in non-strict contexts -->
+		<exclude name="WordPress.PHP.StrictInArray"/>
+	</rule>
+
+	<!-- Require escaping output -->
+	<rule ref="WordPress.Security.EscapeOutput"/>
+	<rule ref="WordPress.Security.NonceVerification"/>
+
+	<!-- Require proper sanitization -->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+
+	<!-- Allow local file reads with file_get_contents (Vite manifest) -->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<properties>
+			<property name="exclude" type="array">
+				<element value="file_get_contents"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
