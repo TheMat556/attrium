@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
 interface SecondaryItem {
-  title: string
-  url: string
-  icon: Component
+	title: string
+	url: string
+	icon: Component
 }
 
 defineProps<{
-  items: SecondaryItem[]
+	items: SecondaryItem[]
 }>()
 </script>
 

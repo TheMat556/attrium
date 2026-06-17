@@ -1,0 +1,62 @@
+# Attrium CI — runs on push/PR to main
+#
+# Checks:
+#   1. Biome linting & formatting (JS/TS/Vue)
+#   2. PHP_CodeSniffer (PHP)
+#   3. Vite production build (verifies TypeScript & bundle)
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- Node.js / Bun ----------
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Biome lint check
+        run: bun run lint:check
+
+      - name: Biome format check
+        run: bun run format:check
+
+      # ---------- PHP ----------
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: ./admin
+        run: composer install --no-interaction --no-progress
+
+      - name: PHPCS lint
+        working-directory: ./admin
+        run: composer lint
+
+      # ---------- Build ----------
+      - name: Build Vue app
+        run: bun run build

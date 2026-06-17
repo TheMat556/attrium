@@ -1,27 +1,21 @@
 <script setup lang="ts">
+import { Bell, CreditCard, LogOut, MoreVertical, UserCircle } from '@lucide/vue'
 import { computed } from 'vue'
-import {
-  UserCircle,
-  CreditCard,
-  Bell,
-  LogOut,
-  MoreVertical,
-} from '@lucide/vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 
@@ -29,12 +23,12 @@ const { userName, userEmail } = useServerData()
 const { isMobile } = useSidebar()
 
 const initials = computed(() => {
-  return userName
-    .split(' ')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+	return userName
+		.split(' ')
+		.map((n: string) => n[0])
+		.join('')
+		.toUpperCase()
+		.slice(0, 2)
 })
 </script>
 
