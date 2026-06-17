@@ -7,18 +7,35 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
+admin/vendor/
 
-# Editor directories and files
+# Build output
+dist/
+dist-ssr/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+
+# PHP
+.phpcs-cache
+.phpunit.result.cache
+.phpunit.cache/
+
+# Environment
+*.local
+.env
+.env.local

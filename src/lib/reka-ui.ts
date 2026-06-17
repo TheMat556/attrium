@@ -16,17 +16,18 @@
  * regenerating them does not lose this behaviour, and reka-ui upgrades keep
  * working because the wrappers delegate to whatever the real portal is.
  */
-import { defineComponent, h } from 'vue'
+
 import * as Reka from '@reka-ui/original'
+import { defineComponent, h } from 'vue'
 
 export * from '@reka-ui/original'
 
 /** The portal container that lives inside the shadow root (set in main.ts). */
 function shadowPortalTarget(): HTMLElement | string {
-  if (typeof window !== 'undefined' && window.__ATTRIUM_PORTAL__) {
-    return window.__ATTRIUM_PORTAL__
-  }
-  return 'body'
+	if (typeof window !== 'undefined' && window.__ATTRIUM_PORTAL__) {
+		return window.__ATTRIUM_PORTAL__
+	}
+	return 'body'
 }
 
 /**
@@ -34,18 +35,18 @@ function shadowPortalTarget(): HTMLElement | string {
  * portal container. An explicit `to` passed by a caller still wins.
  */
 function withShadowPortal(Original: unknown) {
-  const Wrapped = Original as ReturnType<typeof defineComponent>
+	const Wrapped = Original as ReturnType<typeof defineComponent>
 
-  return defineComponent({
-    name: 'ShadowPortal',
-    inheritAttrs: false,
-    setup(_props, { slots, attrs }) {
-      return () => {
-        const to = (attrs as { to?: unknown }).to ?? shadowPortalTarget()
-        return h(Wrapped, { ...attrs, to }, slots)
-      }
-    },
-  })
+	return defineComponent({
+		name: 'ShadowPortal',
+		inheritAttrs: false,
+		setup(_props, { slots, attrs }) {
+			return () => {
+				const to = (attrs as { to?: unknown }).to ?? shadowPortalTarget()
+				return h(Wrapped, { ...attrs, to }, slots)
+			}
+		},
+	})
 }
 
 // Every reka-ui `*Portal` export, wrapped so it teleports into the shadow root.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search, ExternalLink, Plus, Sun, Moon } from '@lucide/vue'
+import { ExternalLink, Moon, Plus, Search, Sun } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'

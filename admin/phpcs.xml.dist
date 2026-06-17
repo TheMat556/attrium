@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<ruleset name="Attrium">
+	<description>PHPCS ruleset for Attrium WordPress plugin</description>
+
+	<file>src/</file>
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="p"/>
+
+	<!-- Warnings are informational, not CI blockers -->
+	<config name="ignore_warnings_on_exit" value="1"/>
+
+	<!--
+	WordPress-Extra inherits WordPress-Core + recommended security sniffs
+	(EscapeOutput, NonceVerification, SafeRedirect, PluginMenuSlug).
+	-->
+	<rule ref="WordPress-Extra">
+
+		<!-- PSR-4 class naming (e.g. Attrium.php, not class-attrium.php) -->
+		<exclude name="WordPress.Files.FileName"/>
+
+		<!-- Modern short array syntax [] over array() -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+
+		<!-- Yoda conditions are optional -->
+		<exclude name="WordPress.PHP.YodaConditions"/>
+
+		<!-- 4-space indentation, not tabs -->
+		<exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+
+		<!-- Inline comments don't need trailing punctuation -->
+		<exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+
+		<!-- Flexible parenthesis spacing -->
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceAfterOpenBracket"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.SpaceBeforeCloseBracket"/>
+
+	</rule>
+
+	<!--
+	Security: ValidatedSanitizedInput is NOT included in WordPress-Extra,
+	so we add it explicitly.
+	-->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+
+	<!--
+	Discourage debug functions in committed code.
+	-->
+	<rule ref="Generic.PHP.ForbiddenFunctions">
+		<properties>
+			<property name="forbiddenFunctions" type="array">
+				<element key="var_dump" value="null"/>
+				<element key="print_r" value="null"/>
+				<element key="error_log" value="null"/>
+				<element key="debug_backtrace" value="null"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

@@ -1,45 +1,45 @@
 <script setup lang="ts">
+import { ChevronRight } from '@lucide/vue'
 import type { Component } from 'vue'
 import { ref } from 'vue'
-import { ChevronRight } from '@lucide/vue'
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarMenu,
+	SidebarMenuBadge,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
 
 interface NavChild {
-  title: string
-  url: string
-  badge?: string
+	title: string
+	url: string
+	badge?: string
 }
 
 interface NavItem {
-  title: string
-  url: string
-  icon?: Component
-  badge?: string
-  children?: NavChild[]
+	title: string
+	url: string
+	icon?: Component
+	badge?: string
+	children?: NavChild[]
 }
 
 defineProps<{
-  items: NavItem[]
+	items: NavItem[]
 }>()
 
 const openMap = ref<Record<string, boolean>>({})
 
 function toggle(title: string) {
-  openMap.value[title] = !openMap.value[title]
+	openMap.value[title] = !openMap.value[title]
 }
 
 function isOpen(title: string) {
-  return !!openMap.value[title]
+	return !!openMap.value[title]
 }
 </script>
 
