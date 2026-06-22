@@ -2,6 +2,7 @@
 import { ChevronRight } from '@lucide/vue'
 import type { Component } from 'vue'
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import {
 	SidebarGroup,
 	SidebarGroupContent,
@@ -13,6 +14,7 @@ import {
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import { useIframeNavigation } from '@/composables/useIframeNavigation'
 
 interface NavChild {
 	title: string
@@ -28,9 +30,22 @@ interface NavItem {
 	children?: NavChild[]
 }
 
-defineProps<{
+const props = defineProps<{
 	items: NavItem[]
 }>()
+
+const route = useRoute()
+const { navigateTo, extractRelativePath } = useIframeNavigation()
+
+/** True for links pointing to a different origin than the current site. */
+function isExternalLink(url: string): boolean {
+	if (!url.startsWith('http')) return false
+	try {
+		return new URL(url).origin !== window.location.origin
+	} catch {
+		return false
+	}
+}
 
 const openMap = ref<Record<string, boolean>>({})
 
@@ -41,6 +56,43 @@ function toggle(title: string) {
 function isOpen(title: string) {
 	return !!openMap.value[title]
 }
+
+function handleClick(url: string, children?: NavChild[]) {
+	if (children && children.length > 0) {
+		// Toggle submenu
+		const item = props.items.find((i) => i.url === url)
+		if (item) toggle(item.title)
+		return
+	}
+
+	// External links open in new tab
+	if (isExternalLink(url)) {
+		window.open(url, '_blank')
+		return
+	}
+
+	navigateTo(url)
+}
+
+function handleChildClick(url: string) {
+	// External links open in new tab
+	if (isExternalLink(url)) {
+		window.open(url, '_blank')
+		return
+	}
+	navigateTo(url)
+}
+
+/** Check if a URL matches the current route */
+function isActive(url: string): boolean {
+	if (route.name !== 'wp-page') return false
+
+	const currentPath = route.query.path as string | undefined
+	if (!currentPath) return false
+
+	// Compare normalized relative admin paths for an exact match.
+	return extractRelativePath(url) === currentPath
+}
 </script>
 
 <template>
@@ -50,7 +102,8 @@ function isOpen(title: string) {
         <SidebarMenuItem v-for="item in items" :key="item.title">
           <SidebarMenuButton
             :tooltip="item.title"
-            @click="item.children?.length && toggle(item.title)"
+            :data-active="isActive(item.url) ? 'true' : undefined"
+            @click="handleClick(item.url, item.children)"
           >
             <component :is="item.icon" v-if="item.icon" />
             <span>{{ item.title }}</span>
@@ -68,16 +121,17 @@ function isOpen(title: string) {
           </SidebarMenuButton>
           <SidebarMenuSub v-if="item.children?.length" v-show="isOpen(item.title)">
             <SidebarMenuSubItem v-for="child in item.children" :key="child.title">
-              <SidebarMenuSubButton asChild>
-                <a :href="child.url">
-                  <span>{{ child.title }}</span>
-                  <SidebarMenuBadge
-                    v-if="child.badge"
-                    class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
-                  >
-                    {{ child.badge }}
-                  </SidebarMenuBadge>
-                </a>
+              <SidebarMenuSubButton
+                :data-active="isActive(child.url) ? 'true' : undefined"
+                @click="handleChildClick(child.url)"
+              >
+                <span>{{ child.title }}</span>
+                <SidebarMenuBadge
+                  v-if="child.badge"
+                  class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+                >
+                  {{ child.badge }}
+                </SidebarMenuBadge>
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
           </SidebarMenuSub>

@@ -23,6 +23,7 @@ export interface ServerData {
 	userEmail: string
 	canManage: boolean
 	currentScreen: Record<string, string> | null
+	currentPage: string
 	pluginVersion: string
 	pluginBase: string
 	menu: MenuItem[]
@@ -44,6 +45,7 @@ export function useServerData(): ServerData {
 		userEmail: get('user-email'),
 		canManage: get('can-manage') === 'true',
 		currentScreen: parseJson(get('current-screen')),
+		currentPage: get('current-page'),
 		menu: parseMenu(get('menu')),
 		pluginVersion: get('plugin-version'),
 		pluginBase: get('plugin-base'),
