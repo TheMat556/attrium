@@ -129,11 +129,13 @@ class Attrium {
             if ( ! is_scalar($value) || $value === '' ) {
                 continue;
             }
-            $clean_key = sanitize_key($param);
-            if ( $clean_key === '' ) {
+            // Preserve original key names; sanitize_key() lowercases and strips
+            // characters, which breaks plugin pages relying on exact param keys.
+            $raw_key = (string) wp_unslash($param);
+            if ( $raw_key === '' ) {
                 continue;
             }
-            $query_parts[] = $clean_key . '=' . rawurlencode(sanitize_text_field(wp_unslash($value)));
+            $query_parts[] = rawurlencode($raw_key) . '=' . rawurlencode((string) wp_unslash($value));
         }
         if ( ! empty($query_parts) ) {
             $current_page .= '?' . implode('&', $query_parts);

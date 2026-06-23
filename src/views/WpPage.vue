@@ -10,8 +10,8 @@ const { adminUrl } = useServerData()
 
 /** The relative path from the query string, e.g. "edit.php?post_type=product" */
 const relativePath = computed<string>(() => {
-	const path = route.query.path as string | undefined
-	return path || ''
+	const path = route.query.path
+	return (Array.isArray(path) ? path[0] : path) || ''
 })
 
 /** Full admin URL to load in the iframe.
@@ -19,7 +19,7 @@ const relativePath = computed<string>(() => {
 const iframeUrl = computed<string>(() => {
 	const base = adminUrl + relativePath.value
 	const separator = relativePath.value.includes('?') ? '&' : '?'
-	return base + separator + 'attrium=off'
+	return `${base + separator}attrium=off`
 })
 
 /** Real title read from the loaded iframe document; empty until it loads. */

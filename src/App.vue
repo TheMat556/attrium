@@ -22,12 +22,12 @@ const isIframeRoute = computed(() => route.name === 'wp-page')
 // keep the original responsive margins/padding for both.
 const cardClass = computed(() => (isIframeRoute.value ? 'min-h-0' : ''))
 const innerClass = computed(() =>
-	isIframeRoute.value ? 'flex-1 min-h-0 gap-4 py-4 md:gap-6 md:py-6' : 'gap-4 py-4 md:gap-6 md:py-6',
+	isIframeRoute.value
+		? 'flex-1 min-h-0 gap-4 py-4 md:gap-6 md:py-6'
+		: 'gap-4 py-4 md:gap-6 md:py-6',
 )
 const mainClass = computed(() =>
-	isIframeRoute.value
-		? 'flex flex-1 min-h-0 flex-col px-4 lg:px-6'
-		: 'px-4 lg:px-6',
+	isIframeRoute.value ? 'flex flex-1 min-h-0 flex-col px-4 lg:px-6' : 'px-4 lg:px-6',
 )
 </script>
 

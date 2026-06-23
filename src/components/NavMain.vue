@@ -67,7 +67,7 @@ function handleClick(url: string, children?: NavChild[]) {
 
 	// External links open in new tab
 	if (isExternalLink(url)) {
-		window.open(url, '_blank')
+		window.open(url, '_blank', 'noopener,noreferrer')
 		return
 	}
 
@@ -77,7 +77,7 @@ function handleClick(url: string, children?: NavChild[]) {
 function handleChildClick(url: string) {
 	// External links open in new tab
 	if (isExternalLink(url)) {
-		window.open(url, '_blank')
+		window.open(url, '_blank', 'noopener,noreferrer')
 		return
 	}
 	navigateTo(url)
