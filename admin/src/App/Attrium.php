@@ -135,7 +135,7 @@ class Attrium {
             if ( $raw_key === '' ) {
                 continue;
             }
-            $query_parts[] = rawurlencode($raw_key) . '=' . rawurlencode((string) wp_unslash($value));
+            $query_parts[] = rawurlencode($raw_key) . '=' . rawurlencode( (string) wp_unslash($value));
         }
         if ( ! empty($query_parts) ) {
             $current_page .= '?' . implode('&', $query_parts);
