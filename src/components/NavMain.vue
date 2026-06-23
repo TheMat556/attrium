@@ -57,14 +57,7 @@ function isOpen(title: string) {
 	return !!openMap.value[title]
 }
 
-function handleClick(url: string, children?: NavChild[]) {
-	if (children && children.length > 0) {
-		// Toggle submenu
-		const item = props.items.find((i) => i.url === url)
-		if (item) toggle(item.title)
-		return
-	}
-
+function navigateToUrl(url: string) {
 	// External links open in new tab
 	if (isExternalLink(url)) {
 		window.open(url, '_blank', 'noopener,noreferrer')
@@ -74,13 +67,19 @@ function handleClick(url: string, children?: NavChild[]) {
 	navigateTo(url)
 }
 
-function handleChildClick(url: string) {
-	// External links open in new tab
-	if (isExternalLink(url)) {
-		window.open(url, '_blank', 'noopener,noreferrer')
+function handleClick(url: string, children?: NavChild[]) {
+	if (children && children.length > 0) {
+		// Toggle submenu
+		const item = props.items.find((i) => i.url === url)
+		if (item) toggle(item.title)
 		return
 	}
-	navigateTo(url)
+
+	navigateToUrl(url)
+}
+
+function handleChildClick(url: string) {
+	navigateToUrl(url)
 }
 
 /** Check if a URL matches the current route */
