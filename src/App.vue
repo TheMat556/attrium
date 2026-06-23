@@ -7,10 +7,14 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useIframeNavigation } from '@/composables/useIframeNavigation'
 
 // On initial load, auto-navigate to the current WP admin page
-// so the correct page is shown in the content area
+// so the correct page is shown in the content area.
+// Only fire on the dashboard route — if the user reloads an iframe page
+// (e.g. #/wp-page?path=themes.php) we must NOT overwrite it.
 const { autoNavigateToCurrentPage } = useIframeNavigation()
 onMounted(() => {
-	autoNavigateToCurrentPage()
+	if (route.name === 'dashboard') {
+		autoNavigateToCurrentPage()
+	}
 })
 
 // Iframe pages (3rd-party WP admin) need the layout to fill available height
