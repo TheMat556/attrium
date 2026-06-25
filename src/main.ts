@@ -52,7 +52,7 @@ const slot = shadow.querySelector('slot[name="wp-content"]')
 
 if (!slot) {
 	removeHider()
-    	clearTimeout(window.__ATTRIUM_WATCHDOG__)
+	clearTimeout(window.__ATTRIUM_WATCHDOG__)
 } else {
 	// Move the WordPress content (#wpcontent) from its original position in
 	// #wpwrap into #attrium-host as a light-DOM child. The slot="wp-content"
