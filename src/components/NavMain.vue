@@ -49,7 +49,7 @@ function isOpen(title: string) {
       <SidebarMenu>
         <SidebarMenuItem v-for="item in items" :key="item.title">
           <!--
-            Top-level items with a submenu expand on click (uixpress-style).
+            Top-level items with a submenu expand on click.
             Items without children link directly so standalone admin pages
             still navigate (full page load -> embedded WP page loads).
           -->
