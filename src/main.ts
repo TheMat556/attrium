@@ -1,3 +1,7 @@
+// @font-face rules for Inter Variable — imported separately from style.css
+// so Vite resolves them into a light-DOM CSS bundle that PHP can serve.
+// The Shadow DOM consumes the font via the --font-sans CSS variable.
+import './fonts.css'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'

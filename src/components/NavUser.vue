@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Bell, CreditCard, LogOut, MoreVertical, UserCircle } from '@lucide/vue'
+import { LogOut, MoreVertical, UserRoundPen } from '@lucide/vue'
 import { computed } from 'vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
@@ -19,8 +18,16 @@ import {
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 
-const { userName, userEmail } = useServerData()
+const { userName, userEmail, adminUrl } = useServerData()
 const { isMobile } = useSidebar()
+
+function editProfile() {
+	window.location.href = adminUrl + 'profile.php'
+}
+
+function logout() {
+	window.location.href = adminUrl + 'logout.php'
+}
 
 const initials = computed(() => {
 	return userName
@@ -69,25 +76,15 @@ const initials = computed(() => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <UserCircle />
-              Account
+            <DropdownMenuItem @click="editProfile">
+              <UserRoundPen />
+              Profil bearbeiten
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <CreditCard />
-              Billing
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell />
-              Notifications
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <LogOut />
-            Log out
-          </DropdownMenuItem>
+            <DropdownMenuItem @click="logout">
+              <LogOut />
+              Abmelden
+            </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
