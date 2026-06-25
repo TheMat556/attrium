@@ -23,10 +23,10 @@ class Attrium {
      * Whether the current screen should get the attrium overlay.
      *
      * The block editor and site editor manage their own full-screen layout,
-     * so we leave them alone (mirrors uixpress behaviour) to keep those
+     * so we leave them alone to keep those
      * pages working while we embed the default admin pages everywhere else.
      */
-    private static function is_overlay_screen() {
+    private static function is_overlay_screen(): bool {
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
 
         if ( ! $screen ) {
@@ -44,7 +44,7 @@ class Attrium {
         return true;
     }
 
-    public function load_styles() {
+    public function load_styles(): void {
         if ( ! self::is_overlay_screen() ) {
             return;
         }
@@ -59,7 +59,7 @@ class Attrium {
         wp_enqueue_style('attrium', $style, [], ATTRIUM_VERSION);
     }
 
-    public function load_base_scripts() {
+    public function load_base_scripts(): void {
         if ( ! self::is_overlay_screen() ) {
             return;
         }
@@ -80,7 +80,7 @@ class Attrium {
         );
     }
 
-    public function output_data_attributes() {
+    public function output_data_attributes(): void {
         if ( ! self::is_overlay_screen() ) {
             return;
         }
@@ -122,7 +122,7 @@ class Attrium {
         wp_print_script_tag($scripts_tag);
     }
 
-    public function build_attrium() {
+    public function build_attrium(): void {
         if ( ! self::is_overlay_screen() ) {
             return;
         }
@@ -163,9 +163,11 @@ class Attrium {
         echo "<script>
         window.__ATTRIUM_WATCHDOG__ = setTimeout(function(){
             console.error('[Attrium] Bootstrap watchdog fired after 5s — Vue app did not initialise. Removing overlay so WordPress admin remains usable.');
-            document.querySelectorAll('#attrium-overlay-css, #attrium-body-hider')
-                .forEach(function(e){ e.remove(); });
-            var h = document.querySelector('#attrium-host');
+            var oe = document.getElementById('attrium-overlay-css');
+            if(oe) oe.remove();
+            var be = document.getElementById('attrium-body-hider');
+            if(be) be.remove();
+            var h = document.getElementById('attrium-host');
             if(h) h.remove();
         }, 5000);
         </script>";
