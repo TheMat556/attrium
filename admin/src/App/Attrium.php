@@ -147,5 +147,27 @@ class Attrium {
         // and the Vue app has moved #wpcontent into it, then main.ts removes
         // this style so the slotted content shows through.
         echo "<style id='attrium-body-hider'>body > *:not(#attrium-host){display:none}</style>";
+
+        // Bootstrap watchdog (inline, non-module — runs regardless of module
+        // loading). If the Vue bootstrap hasn't cleared this within 5 seconds,
+        // something went wrong: tear down Attrium so the original WP admin
+        // reappears instead of leaving the user staring at a blank screen.
+        // main.ts calls clearTimeout(window.__ATTRIUM_WATCHDOG__) on every
+        // successful path; the timeout reaching zero is always a failure.
+        //
+        // 5s is a deliberately generous ceiling: a healthy boot clears this in
+        // well under a second, so the only way to reach it is a genuine failure
+        // (missing/404 bundle, JS error, stale manifest) on even a slow admin.
+        // The console.error is the only signal the user gets that the watchdog
+        // tore Attrium down — keep it so field failures are debuggable.
+        echo "<script>
+        window.__ATTRIUM_WATCHDOG__ = setTimeout(function(){
+            console.error('[Attrium] Bootstrap watchdog fired after 5s — Vue app did not initialise. Removing overlay so WordPress admin remains usable.');
+            document.querySelectorAll('#attrium-overlay-css, #attrium-body-hider')
+                .forEach(function(e){ e.remove(); });
+            var h = document.querySelector('#attrium-host');
+            if(h) h.remove();
+        }, 5000);
+        </script>";
     }
 }

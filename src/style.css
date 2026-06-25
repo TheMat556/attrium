@@ -67,6 +67,7 @@
   --tw-ring-offset-shadow: 0 0 #0000;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --wp-content-foreground: #3c434a;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -143,11 +144,11 @@
     Reset the inherited color baseline on the slotted WordPress content so the
     shadow host's --foreground does not bleed through the slot into WP markup
     that relies on inherited (default) color. WP's own explicit colors still
-    win; this only restores the wp-admin default text color (#3c434a) for
+    win; this only restores the wp-admin baseline (--wp-content-foreground) for
     elements that would otherwise inherit ours. ::slotted matches the slotted
     root only, but color inherits to descendants from there.
   */
   ::slotted([slot='wp-content']) {
-    color: #3c434a;
+    color: var(--wp-content-foreground);
   }
 }

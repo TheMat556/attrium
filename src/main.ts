@@ -51,6 +51,7 @@ const slot = shadow.querySelector('slot[name="wp-content"]')
 
 if (!slot) {
 	removeHider()
+	clearTimeout(window.__ATTRIUM_WATCHDOG__)
 } else {
 	// Move the WordPress content (#wpcontent) from its original position in
 	// #wpwrap into #attrium-host as a light-DOM child. The slot="wp-content"
@@ -64,6 +65,7 @@ if (!slot) {
 		host.appendChild(wpcontent)
 		// Content is projected and visible now.
 		removeHider()
+		clearTimeout(window.__ATTRIUM_WATCHDOG__)
 	}
 	// If the slot exists but #wpcontent is missing (unexpected), the hider
 	// stays so we fail visibly rather than silently dropping page content.
