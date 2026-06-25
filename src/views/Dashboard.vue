@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card'
 import { useServerData } from '@/composables/useServerData'
 
 // Placeholder native dashboard. Replaces the slotted WP dashboard when the

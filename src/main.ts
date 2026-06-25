@@ -40,7 +40,8 @@ window.__ATTRIUM_PORTAL__ = portal
 // after this call — but we still verify it below rather than assume timing.
 createApp(App).use(createPinia()).mount(mount)
 
-const removeHider = () => document.querySelector('#attrium-body-hider')?.remove()
+const removeHider = () =>
+	document.querySelector('#attrium-body-hider')?.remove()
 
 // On screens Attrium overrides natively (see src/views/overrides.ts), App.vue
 // renders its own view and no wp-content slot is rendered. There is nothing to
@@ -51,7 +52,7 @@ const slot = shadow.querySelector('slot[name="wp-content"]')
 
 if (!slot) {
 	removeHider()
-	clearTimeout(window.__ATTRIUM_WATCHDOG__)
+    	clearTimeout(window.__ATTRIUM_WATCHDOG__)
 } else {
 	// Move the WordPress content (#wpcontent) from its original position in
 	// #wpwrap into #attrium-host as a light-DOM child. The slot="wp-content"
