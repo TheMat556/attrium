@@ -22,7 +22,8 @@
     "reka-ui": "^2.9.10",
     "shadcn-vue": "^2.7.4",
     "tailwind-merge": "^3.6.0",
-    "vue": "^3.5.34"
+    "vue": "^3.5.34",
+    "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",

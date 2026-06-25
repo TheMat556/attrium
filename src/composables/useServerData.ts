@@ -22,7 +22,7 @@ export interface ServerData {
 	userName: string
 	userEmail: string
 	canManage: boolean
-	screenId: string
+	currentScreen: Record<string, string> | null
 	pluginVersion: string
 	pluginBase: string
 	menu: MenuItem[]
@@ -43,7 +43,7 @@ export function useServerData(): ServerData {
 		userName: get('user-name'),
 		userEmail: get('user-email'),
 		canManage: get('can-manage') === 'true',
-		screenId: get('screen-id'),
+		currentScreen: parseJson(get('current-screen')),
 		menu: parseMenu(get('menu')),
 		pluginVersion: get('plugin-version'),
 		pluginBase: get('plugin-base'),
@@ -56,5 +56,14 @@ function parseMenu(str: string): MenuItem[] {
 		return JSON.parse(str)
 	} catch {
 		return []
+	}
+}
+
+function parseJson(str: string): Record<string, string> | null {
+	if (!str) return null
+	try {
+		return JSON.parse(str)
+	} catch {
+		return null
 	}
 }

@@ -48,15 +48,9 @@ function isOpen(title: string) {
     <SidebarGroupContent class="flex flex-col gap-2">
       <SidebarMenu>
         <SidebarMenuItem v-for="item in items" :key="item.title">
-          <!--
-            Top-level items with a submenu expand on click (uixpress-style).
-            Items without children link directly so standalone admin pages
-            still navigate (full page load -> embedded WP page loads).
-          -->
           <SidebarMenuButton
-            v-if="item.children?.length"
             :tooltip="item.title"
-            @click="toggle(item.title)"
+            @click="item.children?.length && toggle(item.title)"
           >
             <component :is="item.icon" v-if="item.icon" />
             <span>{{ item.title }}</span>
@@ -67,25 +61,10 @@ function isOpen(title: string) {
               {{ item.badge }}
             </SidebarMenuBadge>
             <ChevronRight
+              v-if="item.children?.length"
               class="h-4 w-4 transition-transform duration-200"
               :class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
             />
-          </SidebarMenuButton>
-          <SidebarMenuButton
-            v-else
-            asChild
-            :tooltip="item.title"
-          >
-            <a :href="item.url">
-              <component :is="item.icon" v-if="item.icon" />
-              <span>{{ item.title }}</span>
-              <SidebarMenuBadge
-                v-if="item.badge"
-                class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                {{ item.badge }}
-              </SidebarMenuBadge>
-            </a>
           </SidebarMenuButton>
           <SidebarMenuSub v-if="item.children?.length" v-show="isOpen(item.title)">
             <SidebarMenuSubItem v-for="child in item.children" :key="child.title">

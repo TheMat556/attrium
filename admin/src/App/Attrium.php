@@ -19,36 +19,7 @@ class Attrium {
         add_action('in_admin_header', [ $this, 'build_attrium' ], 1);
     }
 
-    /**
-     * Whether the current screen should get the attrium overlay.
-     *
-     * The block editor and site editor manage their own full-screen layout,
-     * so we leave them alone (mirrors uixpress behaviour) to keep those
-     * pages working while we embed the default admin pages everywhere else.
-     */
-    private static function is_overlay_screen() {
-        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-
-        if ( ! $screen ) {
-            return true;
-        }
-
-        if ( method_exists($screen, 'is_block_editor') && $screen->is_block_editor() ) {
-            return false;
-        }
-
-        if ( isset($screen->id) && in_array($screen->id, [ 'site-editor', 'customize' ], true) ) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function load_styles() {
-        if ( ! self::is_overlay_screen() ) {
-            return;
-        }
-
         $css_file = Scripts::get_build_css('src/main.ts');
 
         if ( ! $css_file ) {
@@ -60,10 +31,6 @@ class Attrium {
     }
 
     public function load_base_scripts() {
-        if ( ! self::is_overlay_screen() ) {
-            return;
-        }
-
         $build_file = Scripts::get_build_file('src/main.ts');
 
         if ( ! $build_file ) {
@@ -81,10 +48,6 @@ class Attrium {
     }
 
     public function output_data_attributes() {
-        if ( ! self::is_overlay_screen() ) {
-            return;
-        }
-
         $rest_base  = get_rest_url();
         $rest_nonce = wp_create_nonce('wp_rest');
         $admin_url  = get_admin_url();
@@ -95,11 +58,17 @@ class Attrium {
         $user_mail    = $current_user->user_email;
         $can_manage   = current_user_can('manage_options') ? 'true' : 'false';
 
-        // Screen id lets the client swap the slotted WP content for a native
-        // Attrium view (e.g. 'dashboard'). Keep this minimal — a single id is
-        // enough to branch on; richer screen data can be added when needed.
-        $screen    = function_exists('get_current_screen') ? get_current_screen() : null;
-        $screen_id = $screen && isset($screen->id) ? $screen->id : '';
+        // Detect current admin screen for auto-navigation
+        $current_screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        $screen_data    = null;
+        if ( $current_screen ) {
+            $screen_data = [
+                'base'      => $current_screen->base,
+                'post_type' => $current_screen->post_type,
+                'action'    => $current_screen->action,
+                'id'        => $current_screen->id,
+            ];
+        }
 
         $menu_items = Menu::get_items();
 
@@ -113,7 +82,7 @@ class Attrium {
             'user-name'      => esc_attr($user_name),
             'user-email'     => esc_attr($user_mail),
             'can-manage'     => esc_attr($can_manage),
-            'screen-id'      => esc_attr($screen_id),
+            'current-screen' => $screen_data ? wp_json_encode($screen_data) : '',
             'menu'           => wp_json_encode($menu_items),
             'plugin-version' => esc_attr(ATTRIUM_VERSION),
             'plugin-base'    => esc_url(ATTRIUM_URL),
@@ -123,29 +92,14 @@ class Attrium {
     }
 
     public function build_attrium() {
-        if ( ! self::is_overlay_screen() ) {
-            return;
-        }
-
         if ( ! Scripts::get_build_file('src/main.ts') ) {
             return;
         }
 
-        // Embed the default WordPress admin pages using a shadow DOM slot:
-        // #wpcontent is moved into #attrium-host (light DOM child) and
-        // projected into the SidebarInset content card via <slot>. The
-        // SidebarProvider handles the gray background, the Sidebar (inset
-        // variant) handles padding, and SidebarInset handles the card
-        // margins/rounded corners. We only need to hide the old WP chrome.
-        echo "<style id='attrium-overlay-css'>
-        #wpadminbar,#adminmenumain,#wpwrap{display:none !important}
-        #wpcontent{margin-left:0 !important}
-        #wpfooter{display:none !important}
+        echo "<style id='attrium-body-hider'>
+        html.wp-toolbar{padding:0!important}
+        #wpadminbar{display:none!important}
+        body > *:not(#attrium-host) {display:none}
         </style>";
-
-        // Temporary FOUC hider: hides everything until #attrium-host exists
-        // and the Vue app has moved #wpcontent into it, then main.ts removes
-        // this style so the slotted content shows through.
-        echo "<style id='attrium-body-hider'>body > *:not(#attrium-host){display:none}</style>";
     }
 }

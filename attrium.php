@@ -2,7 +2,7 @@
 /**
  * Plugin Name:     Attrium
  * Plugin URI:      https://www.hader.ovh/attrium
- * Description:     Modern WordPress admin theme built with Vue 3, Tailwind CSS
+ * Description:     Modern WordPress admin theme built with Vue 3, Tailwind CSS and DaisyUI
  * Version:         1.0.0
  * Author:          Matthias Hader
  * Text Domain:     attrium

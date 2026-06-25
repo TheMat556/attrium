@@ -1,33 +1,41 @@
 <script setup lang="ts">
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { onMounted, ref } from 'vue'
 import { useServerData } from '@/composables/useServerData'
 
-// Placeholder native dashboard. Replaces the slotted WP dashboard when the
-// server reports screenId === 'dashboard'. Fill with real widgets later.
-const { userName, pluginVersion } = useServerData()
+const { userName, siteUrl } = useServerData()
+const wpVersion = ref('')
+
+onMounted(async () => {
+	try {
+		const res = await fetch('/wp-json/')
+		const data = await res.json()
+		wpVersion.value = data?.offers?.[0]?.version || ''
+	} catch {
+		wpVersion.value = ''
+	}
+})
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
-    <div class="flex flex-col gap-1">
-      <h1 class="text-2xl font-semibold tracking-tight">Welcome, {{ userName }}</h1>
-      <p class="text-muted-foreground text-sm">
-        Attrium dashboard placeholder — real widgets land here soon.
-      </p>
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Welcome, {{ userName }}</h1>
+      <p class="text-muted-foreground">Here's your WordPress admin overview.</p>
     </div>
 
     <div class="grid gap-4 md:grid-cols-3">
-      <Card v-for="n in 3" :key="n">
-        <CardHeader>
-          <CardTitle class="text-base">Placeholder {{ n }}</CardTitle>
-          <CardDescription>Widget slot reserved for later.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="bg-muted h-24 w-full animate-pulse rounded-md" />
-        </CardContent>
-      </Card>
+      <div class="rounded-lg border p-4">
+        <h3 class="text-sm font-medium text-muted-foreground">Site</h3>
+        <p class="mt-1 text-lg font-semibold">{{ siteUrl }}</p>
+      </div>
+      <div class="rounded-lg border p-4">
+        <h3 class="text-sm font-medium text-muted-foreground">WordPress</h3>
+        <p class="mt-1 text-lg font-semibold">{{ wpVersion || 'Loading...' }}</p>
+      </div>
+      <div class="rounded-lg border p-4">
+        <h3 class="text-sm font-medium text-muted-foreground">Attrium</h3>
+        <p class="mt-1 text-lg font-semibold">v1.0.0</p>
+      </div>
     </div>
-
-    <p class="text-muted-foreground text-xs">Attrium v{{ pluginVersion }}</p>
   </div>
 </template>
