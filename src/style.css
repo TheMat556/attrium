@@ -2,7 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn-vue/tailwind.css";
 
-/* Submenu slide-down animation */
+/*
+ * Submenu slide-down animation using CSS grid `grid-template-rows`.
+ */
 .submenu-wrapper {
   max-height: 0;
   opacity: 0;
@@ -11,14 +13,33 @@
 }
 
 .submenu-wrapper.submenu-open {
-  max-height: 500px;
+  max-height: 2000px; /* Fallback for older browsers */
   opacity: 1;
+}
+
+@supports (grid-template-rows: 0fr) {
+  .submenu-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    max-height: none;
+    transition: grid-template-rows 0.35s ease-out, opacity 0.25s ease-out;
+  }
+
+  .submenu-wrapper > :first-child {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .submenu-wrapper.submenu-open {
+    grid-template-rows: 1fr;
+    max-height: none;
+  }
 }
 
 @custom-variant dark (&:is(.dark *, :host(.dark) *));
 
 @theme inline {
---font-sans: 'Inter Variable', sans-serif;
+  --font-sans: 'Inter Variable', sans-serif;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

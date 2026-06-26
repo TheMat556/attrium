@@ -43,6 +43,10 @@ function urlsMatch(a: string, b: string): boolean {
 const currentUrl = computed(() => window.location.href.replace(/\/+$/, ''))
 
 const activeParent = computed<string | null>(() => {
+	// All sidebar nav links use <a href="..."> which trigger full page reloads,
+	// so window.location.href resolves correctly on each mount. No SPA routing
+	// happens here — the active parent is determined at render time and stays
+	// stable until the next full page navigation.
 	const cur = currentUrl.value
 	for (const item of props.items) {
 		if (!item.children?.length) continue
@@ -75,6 +79,10 @@ function toggle(title: string) {
 function isOpen(title: string): boolean {
 	return title === activeParent.value || manualOpen.value === title
 }
+
+function titleClass(item: NavItem): string {
+	return item.title === activeParent.value ? 'font-semibold' : 'font-medium'
+}
 </script>
 
 <template>
@@ -94,7 +102,7 @@ function isOpen(title: string): boolean {
             @click="toggle(item.title)"
           >
             <component :is="item.icon" v-if="item.icon" />
-            <span class="ml-3" :class="item.title === activeParent ? 'font-semibold' : 'font-medium'">{{ item.title }}</span>
+            <span class="ml-3" :class="titleClass(item)">{{ item.title }}</span>
             <SidebarMenuBadge
               v-if="item.badge"
               class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
@@ -113,7 +121,7 @@ function isOpen(title: string): boolean {
           >
             <a :href="item.url">
               <component :is="item.icon" v-if="item.icon" />
-              <span class="ml-3 font-medium">{{ item.title }}</span>
+              <span class="ml-3" :class="titleClass(item)">{{ item.title }}</span>
               <SidebarMenuBadge
                 v-if="item.badge"
                 class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"

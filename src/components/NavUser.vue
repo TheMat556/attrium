@@ -18,15 +18,15 @@ import {
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 
-const { userName, userEmail, adminUrl } = useServerData()
+const { userName, userEmail, adminUrl, logoutUrl } = useServerData()
 const { isMobile } = useSidebar()
 
 function editProfile() {
-	window.location.href = adminUrl + 'profile.php'
+	window.location.href = `${adminUrl}profile.php`
 }
 
 function logout() {
-	window.location.href = adminUrl + 'logout.php'
+	window.location.href = logoutUrl
 }
 
 const initials = computed(() => {
@@ -78,12 +78,12 @@ const initials = computed(() => {
           <DropdownMenuSeparator />
             <DropdownMenuItem @click="editProfile">
               <UserRoundPen />
-              Profil bearbeiten
+              Edit Profile
             </DropdownMenuItem>
           <DropdownMenuSeparator />
             <DropdownMenuItem @click="logout">
               <LogOut />
-              Abmelden
+              Log out
             </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
