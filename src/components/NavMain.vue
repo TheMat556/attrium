@@ -35,18 +35,25 @@ const props = defineProps<{
 /**
  * Determine the active parent — the top-level menu item whose URL or child's
  * URL matches the current page. That parent's submenu is always expanded.
+ *
+ * Compares pathname + `page` query param so irrelevant params (paged, tab,
+ * filter, s, hash) don't cause false mismatches — the `page` param is the
+ * actual WordPress routing key for submenu/admin-page items.
  */
 function urlsMatch(a: string, b: string): boolean {
-	return a.replace(/\/+$/, '') === b.replace(/\/+$/, '')
+	const ua = new URL(a, window.location.origin)
+	const ub = new URL(b, window.location.origin)
+	ua.hash = ''
+	ub.hash = ''
+	return (
+		ua.pathname.replace(/\/+$/, '') === ub.pathname.replace(/\/+$/, '') &&
+		ua.searchParams.get('page') === ub.searchParams.get('page')
+	)
 }
 
-const currentUrl = computed(() => window.location.href.replace(/\/+$/, ''))
+const currentUrl = computed(() => window.location.href)
 
 const activeParent = computed<string | null>(() => {
-	// All sidebar nav links use <a href="..."> which trigger full page reloads,
-	// so window.location.href resolves correctly on each mount. No SPA routing
-	// happens here — the active parent is determined at render time and stays
-	// stable until the next full page navigation.
 	const cur = currentUrl.value
 	for (const item of props.items) {
 		if (!item.children?.length) continue
