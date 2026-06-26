@@ -103,12 +103,15 @@ class Attrium {
 
         $menu_items = Menu::get_items();
 
+        $logout_url = wp_logout_url();
+
         $scripts_tag = [
             'id'             => 'attrium-data',
             'type'           => 'module',
             'rest-base'      => esc_url($rest_base),
             'rest-nonce'     => esc_attr($rest_nonce),
             'admin-url'      => esc_url($admin_url),
+            'logout-url'     => esc_url($logout_url),
             'site-url'       => esc_url($site_url),
             'user-name'      => esc_attr($user_name),
             'user-email'     => esc_attr($user_mail),

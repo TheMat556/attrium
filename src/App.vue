@@ -21,9 +21,9 @@ const override = getScreenOverride(screenId)
     }"
   >
     <AppSidebar variant="inset" />
-    <SidebarInset>
+    <SidebarInset class="ml-0">
       <SiteHeader />
-      <div class="bg-background flex flex-1 flex-col rounded-xl shadow-sm md:mx-2 md:mb-2">
+      <div class="bg-background flex flex-1 flex-col rounded-xl shadow-sm overflow-hidden md:mx-2 md:mb-2">
         <div class="@container/main flex flex-1 flex-col gap-2">
           <div class="flex flex-col gap-4 md:gap-6">
             <main>

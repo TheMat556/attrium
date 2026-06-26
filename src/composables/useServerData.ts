@@ -18,6 +18,7 @@ export interface ServerData {
 	restBase: string
 	restNonce: string
 	adminUrl: string
+	logoutUrl: string
 	siteUrl: string
 	userName: string
 	userEmail: string
@@ -39,6 +40,7 @@ export function useServerData(): ServerData {
 		restBase: get('rest-base'),
 		restNonce: get('rest-nonce'),
 		adminUrl: get('admin-url'),
+		logoutUrl: get('logout-url'),
 		siteUrl: get('site-url'),
 		userName: get('user-name'),
 		userEmail: get('user-email'),

@@ -28,7 +28,7 @@ export default defineConfig({
     manifest: true,
     cssCodeSplit: false,
     rollupOptions: {
-      input: 'src/main.ts'
+      input: 'src/main.ts',
     }
   }
 })

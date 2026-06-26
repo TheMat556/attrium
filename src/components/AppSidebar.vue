@@ -64,7 +64,9 @@ const footerItems = computed(() => [
       <NavMain :items="navMain" />
     </SidebarContent>
     <SidebarFooter>
-      <NavMain :items="footerItems" />
+      <div class="group-data-[collapsible=icon]:-mx-2">
+        <NavMain :items="footerItems" />
+      </div>
       <NavUser />
     </SidebarFooter>
   </Sidebar>
