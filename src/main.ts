@@ -40,7 +40,8 @@ window.__ATTRIUM_PORTAL__ = portal
 // after this call — but we still verify it below rather than assume timing.
 createApp(App).use(createPinia()).mount(mount)
 
-const removeHider = () => document.querySelector('#attrium-body-hider')?.remove()
+const removeHider = () =>
+	document.querySelector('#attrium-body-hider')?.remove()
 
 // On screens Attrium overrides natively (see src/views/overrides.ts), App.vue
 // renders its own view and no wp-content slot is rendered. There is nothing to

@@ -1,6 +1,9 @@
 import { useServerData } from '@/composables/useServerData'
 
-export async function wpFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function wpFetch<T>(
+	endpoint: string,
+	options: RequestInit = {},
+): Promise<T> {
 	const { restBase, restNonce } = useServerData()
 
 	const url = endpoint.startsWith('http') ? endpoint : `${restBase}${endpoint}`
