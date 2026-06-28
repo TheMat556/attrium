@@ -1,9 +1,38 @@
 <script setup lang="ts">
-import { ExternalLink, Moon, Plus, Search, Sun } from '@lucide/vue'
+import {
+	ExternalLink,
+	File,
+	FileText,
+	Moon,
+	Plus,
+	Search,
+	Sun,
+} from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { useServerData } from '@/composables/useServerData'
 import { isDark, toggle } from '@/composables/useTheme'
+
+const { adminUrl, siteUrl } = useServerData()
+
+function newPost() {
+	window.location.href = `${adminUrl}post-new.php`
+}
+
+function newPage() {
+	window.location.href = `${adminUrl}post-new.php?post_type=page`
+}
+
+function openFrontend() {
+	window.open(siteUrl, '_blank', 'noopener,noreferrer')
+}
 </script>
 
 <template>
@@ -14,9 +43,23 @@ import { isDark, toggle } from '@/composables/useTheme'
         orientation="vertical"
         class="data-[orientation=vertical]:h-6"
       />
-      <Button variant="ghost" size="icon-sm">
-        <Plus />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm">
+            <Plus />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" :side-offset="4">
+          <DropdownMenuItem @click="newPost">
+            <FileText />
+            New Post
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="newPage">
+            <File />
+            New Page
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div class="ml-auto flex items-center gap-2">
         <Button variant="ghost" size="icon-sm" @click="toggle">
@@ -30,7 +73,7 @@ import { isDark, toggle } from '@/composables/useTheme'
         <Button variant="ghost" size="icon-sm">
           <Search />
         </Button>
-        <Button variant="ghost" size="icon-sm">
+        <Button variant="ghost" size="icon-sm" @click="openFrontend">
           <ExternalLink />
         </Button>
       </div>
