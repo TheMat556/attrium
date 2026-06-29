@@ -8,6 +8,8 @@ import {
 	Search,
 	Sun,
 } from '@lucide/vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import CommandPalette from '@/components/CommandPalette.vue'
 import { Button } from '@/components/ui/button'
 import {
 	DropdownMenu,
@@ -19,20 +21,26 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 import { isDark, toggle } from '@/composables/useTheme'
+import { useWpActions } from '@/composables/useWpActions'
 
-const { adminUrl, siteUrl } = useServerData()
+const { canCreatePosts, canCreatePages } = useServerData()
+const { newPost, newPage, viewSite } = useWpActions()
 
-function newPost() {
-	window.location.href = `${adminUrl}post-new.php`
+const canCreateAny = canCreatePosts || canCreatePages
+
+const paletteOpen = ref(false)
+
+// ⌘K / Ctrl+K toggles the command palette, matching the convention users
+// expect from this kind of overlay.
+function onKeydown(e: KeyboardEvent) {
+	if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+		e.preventDefault()
+		paletteOpen.value = !paletteOpen.value
+	}
 }
 
-function newPage() {
-	window.location.href = `${adminUrl}post-new.php?post_type=page`
-}
-
-function openFrontend() {
-	window.open(siteUrl, '_blank', 'noopener,noreferrer')
-}
+onMounted(() => document.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
@@ -43,18 +51,18 @@ function openFrontend() {
         orientation="vertical"
         class="data-[orientation=vertical]:h-6"
       />
-      <DropdownMenu>
+      <DropdownMenu v-if="canCreateAny">
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm">
             <Plus />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" :side-offset="4">
-          <DropdownMenuItem @click="newPost">
+          <DropdownMenuItem v-if="canCreatePosts" @click="newPost">
             <FileText />
             New Post
           </DropdownMenuItem>
-          <DropdownMenuItem @click="newPage">
+          <DropdownMenuItem v-if="canCreatePages" @click="newPage">
             <File />
             New Page
           </DropdownMenuItem>
@@ -70,13 +78,14 @@ function openFrontend() {
           orientation="vertical"
           class="mx-1 data-[orientation=vertical]:h-6"
         />
-        <Button variant="ghost" size="icon-sm">
+        <Button variant="ghost" size="icon-sm" @click="paletteOpen = true">
           <Search />
         </Button>
-        <Button variant="ghost" size="icon-sm" @click="openFrontend">
+        <Button variant="ghost" size="icon-sm" @click="viewSite">
           <ExternalLink />
         </Button>
       </div>
     </div>
+    <CommandPalette v-model:open="paletteOpen" />
   </header>
 </template>

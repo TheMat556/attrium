@@ -13,6 +13,7 @@ class Attrium {
             return;
         }
 
+        add_action('admin_enqueue_scripts', [ $this, 'suppress_wp_command_palette' ], 0);
         add_action('admin_enqueue_scripts', [ $this, 'load_styles' ], 1);
         add_action('admin_enqueue_scripts', [ $this, 'load_base_scripts' ], 1);
         add_action('admin_head', [ $this, 'output_data_attributes' ], 0);
@@ -42,6 +43,24 @@ class Attrium {
         }
 
         return true;
+    }
+
+    /**
+     * Remove WordPress 7.0's native command palette on overlay screens.
+     *
+     * Core enqueues @wordpress/commands via wp_enqueue_command_palette_assets()
+     * on admin_enqueue_scripts (priority 10), and it binds Cmd+K — the same
+     * shortcut Attrium's own palette uses. Running at priority 0 lets us drop
+     * the core callback before it fires. The block/site editor pull wp-commands
+     * in as a script dependency (not via this function) and are not overlay
+     * screens anyway, so their palette is untouched.
+     */
+    public function suppress_wp_command_palette(): void {
+        if ( ! self::is_overlay_screen() ) {
+            return;
+        }
+
+        remove_action('admin_enqueue_scripts', 'wp_enqueue_command_palette_assets');
     }
 
     public function load_styles(): void {
@@ -95,6 +114,13 @@ class Attrium {
         $user_mail    = $current_user->user_email;
         $can_manage   = current_user_can('manage_options') ? 'true' : 'false';
 
+        // Per-type create capabilities so the header "+" menu only offers what
+        // the current user may actually create. edit_posts/edit_pages are the
+        // standard create caps; manage_options is too strict (editors create
+        // pages without it).
+        $can_create_posts = current_user_can('edit_posts') ? 'true' : 'false';
+        $can_create_pages = current_user_can('edit_pages') ? 'true' : 'false';
+
         // Screen id lets the client swap the slotted WP content for a native
         // Attrium view (e.g. 'dashboard'). Keep this minimal — a single id is
         // enough to branch on; richer screen data can be added when needed.
@@ -106,20 +132,22 @@ class Attrium {
         $logout_url = wp_logout_url();
 
         $scripts_tag = [
-            'id'             => 'attrium-data',
-            'type'           => 'module',
-            'rest-base'      => esc_url($rest_base),
-            'rest-nonce'     => esc_attr($rest_nonce),
-            'admin-url'      => esc_url($admin_url),
-            'logout-url'     => esc_url($logout_url),
-            'site-url'       => esc_url($site_url),
-            'user-name'      => esc_attr($user_name),
-            'user-email'     => esc_attr($user_mail),
-            'can-manage'     => esc_attr($can_manage),
-            'screen-id'      => esc_attr($screen_id),
-            'menu'           => wp_json_encode($menu_items),
-            'plugin-version' => esc_attr(ATTRIUM_VERSION),
-            'plugin-base'    => esc_url(ATTRIUM_URL),
+            'id'               => 'attrium-data',
+            'type'             => 'module',
+            'rest-base'        => esc_url($rest_base),
+            'rest-nonce'       => esc_attr($rest_nonce),
+            'admin-url'        => esc_url($admin_url),
+            'logout-url'       => esc_url($logout_url),
+            'site-url'         => esc_url($site_url),
+            'user-name'        => esc_attr($user_name),
+            'user-email'       => esc_attr($user_mail),
+            'can-manage'       => esc_attr($can_manage),
+            'can-create-posts' => esc_attr($can_create_posts),
+            'can-create-pages' => esc_attr($can_create_pages),
+            'screen-id'        => esc_attr($screen_id),
+            'menu'             => wp_json_encode($menu_items),
+            'plugin-version'   => esc_attr(ATTRIUM_VERSION),
+            'plugin-base'      => esc_url(ATTRIUM_URL),
         ];
 
         wp_print_script_tag($scripts_tag);
