@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-vue/tailwind.css";
@@ -130,6 +131,34 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+@layer base {
+  /* Scrollbar styling for the command palette and DialogContent scroll areas.
+     Webkit (Chrome/Safari/Edge) scrollbars get thin, rounded, color-matched
+     thumbs. Firefox picks up scrollbar-color/width automatically via the
+     properties on :host/:root. */
+  :host::-webkit-scrollbar,
+  :host *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  :host::-webkit-scrollbar-track,
+  :host *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  :host::-webkit-scrollbar-thumb,
+  :host *::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+  }
+  :host::-webkit-scrollbar-thumb,
+  :host *::-webkit-scrollbar-thumb {
+    background: oklch(0.7 0 0);
+  }
+  :host(.dark)::-webkit-scrollbar-thumb,
+  :host(.dark) *::-webkit-scrollbar-thumb {
+    background: oklch(0.4 0 0);
+  }
+}
+
 .dark, :host(.dark) {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -181,5 +210,18 @@
   */
   ::slotted([slot='wp-content']) {
     color: var(--wp-content-foreground);
+  }
+}
+
+/*
+ ---break---
+ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

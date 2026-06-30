@@ -38,36 +38,37 @@ const footerItems = computed(() => [
 </script>
 
 <template>
-  <Sidebar collapsible="icon" variant="inset">
-    <SidebarHeader>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            class="data-[slot=sidebar-menu-button]:p-1.5!"
-          >
-            <a href="#">
-              <div
-                class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold"
-              >
-                A
-              </div>
-              <span class="text-base font-semibold group-data-[collapsible=icon]:hidden"
-                >Attrium</span
-              >
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain :items="navMain" />
-    </SidebarContent>
-    <SidebarFooter>
-      <div class="group-data-[collapsible=icon]:-mx-2">
-        <NavMain :items="footerItems" />
-      </div>
-      <NavUser />
-    </SidebarFooter>
-  </Sidebar>
+	<Sidebar collapsible="icon" variant="inset">
+		<SidebarHeader>
+			<SidebarMenu>
+				<SidebarMenuItem>
+					<SidebarMenuButton
+						as-child
+						class="data-[slot=sidebar-menu-button]:p-1.5!"
+					>
+						<a href="">
+							<div
+								class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold"
+							>
+								A
+							</div>
+							<span
+								class="text-base font-semibold group-data-[collapsible=icon]:hidden"
+								>Attrium</span
+							>
+						</a>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		</SidebarHeader>
+		<SidebarContent>
+			<NavMain :items="navMain" />
+		</SidebarContent>
+		<SidebarFooter>
+			<div class="group-data-[collapsible=icon]:-mx-2">
+				<NavMain :items="footerItems" />
+			</div>
+			<NavUser />
+		</SidebarFooter>
+	</Sidebar>
 </template>
