@@ -20,18 +20,18 @@ defineProps<{
 </script>
 
 <template>
-  <SidebarGroup>
-    <SidebarGroupContent>
-      <SidebarMenu>
-        <SidebarMenuItem v-for="item in items" :key="item.title">
-          <SidebarMenuButton asChild>
-            <a :href="item.url">
-              <component :is="item.icon" />
-              <span>{{ item.title }}</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarGroupContent>
-  </SidebarGroup>
+	<SidebarGroup>
+		<SidebarGroupContent>
+			<SidebarMenu>
+				<SidebarMenuItem v-for="item in items" :key="item.title">
+					<SidebarMenuButton asChild>
+						<a :href="item.url">
+							<component :is="item.icon" />
+							<span>{{ item.title }}</span>
+						</a>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		</SidebarGroupContent>
+	</SidebarGroup>
 </template>

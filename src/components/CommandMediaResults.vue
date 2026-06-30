@@ -33,6 +33,9 @@ const results = ref<WpMedia[]>([])
 let requestSeq = 0
 
 const search = useDebounceFn(async (query: string) => {
+	if (query.length < MIN_QUERY_LENGTH || query !== filterState.search) {
+		return
+	}
 	const seq = ++requestSeq
 	const params = new URLSearchParams({
 		search: query,
@@ -81,25 +84,25 @@ function selectMedia(item: WpMedia): void {
 </script>
 
 <template>
-  <CommandGroup
-    v-if="filterState.search.length >= MIN_QUERY_LENGTH && results.length"
-    heading="Media"
-  >
-    <!--
+	<CommandGroup
+		v-if="filterState.search.length >= MIN_QUERY_LENGTH && results.length"
+		heading="Media"
+	>
+		<!--
       Key by id + search so each query remounts items: CommandItem snapshots its
       textContent on mount only. The sr-only search span makes the item's text
       contain the query, so reka-ui's client filter never re-hides a result the
       WP API already matched (WP also matches filename/caption, not just title).
     -->
-    <CommandItem
-      v-for="item in results"
-      :key="`${item.id}-${filterState.search}`"
-      :value="mediaTitle(item)"
-      @select="selectMedia(item)"
-    >
-      <Image />
-      {{ mediaTitle(item) }}
-      <span class="sr-only">{{ filterState.search }}</span>
-    </CommandItem>
-  </CommandGroup>
+		<CommandItem
+			v-for="item in results"
+			:key="`${item.id}-${filterState.search}`"
+			:value="mediaTitle(item)"
+			@select="selectMedia(item)"
+		>
+			<Image />
+			{{ mediaTitle(item) }}
+			<span class="sr-only">{{ filterState.search }}</span>
+		</CommandItem>
+	</CommandGroup>
 </template>

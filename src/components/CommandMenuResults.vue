@@ -24,33 +24,33 @@ function entry(label: string, url: string, icon: string): HistoryInput {
 </script>
 
 <template>
-  <template v-if="filterState.search">
-    <CommandGroup v-if="menuChildless.length" heading="Go to">
-      <CommandItem
-        v-for="item in menuChildless"
-        :key="item.slug"
-        :value="item.title"
-        @select="emit('select', entry(item.title, item.url, item.icon))"
-      >
-        <component :is="getIcon(item.icon)" />
-        {{ item.title }}
-      </CommandItem>
-    </CommandGroup>
+	<template v-if="filterState.search">
+		<CommandGroup v-if="menuChildless.length" heading="Go to">
+			<CommandItem
+				v-for="item in menuChildless"
+				:key="item.slug"
+				:value="item.title"
+				@select="emit('select', entry(item.title, item.url, item.icon))"
+			>
+				<component :is="getIcon(item.icon)" />
+				{{ item.title }}
+			</CommandItem>
+		</CommandGroup>
 
-    <CommandGroup
-      v-for="item in menuWithChildren"
-      :key="item.slug"
-      :heading="item.title"
-    >
-      <CommandItem
-        v-for="child in item.children"
-        :key="child.url"
-        :value="`${item.title} ${child.title}`"
-        @select="emit('select', entry(`${item.title} › ${child.title}`, child.url, item.icon))"
-      >
-        <component :is="getIcon(item.icon)" />
-        {{ child.title }}
-      </CommandItem>
-    </CommandGroup>
-  </template>
+		<CommandGroup
+			v-for="item in menuWithChildren"
+			:key="item.slug"
+			:heading="item.title"
+		>
+			<CommandItem
+				v-for="child in item.children"
+				:key="child.url"
+				:value="`${item.title} ${child.title}`"
+				@select="emit('select', entry(`${item.title} › ${child.title}`, child.url, item.icon))"
+			>
+				<component :is="getIcon(item.icon)" />
+				{{ child.title }}
+			</CommandItem>
+		</CommandGroup>
+	</template>
 </template>

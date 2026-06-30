@@ -22,7 +22,7 @@ import { getIcon } from '@/lib/iconMap'
 
 const open = defineModel<boolean>('open', { default: false })
 
-const { canCreatePosts, canCreatePages } = useServerData()
+const { canCreatePosts, canCreatePages, siteUrl } = useServerData()
 const { adminPath, viewSite } = useWpActions()
 const { record, recent, frequent } = usePaletteHistory()
 
@@ -63,9 +63,17 @@ function select(entry: HistoryInput) {
 	window.location.href = entry.url
 }
 
+const viewSiteEntry: HistoryInput = {
+	id: siteUrl || 'view-site',
+	label: 'View Site',
+	url: siteUrl || 'view-site',
+	icon: 'dashicons-welcome-view-site',
+}
+
 // View Site opens an external tab — record it for history, but navigation is
 // handled by useWpActions (new tab, not a same-page load).
 function selectViewSite() {
+	record(viewSiteEntry)
 	close()
 	viewSite()
 }
@@ -81,99 +89,101 @@ function toggleTheme() {
 </script>
 
 <template>
-  <CommandDialog
-    v-model:open="open"
-    class="p-2 [&_[data-slot=command-group-heading]]:mt-3 [&_[data-slot=command-group-heading]]:mb-1"
-  >
-    <CommandInput placeholder="Type a command or search..." />
-    <CommandList class="px-1">
-      <CommandEmpty>No results found.</CommandEmpty>
+	<CommandDialog
+		v-model:open="open"
+		class="p-2 [&_[data-slot=command-group-heading]]:mt-3 [&_[data-slot=command-group-heading]]:mb-1"
+	>
+		<CommandInput placeholder="Type a command or search..." />
+		<CommandList class="px-1">
+			<CommandEmpty>No results found.</CommandEmpty>
 
-      <CommandGroup v-if="recent.length" heading="Recently used">
-        <CommandItem
-          v-for="entry in recent"
-          :key="entry.id"
-          :value="entry.label"
-          @select="select(entry)"
-        >
-          <component :is="getIcon(entry.icon)" v-if="entry.icon" />
-          {{ entry.label }}
-        </CommandItem>
-      </CommandGroup>
+			<CommandGroup v-if="recent.length" heading="Recently used">
+				<CommandItem
+					v-for="entry in recent"
+					:key="entry.id"
+					:value="entry.label"
+					@select="select(entry)"
+				>
+					<component :is="getIcon(entry.icon)" v-if="entry.icon" />
+					{{ entry.label }}
+				</CommandItem>
+			</CommandGroup>
 
-      <CommandGroup v-if="frequent.length" heading="Frequently used">
-        <CommandItem
-          v-for="entry in frequent"
-          :key="entry.id"
-          :value="entry.label"
-          @select="select(entry)"
-        >
-          <component :is="getIcon(entry.icon)" v-if="entry.icon" />
-          {{ entry.label }}
-        </CommandItem>
-      </CommandGroup>
+			<CommandGroup v-if="frequent.length" heading="Frequently used">
+				<CommandItem
+					v-for="entry in frequent"
+					:key="entry.id"
+					:value="entry.label"
+					@select="select(entry)"
+				>
+					<component :is="getIcon(entry.icon)" v-if="entry.icon" />
+					{{ entry.label }}
+				</CommandItem>
+			</CommandGroup>
 
-      <CommandGroup heading="Create">
-        <CommandItem
-          v-if="canCreatePosts"
-          value="new post"
-          @select="select(newPostEntry)"
-        >
-          <component :is="getIcon(newPostEntry.icon)" />
-          New Post
-        </CommandItem>
-        <CommandItem
-          v-if="canCreatePages"
-          value="new page"
-          @select="select(newPageEntry)"
-        >
-          <component :is="getIcon(newPageEntry.icon)" />
-          New Page
-        </CommandItem>
-      </CommandGroup>
+			<CommandGroup v-if="canCreatePosts || canCreatePages" heading="Create">
+				<CommandItem
+					v-if="canCreatePosts"
+					value="new post"
+					@select="select(newPostEntry)"
+				>
+					<component :is="getIcon(newPostEntry.icon)" />
+					New Post
+				</CommandItem>
+				<CommandItem
+					v-if="canCreatePages"
+					value="new page"
+					@select="select(newPageEntry)"
+				>
+					<component :is="getIcon(newPageEntry.icon)" />
+					New Page
+				</CommandItem>
+			</CommandGroup>
 
-      <CommandGroup heading="Navigate">
-        <CommandItem value="dashboard" @select="select(dashboardEntry)">
-          <component :is="getIcon(dashboardEntry.icon)" />
-          Go to Dashboard
-        </CommandItem>
-        <CommandItem value="view site" @select="selectViewSite">
-          <component :is="getIcon('dashicons-welcome-view-site')" />
-          View Site
-        </CommandItem>
-      </CommandGroup>
+			<CommandGroup heading="Navigate">
+				<CommandItem value="dashboard" @select="select(dashboardEntry)">
+					<component :is="getIcon(dashboardEntry.icon)" />
+					Go to Dashboard
+				</CommandItem>
+				<CommandItem value="view site" @select="selectViewSite">
+					<component :is="getIcon('dashicons-welcome-view-site')" />
+					View Site
+				</CommandItem>
+			</CommandGroup>
 
-      <CommandGroup heading="Preferences">
-        <CommandItem value="toggle theme" @select="toggleTheme">
-          <Sun v-if="isDark" />
-          <Moon v-else />
-          {{ themeLabel }}
-        </CommandItem>
-      </CommandGroup>
+			<CommandGroup heading="Preferences">
+				<CommandItem value="toggle theme" @select="toggleTheme">
+					<Sun v-if="isDark" />
+					<Moon v-else />
+					{{ themeLabel }}
+				</CommandItem>
+			</CommandGroup>
 
-      <CommandMenuResults @select="select" />
-      <CommandMediaResults @select="select" />
-    </CommandList>
-    <div
-      class="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-2 pt-3 text-xs"
-    >
-      <span class="flex items-center gap-1.5">
-        <kbd class="bg-muted flex items-center gap-0.5 rounded px-1 py-1 text-xs">
-          <ArrowUp class="size-3" />
-          <ArrowDown class="size-3" />
-        </kbd>
-        to navigate
-      </span>
-      <span class="flex items-center gap-1.5">
-        <kbd class="bg-muted rounded px-1.5 py-0.5 text-xs">Esc</kbd>
-        to close
-      </span>
-      <span class="flex items-center gap-1.5">
-        <kbd class="bg-muted flex items-center rounded px-1 py-1 text-xs">
-          <CornerDownLeft class="size-3" />
-        </kbd>
-        to select
-      </span>
-    </div>
-  </CommandDialog>
+			<CommandMenuResults @select="select" />
+			<CommandMediaResults @select="select" />
+		</CommandList>
+		<div
+			class="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-2 pt-3 text-xs"
+		>
+			<span class="flex items-center gap-1.5">
+				<kbd
+					class="bg-muted flex items-center gap-0.5 rounded px-1 py-1 text-xs"
+				>
+					<ArrowUp class="size-3" />
+					<ArrowDown class="size-3" />
+				</kbd>
+				to navigate
+			</span>
+			<span class="flex items-center gap-1.5">
+				<kbd class="bg-muted rounded px-1.5 py-0.5 text-xs">Esc</kbd>
+				to close
+			</span>
+			<span class="flex items-center gap-1.5">
+				<kbd class="bg-muted flex items-center rounded px-1 py-1 text-xs">
+					<CornerDownLeft class="size-3" />
+				</kbd>
+				to select
+			</span>
+		</div>
+	</CommandDialog>
 </template>

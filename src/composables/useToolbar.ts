@@ -98,7 +98,8 @@ function extractIcon(li: HTMLLIElement): ToolbarIcon | null {
 	}
 
 	// CSS ::before icon (dashicons, admin-bar fonts, etc.)
-	const abIcon = li.querySelector<HTMLElement>(':scope > .ab-item > .ab-icon') ?? abItem
+	const abIcon =
+		li.querySelector<HTMLElement>(':scope > .ab-item > .ab-icon') ?? abItem
 	const before = getComputedStyle(abIcon, '::before')
 	const content = before.content
 	if (content && content !== 'none' && content !== '') {
@@ -212,7 +213,11 @@ function dispatchMouseSequence(id: string): void {
 }
 
 function hasRealHref(item: { href: string }): boolean {
-	return item.href.length > 0 && item.href !== '#'
+	return (
+		item.href.length > 0 &&
+		item.href !== '#' &&
+		!item.href.startsWith('javascript:')
+	)
 }
 
 /**

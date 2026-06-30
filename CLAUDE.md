@@ -56,6 +56,6 @@ The app lives in a shadow root, but reka-ui portals (dialogs, dropdowns, tooltip
 `src/composables/useTheme.ts` uses vueuse `useColorMode` targeting `#attrium-host` (the shadow host, not `<html>`) with the `dark` class, so dark mode applies inside the shadow tree.
 
 ## Conventions
-- Biome formats JS/TS/Vue: **tabs**, line width 100. PHP is **4-space** indent (WordPress-Extra). Don't mix.
+- Biome formats JS/TS/Vue: **tabs**, line width 80. PHP is **4-space** indent (WordPress-Extra). Don't mix.
 - UI components in `src/components/ui/` are generated (shadcn-vue) — prefer regenerating over hand-editing.
 - Commit format: `<type>: <description>` (feat, fix, refactor, docs, test, chore, perf, ci).

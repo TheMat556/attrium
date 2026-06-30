@@ -93,78 +93,78 @@ function titleClass(item: NavItem): string {
 </script>
 
 <template>
-  <SidebarGroup>
-    <SidebarGroupContent class="flex flex-col gap-2">
-      <SidebarMenu>
-        <SidebarMenuItem v-for="item in items" :key="item.title">
-          <!--
+	<SidebarGroup>
+		<SidebarGroupContent class="flex flex-col gap-2">
+			<SidebarMenu>
+				<SidebarMenuItem v-for="item in items" :key="item.title">
+					<!--
             Top-level items with a submenu expand on click.
             Items without children link directly so standalone admin pages
             still navigate (full page load -> embedded WP page loads).
           -->
-          <SidebarMenuButton
-            v-if="item.children?.length"
-            :tooltip="item.title"
-            :is-active="item.title === activeParent"
-            @click="toggle(item.title)"
-          >
-            <component :is="item.icon" v-if="item.icon" />
-            <span class="ml-3" :class="titleClass(item)">{{ item.title }}</span>
-            <SidebarMenuBadge
-              v-if="item.badge"
-              class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
-            >
-              {{ item.badge }}
-            </SidebarMenuBadge>
-            <ChevronRight
-              class="h-4 w-4 transition-transform duration-200"
-              :class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
-            />
-          </SidebarMenuButton>
-          <SidebarMenuButton
-            v-else
-            asChild
-            :tooltip="item.title"
-          >
-            <a :href="item.url">
-              <component :is="item.icon" v-if="item.icon" />
-              <span class="ml-3" :class="titleClass(item)">{{ item.title }}</span>
-              <SidebarMenuBadge
-                v-if="item.badge"
-                class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                {{ item.badge }}
-              </SidebarMenuBadge>
-            </a>
-          </SidebarMenuButton>
-          <div
-            v-if="item.children?.length"
-            class="submenu-wrapper"
-            :class="{ 'submenu-open': isOpen(item.title) }"
-          >
-            <SidebarMenuSub>
-              <SidebarMenuSubItem v-for="child in item.children" :key="child.title">
-                <SidebarMenuSubButton
-                  asChild
-                  :is-active="isActiveUrl(child.url)"
-                  :class="isActiveUrl(child.url) ? 'data-active:bg-transparent! data-active:text-sidebar-accent-foreground!' : ''"
-                >
-                  <a :href="child.url">
-                    <span>{{ child.title }}</span>
-                    <SidebarMenuBadge
-                      v-if="child.badge"
-                      class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
-                    >
-                      {{ child.badge }}
-                    </SidebarMenuBadge>
-                  </a>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            </SidebarMenuSub>
-          </div>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarGroupContent>
-  </SidebarGroup>
+					<SidebarMenuButton
+						v-if="item.children?.length"
+						:tooltip="item.title"
+						:is-active="item.title === activeParent"
+						@click="toggle(item.title)"
+					>
+						<component :is="item.icon" v-if="item.icon" />
+						<span class="ml-3" :class="titleClass(item)">{{ item.title }}</span>
+						<SidebarMenuBadge
+							v-if="item.badge"
+							class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+						>
+							{{ item.badge }}
+						</SidebarMenuBadge>
+						<ChevronRight
+							class="h-4 w-4 transition-transform duration-200"
+							:class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
+						/>
+					</SidebarMenuButton>
+					<SidebarMenuButton v-else asChild :tooltip="item.title">
+						<a :href="item.url">
+							<component :is="item.icon" v-if="item.icon" />
+							<span class="ml-3" :class="titleClass(item)"
+								>{{ item.title }}</span
+							>
+							<SidebarMenuBadge
+								v-if="item.badge"
+								class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+							>
+								{{ item.badge }}
+							</SidebarMenuBadge>
+						</a>
+					</SidebarMenuButton>
+					<div
+						v-if="item.children?.length"
+						class="submenu-wrapper"
+						:class="{ 'submenu-open': isOpen(item.title) }"
+					>
+						<SidebarMenuSub>
+							<SidebarMenuSubItem
+								v-for="child in item.children"
+								:key="child.title"
+							>
+								<SidebarMenuSubButton
+									asChild
+									:is-active="isActiveUrl(child.url)"
+									:class="isActiveUrl(child.url) ? 'data-active:bg-transparent! data-active:text-sidebar-accent-foreground!' : ''"
+								>
+									<a :href="child.url">
+										<span>{{ child.title }}</span>
+										<SidebarMenuBadge
+											v-if="child.badge"
+											class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"
+										>
+											{{ child.badge }}
+										</SidebarMenuBadge>
+									</a>
+								</SidebarMenuSubButton>
+							</SidebarMenuSubItem>
+						</SidebarMenuSub>
+					</div>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		</SidebarGroupContent>
+	</SidebarGroup>
 </template>
-
