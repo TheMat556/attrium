@@ -21,10 +21,13 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 import { isDark, toggle } from '@/composables/useTheme'
+import { handleToolbarClick, useToolbar } from '@/composables/useToolbar'
 import { useWpActions } from '@/composables/useWpActions'
+import ToolbarSubmenu from './ToolbarSubmenu.vue'
 
 const { canCreatePosts, canCreatePages } = useServerData()
 const { newPost, newPage, viewSite } = useWpActions()
+const { items: toolbarItems } = useToolbar()
 
 const canCreateAny = canCreatePosts || canCreatePages
 
@@ -70,6 +73,79 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       </DropdownMenu>
 
       <div class="ml-auto flex items-center gap-2">
+        <template v-if="toolbarItems.length">
+          <template v-for="item in toolbarItems" :key="item.id">
+            <DropdownMenu v-if="item.children.length">
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-sm" :title="item.name">
+                  <span
+                    v-if="item.icon?.kind === 'html'"
+                    class="size-4 flex items-center justify-center"
+                    v-html="item.icon.html"
+                  />
+                  <span
+                    v-else-if="item.icon?.kind === 'css' && item.icon.backgroundImage"
+                    class="size-4"
+                    :style="{
+                      backgroundImage: item.icon.backgroundImage,
+                      backgroundSize: 'contain',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                    }"
+                  />
+                  <span
+                    v-else-if="item.icon?.kind === 'css'"
+                    class="ab-icon"
+                    :style="{
+                      fontFamily: item.icon.fontFamily,
+                    }"
+                  >{{ item.icon.content }}</span>
+                  <span
+                    v-else
+                    class="size-4 rounded bg-muted-foreground/20"
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" :side-offset="4">
+                <ToolbarSubmenu :items="item.children" />
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              v-else
+              variant="ghost"
+              size="icon-sm"
+              :title="item.name"
+              @click="handleToolbarClick(item)"
+            >
+              <span
+                v-if="item.icon?.kind === 'html'"
+                class="size-4 flex items-center justify-center"
+                v-html="item.icon.html"
+              />
+              <span
+                v-else-if="item.icon?.kind === 'css' && item.icon.backgroundImage"
+                class="size-4"
+                :style="{
+                  backgroundImage: item.icon.backgroundImage,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                }"
+              />
+              <span
+                v-else-if="item.icon?.kind === 'css'"
+                class="ab-icon"
+                :style="{
+                  fontFamily: item.icon.fontFamily,
+                }"
+              >{{ item.icon.content }}</span>
+              <span
+                v-else
+                class="size-4 rounded bg-muted-foreground/20"
+              />
+            </Button>
+          </template>
+        </template>
         <Button variant="ghost" size="icon-sm" @click="toggle">
           <Sun v-if="isDark" />
           <Moon v-else />

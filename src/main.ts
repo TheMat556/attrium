@@ -27,6 +27,16 @@ const sheet = document.createElement('style')
 sheet.textContent = styles
 shadow.appendChild(sheet)
 
+// Copy the dashicons stylesheet into the shadow root so font-family:
+// dashicons resolves for toolbar icons rendered inside the shadow tree.
+const dashicons = document.querySelector<HTMLLinkElement>('link#dashicons-css')
+if (dashicons) {
+	const link = document.createElement('link')
+	link.rel = 'stylesheet'
+	link.href = dashicons.href
+	shadow.appendChild(link)
+}
+
 const mount = document.createElement('div')
 mount.id = 'attrium-app'
 shadow.appendChild(mount)
@@ -46,6 +56,58 @@ createApp(App).use(createPinia()).mount(mount)
 
 const removeHider = () =>
 	document.querySelector('#attrium-body-hider')?.remove()
+
+// ── Plugin overlay interception ─────────────────────────────────────
+// WordPress plugins commonly inject overlays (chat widgets, modals,
+// drawers) as children of #wpwrap or #wpadminbar using position:fixed.
+// Whether the current screen has a native override or uses the wp-content
+// slot, these overlays end up inside the hidden WP chrome and need to be
+// relocated to <body> so they can cover the full viewport.
+//
+// This runs unconditionally — before the slot check below — so that
+// overlays are caught even on natively-overridden screens (Dashboard,
+// etc.) where #wpcontent is never moved into the host.
+;(() => {
+	function isPositioned(el: Element): boolean {
+		const pos = getComputedStyle(el).position
+		return pos === 'fixed' || pos === 'absolute'
+	}
+
+	function relocateOverlay(el: Element): void {
+		if ((el as HTMLElement).dataset.attriumRelocated === 'true') return
+		;(el as HTMLElement).dataset.attriumRelocated = 'true'
+		document.body.appendChild(el)
+	}
+
+	// Plugins commonly inject overlays as direct children of #wpwrap
+	// or #wpadminbar (e.g. snn-chat-overlay). Scan direct children
+	// only — overlays are virtually always injected at the container
+	// level, not deeply nested. A full querySelector-all with
+	// getComputedStyle would force layout on every descendant.
+	for (const id of ['wpwrap', 'wpadminbar']) {
+		const container = document.getElementById(id)
+		if (!container) continue
+		for (const el of Array.from(container.children)) {
+			if (isPositioned(el)) relocateOverlay(el)
+		}
+	}
+
+	for (const id of ['wpadminbar', 'wpwrap']) {
+		const container = document.getElementById(id)
+		if (!container) continue
+
+		new MutationObserver((records) => {
+			for (const record of records) {
+				for (const node of record.addedNodes) {
+					if (!(node instanceof Element)) continue
+					if (isPositioned(node) && node.parentElement) {
+						relocateOverlay(node)
+					}
+				}
+			}
+		}).observe(container, { childList: true, subtree: true })
+	}
+})()
 
 // On screens Attrium overrides natively (see src/views/overrides.ts), App.vue
 // renders its own view and no wp-content slot is rendered. There is nothing to
@@ -68,6 +130,7 @@ if (!slot) {
 	if (wpcontent) {
 		wpcontent.setAttribute('slot', 'wp-content')
 		host.appendChild(wpcontent)
+
 		// Content is projected and visible now.
 		removeHider()
 		clearTimeout(window.__ATTRIUM_WATCHDOG__)

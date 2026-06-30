@@ -169,7 +169,8 @@ class Attrium {
         // variant) handles padding, and SidebarInset handles the card
         // margins/rounded corners. We only need to hide the old WP chrome.
         echo "<style id='attrium-overlay-css'>
-        #wpadminbar,#adminmenumain,#wpwrap{display:none !important}
+        #wpadminbar{opacity:0!important;pointer-events:none!important}
+        #adminmenumain,#wpwrap{display:none !important}
         #wpcontent{margin-left:0 !important}
         #wpfooter{display:none !important}
         </style>";
