@@ -121,8 +121,8 @@ function titleClass(item: NavItem): string {
 							:class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
 						/>
 					</SidebarMenuButton>
-					<SidebarMenuButton v-else asChild :tooltip="item.title">
-						<a :href="item.url">
+					<SidebarMenuButton v-else as-child :tooltip="item.title">
+						<a :href="item.url || '#'">
 							<component :is="item.icon" v-if="item.icon" />
 							<span class="ml-3" :class="titleClass(item)"
 								>{{ item.title }}</span
@@ -146,11 +146,11 @@ function titleClass(item: NavItem): string {
 								:key="child.title"
 							>
 								<SidebarMenuSubButton
-									asChild
+									as-child
 									:is-active="isActiveUrl(child.url)"
 									:class="isActiveUrl(child.url) ? 'data-active:bg-transparent! data-active:text-sidebar-accent-foreground!' : ''"
 								>
-									<a :href="child.url">
+									<a :href="child.url || '#'">
 										<span>{{ child.title }}</span>
 										<SidebarMenuBadge
 											v-if="child.badge"

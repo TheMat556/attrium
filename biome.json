@@ -40,6 +40,9 @@
 				"noNonNullAssertion": "off",
 				"useShorthandFunctionType": "off"
 			},
+			"a11y": {
+				"useValidAnchor": "off"
+			},
 			"suspicious": {
 				"noDocumentCookie": "off"
 			}

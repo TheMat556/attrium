@@ -43,10 +43,10 @@ const footerItems = computed(() => [
 			<SidebarMenu>
 				<SidebarMenuItem>
 					<SidebarMenuButton
-						asChild
+						as-child
 						class="data-[slot=sidebar-menu-button]:p-1.5!"
 					>
-						<a href="#">
+						<a href="">
 							<div
 								class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold"
 							>

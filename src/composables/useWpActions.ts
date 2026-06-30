@@ -21,7 +21,7 @@ export function useWpActions(): WpActions {
 	const { adminUrl, siteUrl } = useServerData()
 
 	function adminPath(path: string): string {
-		if(!adminUrl) return ''
+		if (!adminUrl) return ''
 		return new URL(path, adminUrl).href
 	}
 

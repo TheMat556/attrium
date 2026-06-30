@@ -58,7 +58,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 				class="data-[orientation=vertical]:h-6"
 			/>
 			<DropdownMenu v-if="canCreateAny">
-				<DropdownMenuTrigger asChild>
+				<DropdownMenuTrigger as-child>
 					<Button
 						variant="ghost"
 						size="icon-sm"
@@ -83,7 +83,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 				<template v-if="toolbarItems.length">
 					<template v-for="item in toolbarItems" :key="item.id">
 						<DropdownMenu v-if="item.children.length">
-							<DropdownMenuTrigger asChild>
+							<DropdownMenuTrigger as-child>
 								<Button variant="ghost" size="icon-sm" :title="item.name">
 									<span
 										v-if="item.icon?.kind === 'html'"
