@@ -213,10 +213,11 @@ function dispatchMouseSequence(id: string): void {
 }
 
 function hasRealHref(item: { href: string }): boolean {
+	const normalized = item.href.trim().toLowerCase()
 	return (
-		item.href.length > 0 &&
-		item.href !== '#' &&
-		!item.href.startsWith('javascript:')
+		normalized.length > 0 &&
+		normalized !== '#' &&
+		!normalized.startsWith('javascript:')
 	)
 }
 

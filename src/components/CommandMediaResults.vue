@@ -89,11 +89,11 @@ function selectMedia(item: WpMedia): void {
 		heading="Media"
 	>
 		<!--
-      Key by id + search so each query remounts items: CommandItem snapshots its
-      textContent on mount only. The sr-only search span makes the item's text
-      contain the query, so reka-ui's client filter never re-hides a result the
-      WP API already matched (WP also matches filename/caption, not just title).
-    -->
+			Key by id + search so each query remounts items: CommandItem snapshots its
+			textContent on mount only. The sr-only search span makes the item's text
+			contain the query, so reka-ui's client filter never re-hides a result the
+			WP API already matched (WP also matches filename/caption, not just title).
+		-->
 		<CommandItem
 			v-for="item in results"
 			:key="`${item.id}-${filterState.search}`"
