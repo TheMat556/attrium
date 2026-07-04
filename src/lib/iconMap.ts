@@ -91,6 +91,6 @@ const iconMap: Record<string, LucideIcon | typeof Icon> = {
 	'dashicons-list-view': List,
 }
 
-export function getIcon(dashicon: string): LucideIcon | typeof Icon {
-	return iconMap[dashicon] || FileText
+export function getIcon(dashicon?: string): LucideIcon {
+	return ((dashicon && iconMap[dashicon]) || FileText) as LucideIcon
 }

@@ -23,6 +23,8 @@ export interface ServerData {
 	userName: string
 	userEmail: string
 	canManage: boolean
+	canCreatePosts: boolean
+	canCreatePages: boolean
 	screenId: string
 	pluginVersion: string
 	pluginBase: string
@@ -45,6 +47,8 @@ export function useServerData(): ServerData {
 		userName: get('user-name'),
 		userEmail: get('user-email'),
 		canManage: get('can-manage') === 'true',
+		canCreatePosts: get('can-create-posts') === 'true',
+		canCreatePages: get('can-create-pages') === 'true',
 		screenId: get('screen-id'),
 		menu: parseMenu(get('menu')),
 		pluginVersion: get('plugin-version'),
