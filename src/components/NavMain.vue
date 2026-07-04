@@ -124,9 +124,9 @@ function titleClass(item: NavItem): string {
 					<SidebarMenuButton v-else as-child :tooltip="item.title">
 						<a :href="item.url || '#'">
 							<component :is="item.icon" v-if="item.icon" />
-							<span class="ml-3" :class="titleClass(item)"
-								>{{ item.title }}</span
-							>
+							<span class="ml-3" :class="titleClass(item)">
+								{{ item.title }}
+							</span>
 							<SidebarMenuBadge
 								v-if="item.badge"
 								class="static top-auto right-auto ml-auto h-4 min-w-4 bg-sidebar-primary text-sidebar-primary-foreground"

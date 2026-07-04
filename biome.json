@@ -19,7 +19,8 @@
 			"enabled": true,
 			"indentStyle": "tab",
 			"lineWidth": 80,
-			"attributePosition": "auto"
+			"attributePosition": "auto",
+			"whitespaceSensitivity": "ignore"
 		}
 	},
 	"css": {

@@ -24,7 +24,8 @@ defineProps<{ icon: ToolbarIcon | null }>()
 		v-else-if="icon?.kind === 'css'"
 		class="ab-icon"
 		:style="{ fontFamily: icon.fontFamily }"
-		>{{ icon.content }}</span
 	>
+		{{ icon.content }}
+	</span>
 	<span v-else class="size-4 rounded bg-muted-foreground/20" />
 </template>

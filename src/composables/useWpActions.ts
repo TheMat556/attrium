@@ -5,7 +5,6 @@ export interface WpActions {
 	adminPath: (path: string) => string
 	newPost: () => void
 	newPage: () => void
-	goDashboard: () => void
 	viewSite: () => void
 }
 
@@ -34,7 +33,6 @@ export function useWpActions(): WpActions {
 		adminPath,
 		newPost: () => navigate('post-new.php'),
 		newPage: () => navigate('post-new.php?post_type=page'),
-		goDashboard: () => navigate('index.php'),
 		viewSite: () => {
 			if (!siteUrl) return
 			window.open(siteUrl, '_blank', 'noopener,noreferrer')

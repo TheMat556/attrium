@@ -55,6 +55,11 @@ The app lives in a shadow root, but reka-ui portals (dialogs, dropdowns, tooltip
 ### Theme
 `src/composables/useTheme.ts` uses vueuse `useColorMode` targeting `#attrium-host` (the shadow host, not `<html>`) with the `dark` class, so dark mode applies inside the shadow tree.
 
+### Toolbar capture
+`src/composables/useToolbar.ts` scrapes the WordPress admin bar (`#wpadminbar`) into structured `ToolbarItem[]` that `SiteHeader.vue` re-renders as header buttons (via `ToolbarItemIcon.vue` / `ToolbarSubmenu.vue`). Two non-obvious constraints:
+- **The admin bar must stay rendered, not `display:none`.** `Attrium::build_attrium()` hides it with `opacity:0;pointer-events:none` (NOT `display:none`) specifically so the scraper can read it: `extractIcon` calls `getComputedStyle(el, '::before')` for CSS-font icons (dashicons), and the name fallbacks use `innerText` — both return empty for `display:none` elements. Reverting that CSS to `display:none` silently breaks icon/name capture.
+- **Scrape is one-shot, on mount.** `useToolbar` reads the DOM once in `onMounted`. This is correct because the admin bar is server-rendered (plugins add nodes via the `admin_bar_menu` PHP hook, present before Vue boots). A plugin that injects an admin-bar node via client-side JS *after* mount will not appear in the Attrium header — if that's ever reported, a `MutationObserver` on `#wpadminbar` is the fix, but it wasn't added to avoid re-scrape churn for a case with no known occurrence.
+
 ## Conventions
 - Biome formats JS/TS/Vue: **tabs**, line width 80. PHP is **4-space** indent (WordPress-Extra). Don't mix.
 - UI components in `src/components/ui/` are generated (shadcn-vue) — prefer regenerating over hand-editing.

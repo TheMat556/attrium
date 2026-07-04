@@ -54,8 +54,9 @@ const footerItems = computed(() => [
 							</div>
 							<span
 								class="text-base font-semibold group-data-[collapsible=icon]:hidden"
-								>Attrium</span
 							>
+								Attrium
+							</span>
 						</a>
 					</SidebarMenuButton>
 				</SidebarMenuItem>

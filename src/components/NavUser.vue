@@ -53,9 +53,9 @@ const initials = computed(() => {
 						</Avatar>
 						<div class="grid flex-1 text-left text-sm leading-tight">
 							<span class="truncate font-medium">{{ userName }}</span>
-							<span class="truncate text-xs text-muted-foreground"
-								>{{ userEmail }}</span
-							>
+							<span class="truncate text-xs text-muted-foreground">
+								{{ userEmail }}
+							</span>
 						</div>
 						<MoreVertical class="ml-auto size-4" />
 					</SidebarMenuButton>
@@ -69,15 +69,15 @@ const initials = computed(() => {
 					<DropdownMenuLabel class="p-0 font-normal">
 						<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 							<Avatar class="h-8 w-8 rounded-lg">
-								<AvatarFallback class="rounded-lg"
-									>{{ initials }}</AvatarFallback
-								>
+								<AvatarFallback class="rounded-lg">
+									{{ initials }}
+								</AvatarFallback>
 							</Avatar>
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-medium">{{ userName }}</span>
-								<span class="truncate text-xs text-muted-foreground"
-									>{{ userEmail }}</span
-								>
+								<span class="truncate text-xs text-muted-foreground">
+									{{ userEmail }}
+								</span>
 							</div>
 						</div>
 					</DropdownMenuLabel>

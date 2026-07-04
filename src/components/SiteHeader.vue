@@ -40,7 +40,7 @@ function onKeydown(e: KeyboardEvent) {
 	if (e.repeat) return
 	if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
 		e.preventDefault()
-		paletteOpen.value = true
+		paletteOpen.value = !paletteOpen.value
 	}
 }
 

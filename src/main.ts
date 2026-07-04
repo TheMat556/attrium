@@ -92,7 +92,7 @@ const removeHider = () =>
 		}
 	}
 
-	for (const id of ['wpadminbar', 'wpwrap']) {
+	for (const id of ['wpwrap', 'wpadminbar']) {
 		const container = document.getElementById(id)
 		if (!container) continue
 
