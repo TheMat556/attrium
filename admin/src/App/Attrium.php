@@ -9,7 +9,7 @@ defined('ABSPATH') || exit();
 
 class Attrium {
     public function __construct() {
-        if ( isset($_GET['attrium']) && $_GET['attrium'] === 'off' ) {
+        if ( isset($_GET['attrium']) && 'off' === sanitize_key( wp_unslash( $_GET['attrium'] ) ) ) {
             return;
         }
 

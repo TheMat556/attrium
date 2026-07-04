@@ -46,7 +46,7 @@ const footerItems = computed(() => [
 						as-child
 						class="data-[slot=sidebar-menu-button]:p-1.5!"
 					>
-						<a href="">
+						<a :href="`${adminUrl}index.php`">
 							<div
 								class="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold"
 							>

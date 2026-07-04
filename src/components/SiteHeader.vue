@@ -23,6 +23,7 @@ import { useServerData } from '@/composables/useServerData'
 import { isDark, toggle } from '@/composables/useTheme'
 import { handleToolbarClick, useToolbar } from '@/composables/useToolbar'
 import { useWpActions } from '@/composables/useWpActions'
+import ToolbarItemIcon from './ToolbarItemIcon.vue'
 import ToolbarSubmenu from './ToolbarSubmenu.vue'
 
 const { canCreatePosts, canCreatePages } = useServerData()
@@ -85,30 +86,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 						<DropdownMenu v-if="item.children.length">
 							<DropdownMenuTrigger as-child>
 								<Button variant="ghost" size="icon-sm" :title="item.name">
-									<span
-										v-if="item.icon?.kind === 'html'"
-										class="size-4 flex items-center justify-center"
-										v-html="item.icon.html"
-									/>
-									<span
-										v-else-if="item.icon?.kind === 'css' && item.icon.backgroundImage"
-										class="size-4"
-										:style="{
-                      backgroundImage: item.icon.backgroundImage,
-                      backgroundSize: 'contain',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'center',
-                    }"
-									/>
-									<span
-										v-else-if="item.icon?.kind === 'css'"
-										class="ab-icon"
-										:style="{
-                      fontFamily: item.icon.fontFamily,
-                    }"
-										>{{ item.icon.content }}</span
-									>
-									<span v-else class="size-4 rounded bg-muted-foreground/20" />
+									<ToolbarItemIcon :icon="item.icon" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" :side-offset="4">
@@ -122,30 +100,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 							:title="item.name"
 							@click="handleToolbarClick(item)"
 						>
-							<span
-								v-if="item.icon?.kind === 'html'"
-								class="size-4 flex items-center justify-center"
-								v-html="item.icon.html"
-							/>
-							<span
-								v-else-if="item.icon?.kind === 'css' && item.icon.backgroundImage"
-								class="size-4"
-								:style="{
-                  backgroundImage: item.icon.backgroundImage,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center',
-                }"
-							/>
-							<span
-								v-else-if="item.icon?.kind === 'css'"
-								class="ab-icon"
-								:style="{
-                  fontFamily: item.icon.fontFamily,
-                }"
-								>{{ item.icon.content }}</span
-							>
-							<span v-else class="size-4 rounded bg-muted-foreground/20" />
+							<ToolbarItemIcon :icon="item.icon" />
 						</Button>
 					</template>
 				</template>

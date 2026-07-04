@@ -236,23 +236,14 @@ export function handleToolbarClick(item: ToolbarItem | ToolbarChild): void {
 	dispatchMouseSequence(item.id)
 }
 
-/**
- * Reactive model of 3rd-party WordPress admin bar items.
- *
- * Scrapes `#wpadminbar` (light DOM) once on mount, filtering out WordPress
- * core nodes. Exposes a `rescan()` escape hatch for late-injected nodes.
- */
 export function useToolbar(): {
 	items: Ref<ToolbarItem[]>
-	rescan: () => void
 } {
 	const items = ref<ToolbarItem[]>([])
 
-	function rescan() {
+	onMounted(() => {
 		items.value = scrapeToolbar()
-	}
+	})
 
-	onMounted(rescan)
-
-	return { items, rescan }
+	return { items }
 }
