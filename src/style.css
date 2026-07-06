@@ -196,6 +196,48 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Tooltip arrow: replace shadcn's reka-ui TooltipArrow with a CSS
+   ::after pseudo-element. Reka-ui's PopperArrow positioning conflicts
+   with the diamond shape (the arrow span's inline transforms compound
+   multiplicatively with the SVG's rotate/translate, and span top is
+   void 0 when arrowY is 0 — see PopperArrow.js:51-52). A CSS arrow
+   side-steps all reka-ui positioning internals. 
+   TODO: Replace this in the future
+  */
+
+[data-slot="tooltip-content"] > span {
+  display: none;
+}
+[data-slot="tooltip-content"] {
+  position: relative;
+}
+[data-slot="tooltip-content"]::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  width: 10px;
+  height: 10px;
+  background: var(--color-foreground);
+  border-radius: 0.125rem;
+  rotate: 45deg;
+}
+[data-slot="tooltip-content"][data-side="right"]::after {
+  left: -2px;
+  top: calc(50% - 5px);
+}
+[data-slot="tooltip-content"][data-side="left"]::after {
+  right: -2px;
+  top: calc(50% - 5px);
+}
+[data-slot="tooltip-content"][data-side="top"]::after {
+  bottom: -2px;
+  left: calc(50% - 5px);
+}
+[data-slot="tooltip-content"][data-side="bottom"]::after {
+  top: -2px;
+  left: calc(50% - 5px);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
