@@ -1,0 +1,27 @@
+:root {
+  --attrium-primary: oklch(0.205 0 0);
+  --attrium-primary-foreground: oklch(0.985 0 0);
+  --attrium-secondary: oklch(0.97 0 0);
+  --attrium-secondary-foreground: oklch(0.205 0 0);
+  --attrium-foreground: oklch(0.145 0 0);
+  --attrium-border: oklch(0.922 0 0);
+  --attrium-accent: oklch(0.97 0 0);
+  --attrium-ring: oklch(0.708 0 0);
+  --attrium-radius-md: 0.5rem;
+}
+
+// Dark mode is a `.dark` class on #attrium-host (see src/composables/useTheme.ts).
+// Embedded WP content is a light-DOM child of that host (src/main.ts), so
+// redefining the tokens here overrides :root for the whole reskinned subtree.
+// Values mirror the Vue app's dark theme (src/style.css) for visual parity.
+// Radius is theme-independent, so it is intentionally not repeated.
+#attrium-host.dark {
+  --attrium-primary: oklch(0.922 0 0);
+  --attrium-primary-foreground: oklch(0.205 0 0);
+  --attrium-secondary: oklch(0.269 0 0);
+  --attrium-secondary-foreground: oklch(0.985 0 0);
+  --attrium-foreground: oklch(0.985 0 0);
+  --attrium-border: oklch(1 0 0 / 10%);
+  --attrium-accent: oklch(0.269 0 0);
+  --attrium-ring: oklch(0.556 0 0);
+}

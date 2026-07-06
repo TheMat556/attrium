@@ -23,3 +23,4 @@ if (file_exists($autoloader)) {
 }
 
 new Attrium\App\Attrium();
+new Attrium\Modules\ModuleRegistry();

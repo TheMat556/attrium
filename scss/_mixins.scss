@@ -1,0 +1,18 @@
+@mixin module($name) {
+  body.attrium-mod-#{$name} & {
+    @content;
+  }
+}
+
+// Per-screen gate: requires the broad `attrium-mod-screens` flag AND
+// WordPress's own screen body class `<body-class>` (e.g. post-type-page,
+// emitted by core in wp-admin/admin-header.php). Both live on <body>, so they
+// combine into one compound selector. The single `screens` flag toggles the
+// whole per-screen axis (general base + every per-screen file) at once — no
+// rebuild. For the all-screens base rules (no specific screen), use
+// `module('screens')` directly.
+@mixin screen($body-class) {
+  body.attrium-mod-screens.#{$body-class} & {
+    @content;
+  }
+}

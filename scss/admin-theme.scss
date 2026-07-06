@@ -1,0 +1,18 @@
+@use 'tokens';
+@use 'mixins';
+@use 'modules/buttons';
+@use 'modules/tables';
+@use 'modules/forms';
+@use 'modules/notices';
+@use 'modules/postbox';
+@use 'modules/menu';
+@use 'screens/base';
+@use 'screens/pages';
+
+// Loads Tailwind's theme/utilities so the `@apply` calls in the module files
+// resolve during the second (Tailwind CLI) build stage. `@reference` emits NO
+// CSS itself (no preflight reset, no utility classes) — only the @apply-expanded
+// declarations inside our own gated selectors reach admin-theme.css, so wp-admin
+// styling is never touched. Must come AFTER all @use rules: SCSS requires @use
+// (and @forward) before any other statement.
+@reference "tailwindcss";

@@ -1,0 +1,75 @@
+@use '../mixins';
+
+// Buttons module — authored shadcn/cva-style: a shared base + per-variant
+// mixins + a size modifier, then a one-line map from native WP button classes
+// to a variant. Bodies use Tailwind `@apply` (expanded by the Tailwind CLI
+// stage of build:css) reading the --attrium-* design tokens, so light/dark is
+// handled entirely by the token overrides in _tokens.scss.
+
+// ---- Base: shared by every reskinned button, regardless of variant ----
+@mixin btn-base {
+  @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
+         text-sm font-medium border border-transparent transition-colors duration-150
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+         focus-visible:ring-[var(--attrium-ring)] h-9 min-h-9;
+}
+
+// ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
+@mixin btn-primary {
+  @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)];
+
+  &:hover,
+  &:focus {
+    @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
+           border-transparent opacity-90;
+  }
+}
+
+@mixin btn-secondary {
+  @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)];
+
+  &:hover,
+  &:focus {
+    @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
+           border-transparent opacity-90;
+  }
+}
+
+@mixin btn-outline {
+  @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)];
+
+  &:hover,
+  &:focus {
+    @apply bg-[var(--attrium-accent)];
+  }
+}
+
+// ---- Size modifier, independent of variant ----
+@mixin btn-size-lg {
+  @apply h-11 px-6 text-base;
+}
+
+// ---- Mapping: which native WP element gets which variant ----
+// Adding a new WP element to a variant later is a one-line addition here,
+// with no property duplication.
+.button,
+.button-secondary {
+  @include mixins.module('buttons') {
+    @include btn-base;
+    @include btn-secondary;
+  }
+}
+
+.button-primary,
+.page-title-action {
+  @include mixins.module('buttons') {
+    @include btn-base;
+    @include btn-primary;
+  }
+}
+
+.button.button-large {
+  @include mixins.module('buttons') {
+    @include btn-size-lg;
+  }
+}
