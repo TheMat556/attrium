@@ -28,7 +28,6 @@
 @use 'screens/tools';
 @use 'screens/site-health';
 @use 'screens/privacy';
-@use 'screens/bricks';
 
 // Loads Tailwind's theme/utilities so the `@apply` calls in the module files
 // resolve during the second (Tailwind CLI) build stage. `@reference` emits NO
