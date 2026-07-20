@@ -1,0 +1,30 @@
+@use '../mixins';
+@use '../ui';
+
+.subsubsub {
+  @include mixins.module('tabs') {
+    @include ui.pill-track;
+    @apply mb-4;
+
+    li {
+      @apply inline-flex;
+      color: transparent;
+
+      &::after {
+        @apply hidden;
+      }
+
+      a {
+        @include ui.pill-segment;
+
+        &.current {
+          @include ui.pill-segment-active;
+        }
+
+        .count {
+          @apply ml-1;
+        }
+      }
+    }
+  }
+}

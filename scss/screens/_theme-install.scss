@@ -1,0 +1,57 @@
+@use '../mixins';
+@use '../ui';
+
+// Theme installer (theme-install.php → body.theme-install-php): reskin the
+// `.wp-filter` toolbar (the Popular/Latest tabs, theme count, Feature Filter
+// button, and search field). Same idea as the media toolbar in _upload.scss —
+// core (wp-admin/css/common.css `.wp-filter`) hardcodes a #fff bg, #c3c4c7
+// border, and a drop shadow, all of which read as a bright band in dark mode.
+// Everything below is token-driven so light/dark parity is automatic.
+
+// ---- Toolbar container + filter tabs ----
+// Shared verbatim with the plugin installer (see _plugin-install.scss).
+@include ui.filter-toolbar('theme-install-php');
+
+// ---- Theme count badge ----
+.filter-count .count {
+  @include mixins.screen('theme-install-php') {
+    background: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
+    @apply rounded-full text-xs font-semibold;
+  }
+}
+
+// ---- Search field ----
+.wp-filter {
+  input[type="search"],
+  .wp-filter-search {
+    @include mixins.screen('theme-install-php') {
+      @include ui.field-outline;
+      @apply px-3;
+    }
+  }
+}
+
+// ---- Feature-filter drawer ----
+// Reveals a panel of checkbox fieldsets; core paints it #fff with a #dcdcde
+// border. Match the toolbar's token surface so it stays legible in dark mode.
+.filter-drawer {
+  @include mixins.screen('theme-install-php') {
+    background: transparent;
+    border-top: 1px solid var(--attrium-border);
+
+    .filter-group {
+      background: var(--attrium-secondary);
+      border: 1px solid var(--attrium-border);
+      border-radius: var(--attrium-radius-md);
+
+      legend {
+        color: var(--attrium-foreground);
+      }
+
+      label {
+        color: var(--attrium-foreground);
+      }
+    }
+  }
+}

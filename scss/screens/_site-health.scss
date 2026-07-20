@@ -1,0 +1,211 @@
+@use '../mixins';
+@use '../ui';
+
+// Site Health page (site-health.php → body.site-health-php). Core hardcodes
+// #fff / #f0f0f1 / #dcdcde chrome across the header, accordion, and tabs.
+
+.health-check-header {
+  @include mixins.screen('site-health-php') {
+    @apply rounded-[var(--attrium-radius-md)] border-0;
+    background: transparent;
+  }
+}
+
+.health-check-title-section h1 {
+  @include mixins.screen('site-health-php') {
+    color: var(--attrium-foreground);
+  }
+}
+
+.site-health-progress-wrapper {
+  @include mixins.screen('site-health-php') {
+    .site-health-progress-label {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+.health-check-tabs-wrapper {
+  @include mixins.screen('site-health-php') {
+    @include ui.pill-track;
+
+    .health-check-tab {
+      @include ui.pill-segment;
+      @apply mx-1;
+
+      &.active {
+        @include ui.pill-segment-active;
+      }
+    }
+  }
+}
+
+.health-check-accordion {
+  @include mixins.screen('site-health-php') {
+    @apply rounded-[var(--attrium-radius-md)]
+           border border-[var(--attrium-border)]
+           overflow-hidden;
+  }
+}
+
+.health-check-accordion-heading {
+  @include mixins.screen('site-health-php') {
+    @apply border-0;
+
+    .health-check-accordion-trigger {
+      @apply w-full text-left px-4 py-3 text-sm font-medium
+             border-0 cursor-pointer transition-colors
+             flex items-center gap-3;
+      background: var(--attrium-primary-foreground);
+      color: var(--attrium-foreground);
+
+      &:hover {
+        background: var(--attrium-accent);
+      }
+
+      .title {
+        color: var(--attrium-foreground);
+      }
+
+      .badge {
+        @apply text-xs font-medium px-2 py-0.5 rounded-full;
+      }
+
+      .badge.blue {
+        background: oklch(0.55 0.12 250 / 20%);
+        color: oklch(0.65 0.15 250);
+      }
+
+      .badge.orange,
+      .badge.security {
+        background: oklch(0.65 0.15 50 / 20%);
+        color: oklch(0.7 0.18 55);
+      }
+
+      .badge.red,
+      .badge.critical {
+        background: oklch(0.6 0.2 30 / 20%);
+        color: oklch(0.7 0.2 30);
+      }
+
+      .badge.green,
+      .badge.performance {
+        background: oklch(0.55 0.12 145 / 20%);
+        color: oklch(0.6 0.15 145);
+      }
+
+      .badge.purple,
+      .badge.seo {
+        background: oklch(0.55 0.12 290 / 20%);
+        color: oklch(0.65 0.15 290);
+      }
+
+      .icon {
+        @apply ml-auto static;
+        border: solid var(--attrium-foreground);
+        border-width: 0 2px 2px 0;
+        width: 0.5rem;
+        height: 0.5rem;
+        transform: rotate(45deg);
+        transition: transform 0.15s;
+        pointer-events: none;
+      }
+    }
+
+    .health-check-accordion-trigger[aria-expanded="true"] {
+      background: var(--attrium-secondary);
+
+      .icon {
+        transform: rotate(-135deg);
+      }
+    }
+  }
+}
+
+.health-check-accordion-panel {
+  @include mixins.screen('site-health-php') {
+    @apply px-4 py-3 text-sm;
+    background: var(--attrium-primary-foreground);
+    color: var(--attrium-foreground);
+    border-bottom: 1px solid var(--attrium-border);
+
+    p {
+      color: var(--attrium-foreground);
+    }
+
+    .actions {
+      @apply mt-2;
+
+      a {
+        color: var(--attrium-primary);
+      }
+    }
+
+    ul {
+      li {
+        color: var(--attrium-foreground);
+      }
+    }
+  }
+}
+
+.site-health-issues-wrapper {
+  @include mixins.screen('site-health-php') {
+    h2,
+    h3 {
+      color: var(--attrium-foreground);
+    }
+
+    > p {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+.site-health-view-more {
+  @include mixins.screen('site-health-php') {
+    .site-health-view-passed {
+      background: var(--attrium-primary-foreground);
+      color: var(--attrium-foreground);
+      @apply border border-[var(--attrium-border)]
+             rounded-[var(--attrium-radius-md)];
+
+      &:hover {
+        background: var(--attrium-accent);
+      }
+    }
+  }
+}
+
+.site-status-all-clear {
+  @include mixins.screen('site-health-php') {
+    .encouragement,
+    p {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+.site-status-has-issues {
+  @include mixins.screen('site-health-php') {
+    margin: 1.5rem;
+
+    h2 {
+      color: var(--attrium-foreground);
+    }
+
+    > p {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+.site-health-issue-count-title {
+  @include mixins.screen('site-health-php') {
+    color: var(--attrium-foreground);
+
+    .issue-count {
+      color: var(--attrium-foreground);
+    }
+  }
+}

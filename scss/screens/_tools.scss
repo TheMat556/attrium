@@ -1,0 +1,18 @@
+@use '../mixins';
+
+// Tools page (tools.php → body.tools-php). Core gives .card a background of #fff
+// (dashboard.css), which reads as a bright band in dark mode.
+#attrium-host.dark .card {
+  @include mixins.screen('tools-php') {
+    background: var(--attrium-primary-foreground);
+    border-color: var(--attrium-border);
+
+    .title {
+      color: var(--attrium-foreground);
+    }
+
+    p {
+      color: var(--attrium-foreground);
+    }
+  }
+}

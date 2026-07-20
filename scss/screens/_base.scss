@@ -13,6 +13,35 @@
 //   }
 // }
 
+h1, h2, h3 {
+  @include mixins.module('screens') {
+    @apply font-semibold
+  }
+}
+
+#attrium-host.dark {
+  h1, h2, h3 {
+    @include mixins.module('screens') {
+      @apply text-white;
+    }
+  }
+}
+
+#attrium-host.dark {
+  label,
+  th[scope="row"] {
+    @include mixins.module('screens') {
+      @apply text-white;
+    }
+  }
+}
+
+p {
+  @include mixins.module('screens') {
+    color: var(--attrium-muted-foreground);
+  }
+}
+
 #screen-meta-links {
   display: none;
 }

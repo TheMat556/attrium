@@ -67,6 +67,17 @@
     @include btn-primary;
   }
 }
+// wp-components primary button (e.g. the Font Library "Update" button). Scoped
+// to #font-library-wp-admin-app so we don't reskin every .components-button
+// across wp-admin (block editor, etc.), which keep their own design. Colors are
+// already remapped via scss/screens/_font-library.scss; this adds the Attrium
+// button shape (radius, height, focus ring) to match native WP buttons.
+#font-library-wp-admin-app .components-button.is-primary {
+  @include mixins.module('buttons') {
+    @include btn-base;
+    @include btn-primary;
+  }
+}
 
 .button.button-large {
   @include mixins.module('buttons') {

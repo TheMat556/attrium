@@ -1,0 +1,11 @@
+@use '../mixins';
+
+// Import screen (import.php → body.import-php): the importer names
+// (`.importer-title`) are hardcoded near-black by core (wp-admin/css/import.css),
+// which reads as dark-on-dark in dark mode. Route the color through the
+// foreground token so it stays legible in both light and dark.
+.importer-title {
+  @include mixins.screen('import-php') {
+    color: var(--attrium-foreground);
+  }
+}

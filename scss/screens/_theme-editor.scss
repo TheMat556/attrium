@@ -1,0 +1,211 @@
+@use '../mixins';
+
+// Theme + Plugin file editors: theme-editor.php (body.theme-editor-php) and
+// plugin-editor.php (body.plugin-editor-php). Neither is in the native override
+// registry, so both are embedded wp-admin content — the `screens` reskin
+// applies. The markup (#templateside file tree + heading) is identical on both,
+// so each rule is gated under both screen classes via the variadic screen()
+// mixin (one call, comma-joined selectors — see scss/_mixins.scss).
+//
+// Minimal reskin: round the tree scroll box, shrink the oversized default admin
+// heading, and drop the stray margin core leaves around the heading. The
+// #templateside id anchor keeps these ahead of the enabled notices module,
+// which otherwise turns the current-file `span.notice` into a padded card.
+
+// #templateside floats right, so its outer edge is the right side — round only
+// the right corners to mirror the editor pane's left-only rounding.
+#templateside > ul {
+  @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
+    @apply rounded-r-[var(--attrium-radius-md)] rounded-l-none overflow-hidden;
+  }
+}
+
+#templateside > h2 {
+  @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
+    @apply text-sm font-semibold m-0 pt-0 pb-3;
+  }
+}
+
+// Current-file item is a `span.notice.notice-info`, which the enabled notices
+// module wraps in a full box border. Drop that border but keep the coloured
+// left edge as the current-file marker. The #templateside id anchor out-
+// specifies the notices module (0,2,0).
+#templateside .current-file span.notice {
+  @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
+    @apply border-y-0 border-r-0 rounded-none;
+  }
+}
+
+// Editor pane: core gives `#template .CodeMirror` (and the textarea fallback) a
+// square `1px solid #dcdcde` border. overflow-hidden clips CodeMirror's inner
+// scroll layers to the rounded frame.
+#template .CodeMirror,
+#template textarea {
+  @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
+    @apply rounded-l-[var(--attrium-radius-md)] rounded-r-none overflow-hidden;
+  }
+}
+
+// ---- Dark mode: file tree, editor background, CodeMirror chrome & syntax ----
+#attrium-host.dark {
+  // File tree sidebar
+  #templateside {
+    @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
+      background: oklch(0.18 0 0);
+    }
+
+    ul {
+      background: transparent;
+    }
+
+    > h2 {
+      color: oklch(0.7 0 0);
+    }
+
+    // Current-file notice
+    .current-file span.notice {
+      background: oklch(0.22 0 0);
+      color: oklch(0.9 0 0);
+    }
+
+    a {
+      color: oklch(0.7 0 0);
+
+      &:hover {
+        color: oklch(0.9 0 0);
+      }
+    }
+  }
+
+  // CodeMirror border: core sets `#template .CodeMirror { border: 1px solid #dcdcde }`
+  // (light grey). Override the full shorthand so the editor frame has a visible
+  // but subtle boundary matching the dark-mode --attrium-border token.
+  #template .CodeMirror {
+    border: 1px solid oklch(1 0 0 / 10%);
+  }
+
+  #templateside > ul {
+    border: 1px solid oklch(1 0 0 / 10%);
+  }
+
+  .editor-notices .notice {
+    background: oklch(0.22 0 0);
+    color: oklch(0.85 0 0);
+    border-color: oklch(1 0 0 / 8%);
+  }
+
+  // ---- CodeMirror chrome ----
+  .CodeMirror {
+    background: var(--attrium-background);
+    color: oklch(0.85 0 0);
+  }
+
+  .CodeMirror-gutters {
+    background: oklch(0.17 0 0);
+    border-right-color: oklch(1 0 0 / 8%);
+  }
+
+  .CodeMirror-linenumber {
+    color: oklch(0.45 0 0);
+  }
+
+  .CodeMirror-cursor {
+    border-left-color: oklch(0.9 0 0);
+  }
+
+  .CodeMirror-selected {
+    background: oklch(0.55 0.1 240 / 25%);
+  }
+
+  .CodeMirror-focused .CodeMirror-selected {
+    background: oklch(0.55 0.1 240 / 30%);
+  }
+
+  .CodeMirror-activeline-background {
+    background: oklch(1 0 0 / 3%);
+  }
+
+  .CodeMirror-matchingbracket {
+    background: oklch(0.6 0.15 160 / 25%);
+    color: oklch(0.95 0 0) !important;
+    outline: 1px solid oklch(0.6 0.15 160 / 40%);
+  }
+
+  .CodeMirror-nonmatchingbracket {
+    background: oklch(0.6 0.2 30 / 25%);
+    color: oklch(0.9 0.15 30) !important;
+  }
+
+  // ---- CodeMirror syntax highlighting ----
+  .cm-comment {
+    color: oklch(0.55 0.03 135);
+  }
+
+  .cm-keyword {
+    color: oklch(0.65 0.15 285);
+  }
+
+  .cm-atom,
+  .cm-number {
+    color: oklch(0.7 0.14 55);
+  }
+
+  .cm-def,
+  .cm-variable {
+    color: oklch(0.7 0.08 220);
+  }
+
+  .cm-variable-2 {
+    color: oklch(0.6 0.1 200);
+  }
+
+  .cm-variable-3,
+  .cm-type {
+    color: oklch(0.65 0.12 170);
+  }
+
+  .cm-string {
+    color: oklch(0.65 0.12 145);
+  }
+
+  .cm-string-2 {
+    color: oklch(0.6 0.1 80);
+  }
+
+  .cm-operator {
+    color: oklch(0.75 0.08 30);
+  }
+
+  .cm-meta {
+    color: oklch(0.65 0.08 50);
+  }
+
+  .cm-builtin {
+    color: oklch(0.6 0.12 200);
+  }
+
+  .cm-tag {
+    color: oklch(0.65 0.14 30);
+  }
+
+  .cm-attribute {
+    color: oklch(0.7 0.12 90);
+  }
+
+  .cm-qualifier {
+    color: oklch(0.65 0.1 220);
+  }
+
+  .cm-error {
+    color: oklch(0.85 0.18 30);
+    background: oklch(0.6 0.2 30 / 12%);
+  }
+
+  .cm-property {
+    color: oklch(0.65 0.1 210);
+  }
+
+  .cm-punctuation {
+    color: oklch(0.6 0 0);
+  }
+}

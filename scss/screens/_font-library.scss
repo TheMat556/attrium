@@ -1,0 +1,140 @@
+@use '../mixins';
+@use '../ui';
+
+// Font Library (Appearance → Fonts, font-library.php). It is NOT in the native
+// override registry (src/views/overrides.ts), so it is embedded wp-admin content
+// slotted into the Attrium shell — the `screens` reskin module applies.
+//
+// The app is a React/wpds (WordPress Design System) bundle. Its ENTIRE look is
+// driven by CSS variables (--wpds-color-*, --wp-components-color-*) injected as
+// runtime <style> on every [data-wpds-theme-provider-id] root. The component
+// class names themselves (dba930ea7a9438fd__root, _19ce0419607e1896__stack,
+// css-tni0ab, …) are CSS-module hashes that change per WP build, so targeting
+// them directly would be fragile.
+//
+// Instead we reskin by REMAPPING those variables onto Attrium's --attrium-*
+// tokens. Because every override below is a var() reference, light/dark parity
+// is automatic: the slotted content lives inside #attrium-host, so the token
+// redefinitions under #attrium-host.dark (in _tokens.scss) resolve here with no
+// separate dark block.
+//
+// Specificity: the app declares its variables on
+// `.dba930ea7a9438fd__root.dba930ea7a9438fd__root[data-wpds-theme-provider-id]`
+// = (0,3,0). Our `#font-library-wp-admin-app [data-wpds-theme-provider-id}`
+// = (1,1,0) — the id wins, so the override beats the app's own declarations
+// with no !important. Gated by the broad `screens` module flag so the whole
+// per-screen axis toggles together (ModuleRegistry.php).
+//
+// Semantic colors (info/success/caution/warning/error) are intentionally left
+// to wpds defaults — they carry meaning we must not flatten to greyscale.
+
+#font-library-wp-admin-app {
+  @include mixins.module('screens') {
+    // ---- Layout polish (radius needs no override; inline styles don't set it) ----
+    .admin-ui-page__header,
+    .font-library-page__tablist,
+    .font-library-page__tab-panel,
+    .font-library__tabpanel-layout {
+      @apply rounded-[var(--attrium-radius-md)];
+    }
+
+    .font-library__footer {
+      @apply rounded-[var(--attrium-radius-md)];
+    }
+
+    // ---- Surface canvas + scroll ----
+    // Let the Attrium shell background show through by making all font library
+    // containers transparent. The app already emits inline
+    // `background:transparent;border:none` on these elements.
+    @include ui.transparent-react-shell;
+
+    .font-library__tabpanel-layout,
+    .components-navigator {
+      background: transparent !important;
+    }
+
+    // Tablist, header, and footer get background + border resets — the wpds
+    // app adds borders that don't belong on the transparent canvas.
+    .font-library-page__tablist {
+      background: transparent !important;
+      border-bottom: none !important;
+    }
+
+    .admin-ui-page__header {
+      background: transparent !important;
+      border-bottom: none !important;
+    }
+
+    .font-library__footer {
+      background: transparent !important;
+      border-top: none !important;
+    }
+
+    // Make the stage scrollable so tall content doesn't overflow the viewport.
+    .boot-layout__stage {
+      overflow: scroll;
+    }
+
+    // ---- Tab text colors + weight ----
+    // Override wpds CSS variables on the theme provider root (our id-based
+    // selector wins their class-based specificity).
+    [data-wpds-theme-provider-id] {
+      --wp-components-font-weight-medium: 600;
+      --wp-components-font-weight-semibold: 600;
+      --wp-components-font-weight-body: 600;
+    }
+
+    .font-library-page__tablist button[role="tab"] {
+      color: var(--attrium-secondary-foreground);
+      font-weight: 600 !important;
+
+      &[aria-selected="true"] {
+        color: var(--attrium-foreground);
+      }
+    }
+
+    .font-library-page__tablist button[role="tab"] > span {
+      font-weight: 600 !important;
+    }
+
+    .admin-ui-page__header-title {
+      font-weight: 600 !important;
+    }
+
+    // ---- Upload area button ----
+    // .components-button sets its own color/bg/border with equal specificity,
+    // so we include it in the selector to win the cascade.
+    button.components-button.font-library__upload-area {
+      @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
+             text-sm font-medium border-2 border-dashed
+             border-[var(--attrium-border)] text-[var(--attrium-foreground)]
+             bg-transparent no-underline
+             h-9 min-h-9 px-4 cursor-pointer
+             transition-colors duration-150
+             focus-visible:outline-none focus-visible:ring-2
+             focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+
+      &:hover {
+        @apply border-[var(--attrium-ring)] bg-[var(--attrium-accent)];
+      }
+    }
+
+    // ---- Google Fonts connect card ----
+    .components-card {
+      background: var(--attrium-primary-foreground);
+
+      .components-card__body,
+      .components-card-body {
+        color: var(--attrium-foreground);
+      }
+
+      .components-heading {
+        color: var(--attrium-foreground);
+      }
+
+      .components-text {
+        color: var(--attrium-secondary-foreground);
+      }
+    }
+  }
+}

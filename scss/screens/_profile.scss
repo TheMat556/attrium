@@ -1,0 +1,21 @@
+@use '../mixins';
+
+// Profile screen (profile.php / user-edit.php → body.profile-php / body.user-edit-php).
+// Core gives .color-option.selected and .color-option:hover a background of #dcdcde
+// (forms.css:1031), which reads as a light grey band in dark mode.
+#attrium-host.dark {
+  .color-option.selected,
+  .color-option:hover {
+    @include mixins.screen('profile-php', 'user-edit-php') {
+      background: var(--attrium-accent);
+    }
+  }
+
+  // Some profile rows use a bare <th> (no scope attribute) that the shared
+  // th[scope="row"] rule in _base.scss does not catch.
+  .form-table th {
+    @include mixins.screen('profile-php', 'user-edit-php') {
+      @apply text-white;
+    }
+  }
+}

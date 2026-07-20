@@ -1,0 +1,205 @@
+@use '../mixins';
+@use '../ui';
+
+// Menus screen (nav-menus.php → body.nav-menus-php). The "Edit Menus / Manage
+// Locations" bar is a `.nav-tab-wrapper` of `.nav-tab` links — core renders it
+// as classic bottom-border folder tabs (common.css:2376). Reskin it into the
+// same segmented-control pill group used everywhere else (ui.pill-* — see
+// scss/_ui.scss) so the tab styles match across the admin. Only the resets that
+// undo core's folder chrome (the tab float, the active-tab margin nudge) stay
+// here as call-site extras.
+//
+// Everything is expressed through --attrium-* tokens (redefined under
+// #attrium-host.dark in _tokens.scss), so light/dark parity is automatic.
+
+.nav-tab-wrapper {
+  @include mixins.screen('nav-menus-php') {
+    @include ui.pill-track;
+    @apply mb-4;
+
+    .nav-tab {
+      // Core floats the tabs and gives them margins — strip both so each sits
+      // in the pill track as a flat segment.
+      @include ui.pill-segment;
+      @apply float-none m-0;
+    }
+
+    // Active segment. Core also nudges margin-bottom:-1px on the active tab for
+    // the folder look — reset it here.
+    .nav-tab-active,
+    .nav-tab-active:hover,
+    .nav-tab-active:focus {
+      @include ui.pill-segment-active;
+      @apply mb-0;
+    }
+  }
+}
+
+// ---- Menu-editor container surfaces ----
+// Both editor columns — the "Add menu items" accordion (#menu-settings-column)
+// and the "Menu structure" box (#menu-management) — are built from panels core
+// hardcodes with #fff / #c3c4c7 / #dcdcde chrome (common.css:190, 3710; nav-
+// menus.css; edit.css:1311). That reads as bright bands in dark mode and does
+// not match the Attrium surfaces. Everything below re-expresses those surfaces,
+// borders, and radii through --attrium-* tokens (dark parity automatic).
+//
+// Specificity: several core rules are id-anchored (e.g.
+// `#menu-settings-column .accordion-container` = 1,1,0). Each override keeps the
+// same id in its selector so the added body classes push it ahead — no
+// !important needed.
+
+// Outer shells of both columns: token border + radius, drop core's grey border
+// and drop shadow.
+#menu-settings-column .accordion-container,
+#menu-management .menu-edit {
+  @include mixins.screen('nav-menus-php') {
+    @apply rounded-[var(--attrium-radius-md)] overflow-hidden shadow-none
+           border border-[var(--attrium-border)];
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// The "Create your first menu" bar above the editor (core: #fff, no border).
+.manage-menus {
+  @include mixins.screen('nav-menus-php') {
+    @apply rounded-[var(--attrium-radius-md)]
+           border border-[var(--attrium-border)];
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// Accordion sections (Pages / Posts / Custom Links / …).
+.accordion-section {
+  @include mixins.screen('nav-menus-php') {
+    @apply border-b border-[var(--attrium-border)];
+
+    &:last-child {
+      @apply border-b-0;
+    }
+  }
+}
+
+// Section header row: token side-borders removed, token text, accent hover.
+// Core hardcodes background:#fff and border:#c3c4c7 here — both must be
+// overridden for dark mode parity (the --attrium-* tokens switch under
+// #attrium-host.dark in _tokens.scss).
+.accordion-section-title {
+  @include mixins.screen('nav-menus-php') {
+    @apply border-x-0 border-b border-[var(--attrium-border)];
+    background: var(--attrium-primary-foreground);
+
+    button.accordion-trigger {
+      background: transparent;
+      color: var(--attrium-foreground);
+    }
+
+    &:hover button.accordion-trigger,
+    button.accordion-trigger:hover,
+    button.accordion-trigger:focus {
+      background: var(--attrium-accent);
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+// Open accordion section: core swaps the title background from #fff to #f6f7f7.
+// Override with a slightly elevated token surface.
+.accordion-section.open .accordion-section-title {
+  @include mixins.screen('nav-menus-php') {
+    background: var(--attrium-secondary);
+  }
+}
+
+// Expanded section body.
+.accordion-section-content {
+  @include mixins.screen('nav-menus-php') {
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// The checklist tab strip (Most Recent / View All / Search): active chip on the
+// surface, inactive chips transparent.
+.add-menu-item-tabs li.tabs,
+.category-tabs li.tabs {
+  @include mixins.screen('nav-menus-php') {
+    @apply rounded-t-md;
+    border: 1px solid var(--attrium-border);
+    border-bottom-color: var(--attrium-primary-foreground);
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// The scrollable list panel holding the checkboxes.
+.tabs-panel {
+  @include mixins.screen('nav-menus-php') {
+    @apply rounded-md;
+    border: 1px solid var(--attrium-border);
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// Menu Settings box: border, surface, radius. Core hardcodes #fff / #c3c4c7 here.
+.menu-settings {
+  @include mixins.screen('nav-menus-php') {
+    @apply rounded-[var(--attrium-radius-md)]
+           border border-[var(--attrium-border)];
+    background: var(--attrium-primary-foreground);
+
+    h3 {
+      @apply text-sm font-semibold m-0 p-3;
+      color: var(--attrium-foreground);
+    }
+
+    .menu-settings-group {
+      margin: 0.75rem;
+    }
+  }
+}
+
+// "Menu structure" box: header/footer bands and the body content area core
+// paints #f6f7f7 / #fff.
+#nav-menu-header {
+  @include mixins.screen('nav-menus-php') {
+    background: var(--attrium-secondary);
+
+    // Core sets border-bottom: 1px solid #dcdcde (a shorthand). Override with
+    // an explicit border-bottom shorthand using the theme token.
+    border-bottom: 1px solid var(--attrium-border);
+  }
+
+  // Core common.css gives .major-publishing-actions a border-top too, which
+  // would stack a second line inside the header. Remove it.
+  .major-publishing-actions {
+    @include mixins.screen('nav-menus-php') {
+      border-top: 0;
+    }
+  }
+}
+
+#nav-menu-footer {
+  @include mixins.screen('nav-menus-php') {
+    background: var(--attrium-secondary);
+
+    // Core sets border-top: 1px solid #dcdcde (a shorthand). Override with
+    // an explicit border-top shorthand using the theme token.
+    border-top: 1px solid var(--attrium-border);
+
+    // Core also paints a box-shadow on the sticky footer (nav-menus.css).
+    box-shadow: none;
+  }
+
+  // Core common.css gives .major-publishing-actions a border-top too, which
+  // would stack a second line on top of the footer's own border-top. Remove it.
+  .major-publishing-actions {
+    @include mixins.screen('nav-menus-php') {
+      border-top: 0;
+    }
+  }
+}
+
+#post-body {
+  @include mixins.screen('nav-menus-php') {
+    background: var(--attrium-primary-foreground);
+    @apply border-y-0;
+  }
+}

@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 @mixin module($name) {
   body.attrium-mod-#{$name} & {
     @content;
@@ -11,8 +13,23 @@
 // whole per-screen axis (general base + every per-screen file) at once — no
 // rebuild. For the all-screens base rules (no specific screen), use
 // `module('screens')` directly.
-@mixin screen($body-class) {
-  body.attrium-mod-screens.#{$body-class} & {
+//
+// Variadic: pass more than one body class to apply the same rules to several
+// screens that share markup (e.g. `screen('theme-editor-php', 'plugin-editor-php')`)
+// — each becomes its own compound selector in a comma-joined list, so no rule
+// body has to be duplicated per screen.
+@mixin screen($body-classes...) {
+  $selectors: ();
+
+  @each $body-class in $body-classes {
+    $selectors: list.append(
+      $selectors,
+      'body.attrium-mod-screens.#{$body-class} &',
+      $separator: comma
+    );
+  }
+
+  #{$selectors} {
     @content;
   }
 }

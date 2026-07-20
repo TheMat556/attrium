@@ -1,0 +1,124 @@
+@use '../mixins';
+@use '../ui';
+
+// Plugin installer (plugin-install.php → body.plugin-install-php): reskins the
+// `.wp-filter` tab/search toolbar and the `.plugin-card` result cards. Core
+// (wp-admin/css/{common,plugin-install}.css) hardcodes #fff surfaces, #c3c4c7 /
+// #dcdcde borders, drop shadows, and a #f6f7f7 card footer — all read as bright
+// bands in dark mode. Everything below is token-driven (--attrium-* tokens are
+// redefined under #attrium-host.dark in _tokens.scss), so light/dark parity is
+// automatic with no separate dark-mode block. Distinct from _plugins.scss,
+// which targets the installed-plugins list (body.plugins-php).
+
+// ---- Filter toolbar (Featured / Popular / Recommended / Favorites + search) ----
+// Same shared markup as the theme installer's toolbar (see _theme-install.scss),
+// so both pull the identical tab bar from ui.filter-toolbar().
+@include ui.filter-toolbar('plugin-install-php');
+
+// ---- Search field + Keyword/Author/Tag selector ----
+.wp-filter {
+  .wp-filter-search,
+  input[type="search"],
+  #typeselector {
+    @include mixins.screen('plugin-install-php') {
+      @include ui.field-outline;
+      @apply px-3;
+    }
+  }
+}
+
+// ---- Results grid container ----
+// The cards float inside `#the-list` (and its `.wp-list-table` wrapper on some
+// tabs). Core leaves it on the page's default light background, which reads as
+// a bright band behind/between the cards in dark mode. Set it to the app's base
+// surface so the gaps around the cards match the theme in both modes.
+#the-list,
+.wp-list-table.plugin-install {
+  @include mixins.screen('plugin-install-php') {
+    background: transparent;
+    border: none;
+  }
+}
+
+// ---- Result cards ----
+.plugin-card {
+  @include mixins.screen('plugin-install-php') {
+    background: var(--attrium-primary-foreground);
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    overflow: hidden;
+    @apply shadow-none transition-colors duration-150;
+
+    &:hover {
+      border-color: var(--attrium-ring);
+      @apply shadow-none;
+    }
+  }
+}
+
+// Card top section carries the same #fff bg as the card in core — align it to
+// the token surface so the top/bottom split stays seamless.
+.plugin-card .plugin-card-top {
+  @include mixins.screen('plugin-install-php') {
+    background: var(--attrium-primary-foreground);
+  }
+}
+
+// Plugin title link — core paints it link-blue; use the plain foreground token
+// so it reads as a heading in both modes (base.scss already whitens h3 text in
+// dark, but the anchor color would otherwise win).
+.plugin-card .column-name h3 a {
+  @include mixins.screen('plugin-install-php') {
+    color: var(--attrium-foreground);
+  }
+}
+
+// Description + author byline.
+.plugin-card .column-description p,
+.plugin-card .desc p {
+  @include mixins.screen('plugin-install-php') {
+    color: var(--attrium-foreground);
+    opacity: 0.75;
+  }
+}
+
+.plugin-card .authors cite,
+.plugin-card .authors a {
+  @include mixins.screen('plugin-install-php') {
+    color: var(--attrium-foreground);
+    opacity: 0.6;
+  }
+}
+
+// Primary CTA — promote the install action to the primary variant so the main
+// action stands out. The buttons module already reskins `.button` to the
+// secondary variant; this compound selector (higher specificity + later in the
+// cascade) upgrades only the install button, leaving "More Details" untouched
+// (it is a bare link, not a `.button`).
+.plugin-card .plugin-action-buttons .install-now.button {
+  @include mixins.screen('plugin-install-php') {
+    background: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
+    @apply border-transparent;
+
+    &:hover,
+    &:focus {
+      background: var(--attrium-primary);
+      color: var(--attrium-primary-foreground);
+      @apply border-transparent opacity-90;
+    }
+  }
+}
+
+// ---- Card footer (rating / last-updated / installs / compatibility) ----
+// Core paints this band #f6f7f7 with a #dcdcde top border. The container color
+// cascades to the `<strong>` labels ("Last Updated:", etc.) so they stay legible
+// in dark mode. Star-rating (gold) and compatibility (green/red) keep their
+// semantic core colors — they read fine on the token surface in both modes.
+.plugin-card .plugin-card-bottom {
+  @include mixins.screen('plugin-install-php') {
+    background: var(--attrium-secondary);
+    border-top: 1px solid var(--attrium-border);
+    color: var(--attrium-foreground);
+  }
+}

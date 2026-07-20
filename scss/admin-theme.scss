@@ -2,12 +2,32 @@
 @use 'mixins';
 @use 'modules/buttons';
 @use 'modules/tables';
+@use 'modules/tabs';
 @use 'modules/forms';
 @use 'modules/notices';
+@use 'modules/notification';
 @use 'modules/postbox';
 @use 'modules/menu';
 @use 'screens/base';
 @use 'screens/pages';
+@use 'screens/posts';
+@use 'screens/update-core';
+@use 'screens/upload';
+@use 'screens/media-new';
+@use 'screens/plugins';
+@use 'screens/plugin-install';
+@use 'screens/users';
+@use 'screens/import';
+@use 'screens/options-connectors';
+@use 'screens/themes';
+@use 'screens/theme-install';
+@use 'screens/font-library';
+@use 'screens/theme-editor';
+@use 'screens/nav-menus';
+@use 'screens/profile';
+@use 'screens/tools';
+@use 'screens/site-health';
+@use 'screens/privacy';
 
 // Loads Tailwind's theme/utilities so the `@apply` calls in the module files
 // resolve during the second (Tailwind CLI) build stage. `@reference` emits NO

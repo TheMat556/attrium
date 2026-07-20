@@ -1,0 +1,39 @@
+@use '../mixins';
+@use '../ui';
+
+// Privacy settings page (options-privacy.php → body.options-privacy-php).
+// Mirrors the site-health header pattern.
+
+.privacy-settings-header {
+  @include mixins.screen('options-privacy-php') {
+    @apply rounded-[var(--attrium-radius-md)] border-0;
+    background: transparent;
+  }
+}
+
+.privacy-settings-body {
+  @include mixins.screen('options-privacy-php') {
+    margin: 1.5rem;
+  }
+}
+
+.privacy-settings-title-section h1 {
+  @include mixins.screen('options-privacy-php') {
+    color: var(--attrium-foreground);
+  }
+}
+
+.privacy-settings-tabs-wrapper {
+  @include mixins.screen('options-privacy-php') {
+    @include ui.pill-track;
+
+    .privacy-settings-tab {
+      @include ui.pill-segment;
+      @apply mx-1;
+
+      &.active {
+        @include ui.pill-segment-active;
+      }
+    }
+  }
+}

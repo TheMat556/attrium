@@ -1,3 +1,73 @@
 @use '../mixins';
 
-// TODO: Step 4 — notices
+// `:not(.hidden)` so we don't fight WordPress's global `.hidden { display:none }`
+// (wp-admin/css/common.css). Our `@apply flex` sets display:flex at higher
+// specificity and loads later, which would otherwise force empty placeholder
+// notices (e.g. plugins.php's `.notice.hidden`) visible.
+.notice:not(.hidden) {
+  @include mixins.module('notices') {
+    @apply relative rounded-lg border border-[var(--attrium-border)]
+           p-4 flex items-start gap-4 pr-8
+           bg-[var(--attrium-primary-foreground)]
+           text-[var(--attrium-foreground)];
+    border-left-width: 6px;
+    border-left-style: solid;
+
+    &.notice-info {
+      border-left-color: var(--attrium-info);
+    }
+
+    &.notice-success {
+      border-left-color: var(--attrium-success);
+    }
+
+    &.notice-warning {
+      border-left-color: var(--attrium-warning);
+    }
+
+    &.notice-error {
+      border-left-color: var(--attrium-error);
+    }
+
+    .content-wrapper {
+      @apply flex-1;
+    }
+
+    h4,
+    .title {
+      @apply text-sm font-semibold mb-1;
+    }
+
+    p {
+      @apply text-sm;
+      color: var(--attrium-foreground);
+    }
+
+    .button {
+      @apply shrink-0;
+    }
+
+    .notice-dismiss {
+      @apply absolute top-2 right-2 p-1
+             rounded-md border border-transparent
+             text-[var(--attrium-foreground)] opacity-50
+             transition-opacity duration-100 cursor-pointer
+             bg-transparent;
+
+      &:hover {
+        @apply opacity-100;
+      }
+
+      // Keep core's dashicons dismiss icon but let it inherit the foreground
+      // color token instead of core's hardcoded #787c82.
+      &::before {
+        @apply block;
+        color: inherit;
+      }
+    }
+
+    a:not(.button):not(.button-primary) {
+      @apply text-[var(--attrium-primary)];
+    }
+  }
+}

@@ -1,0 +1,11 @@
+@use '../mixins';
+
+// Updates screen (update-core.php): hide the bottom "Update Plugins" submit
+// button. Target the button by its stable id and hide its wrapping <p> via
+// :has(), instead of a positional p:nth-child() that breaks if WordPress
+// reorders the form.
+.wrap form p:has(#upgrade-plugins-2) {
+  @include mixins.screen('update-core-php') {
+    @apply hidden;
+  }
+}

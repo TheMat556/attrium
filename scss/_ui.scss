@@ -1,0 +1,165 @@
+@use 'mixins';
+
+// Reusable component mixins shared across screen/module files. These emit no
+// CSS on their own (no top-level selectors) — they are `@include`d inside an
+// already-gated block, so the caller owns both the selector and the
+// module()/screen() flag. Keeping them here (rather than in a module partial
+// that emits its own gated rules) means a screen can reuse the *look* of a
+// component without pulling in that module's CSS or toggling its flag.
+
+// ---- Segmented pill control (shadcn-style tabs) ----
+// The canonical Attrium tab look: a rounded track on the secondary surface
+// holding flat pill segments, the active one raised onto the primary surface.
+// Core renders four different WP tab widgets (`.subsubsub` list, the Site
+// Health / Privacy tab bars, and the nav-menus `.nav-tab-wrapper` folder tabs)
+// as visually distinct chrome — these mixins converge all of them on one look
+// so tabs match across the admin. Each caller owns its own gate + selector and
+// adds only structural extras its markup needs (e.g. `float-none` for the
+// core-floated `.nav-tab`, the `<li>` resets `.subsubsub` needs); everything
+// visual lives here so the variants can't drift apart.
+@mixin pill-track {
+  @apply inline-flex w-fit items-center justify-center
+         rounded-lg p-[3px] border-0
+         bg-[var(--attrium-secondary)]
+         text-[var(--attrium-secondary-foreground)];
+}
+
+@mixin pill-segment {
+  @apply inline-flex items-center justify-center
+         rounded-md px-3 py-1.5 text-sm font-medium
+         no-underline transition-all border-0 bg-transparent
+         text-[var(--attrium-secondary-foreground)]
+         focus-visible:outline-none
+         focus-visible:ring-2 focus-visible:ring-[var(--attrium-ring)]
+         focus-visible:ring-offset-2;
+
+  &:hover,
+  &:focus {
+    @apply bg-transparent text-[var(--attrium-foreground)];
+  }
+}
+
+@mixin pill-segment-active {
+  @apply shadow-sm
+         bg-[var(--attrium-primary)]
+         text-[var(--attrium-primary-foreground)];
+}
+
+// ---- Form field (outline variant) ----
+// The token-driven text-input / select / search skin reused by the filter
+// toolbars on the media library (_upload), theme installer (_theme-install),
+// and plugin installer (_plugin-install), plus the Font Library upload button.
+// It is deliberately NOT the `forms` module's input-base/outline (those carry
+// font-medium + py-1.5 + placeholder rules and a different height); these
+// toolbar fields are a fixed-height h-9 control. Call sites that need extra
+// horizontal padding add `@apply px-3;` after the include.
+@mixin field-outline {
+  @apply rounded-[var(--attrium-radius-md)] text-sm border
+         border-[var(--attrium-border)] bg-transparent
+         text-[var(--attrium-foreground)] h-9
+         transition-colors duration-150
+         focus-visible:outline-none focus-visible:ring-2
+         focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+}
+
+// ---- Filter toolbar (`.wp-filter` + `.filter-links`) ----
+// The Featured/Popular/… tab bar shared verbatim by the plugin installer and
+// theme installer (their markup is the same core `.wp-filter` toolbar). Takes
+// the screen body class so each installer gates the identical rules under its
+// own screen. Search fields and installer-specific extras (drawer, count badge)
+// stay in the per-screen files.
+@mixin filter-toolbar($screen) {
+  .wp-filter {
+    @include mixins.screen($screen) {
+      background: transparent;
+      border: 1px solid var(--attrium-border);
+      border-radius: var(--attrium-radius-md);
+      color: var(--attrium-foreground);
+      @apply shadow-none;
+    }
+  }
+
+  .filter-links {
+    li > a {
+      @include mixins.screen($screen) {
+        @apply border-b-4 border-transparent font-medium;
+        color: var(--attrium-foreground);
+        opacity: 0.65;
+
+        &:hover,
+        &:focus {
+          color: var(--attrium-foreground);
+          opacity: 1;
+        }
+      }
+    }
+
+    .current,
+    .current:hover,
+    .current:focus {
+      @include mixins.screen($screen) {
+        border-bottom-color: var(--attrium-primary);
+        color: var(--attrium-foreground);
+        opacity: 1;
+        @apply shadow-none;
+      }
+    }
+  }
+}
+
+// ---- Third-party React app shell transparent reset ----
+// Both the Font Library (_font-library.scss) and the Connectors settings page
+// (_options-connectors.scss) render inside a shared React shell
+// (`.boot-layout`, `.admin-ui-page`) that core stylesheets paint with a solid
+// light background at a specificity our compound selectors can't beat. This
+// mixin forces the shell layers transparent so the Attrium content card shows
+// through. The `!important` is unavoidable here — same reasoning as the
+// font-library and connectors comments.
+@mixin transparent-react-shell {
+  .boot-layout,
+  .boot-layout__surfaces,
+  .boot-layout__stage,
+  .admin-ui-page {
+    background: transparent !important;
+  }
+}
+
+// ---- .wp-filter container surface ----
+// The filter toolbar container (`.wp-filter`) appears on the media library,
+// plugin installer, and theme installer screens. Each needs the same token
+// border, radius, and shadow reset; the background varies by context
+// (grid-mode toolbar, list-mode bar, standalone filter, etc.). Pass the
+// background value as $background (defaults to transparent).
+@mixin wp-filter-surface($background: transparent) {
+  background: $background;
+  border: 1px solid var(--attrium-border);
+  border-radius: var(--attrium-radius-md);
+  @apply shadow-none;
+}
+
+// ---- Card surface ----
+// The canonical Attrium card look: an elevated surface on the primary-foreground
+// canvas with a subtle border and rounded corners. Shared by plugin cards
+// (_plugin-install.scss), theme cards (_themes.scss), connector items
+// (_options-connectors.scss), and wpds cards (_font-library.scss). Callers add
+// extras like `overflow: hidden` or `transition-colors` as needed.
+@mixin card-surface {
+  background: var(--attrium-primary-foreground);
+  border: 1px solid var(--attrium-border);
+  border-radius: var(--attrium-radius-md);
+}
+
+// ---- Bottom toolbar bulk-actions hide ----
+// Several list-table screens (pages, posts, plugins) hide the bulk-actions
+// block in the bottom toolbar because the Attrium shell header already provides
+// bulk-action controls. Takes the screen body class so the rule gates under the
+// caller's own screen. Screens that also hide other bottom controls (e.g. users'
+// `.alignleft.actions`, pages' top pagination) keep those extras in their
+// per-screen file.
+@mixin hide-bottom-bulk-actions($screen) {
+  .tablenav.bottom .bulkactions {
+    @include mixins.screen($screen) {
+      @apply hidden;
+    }
+  }
+}

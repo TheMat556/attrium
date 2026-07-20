@@ -1,25 +1,26 @@
 @use '../mixins';
+@use '../ui';
 
 // Pages list (edit.php?post_type=page): hide the bottom toolbar's pagination
 // and bulk-actions. The top toolbar is left untouched. `.tablenav.bottom` only
 // exists on the list table, so this is a no-op on the page editor (which also
 // carries body.post-type-page).
-.tablenav.top .tablenav-pages,
-.tablenav.bottom .bulkactions {
+.tablenav.top .tablenav-pages {
   @include mixins.screen('post-type-page') {
     @apply hidden;
   }
 }
 
+@include ui.hide-bottom-bulk-actions('post-type-page');
+
 .tablenav .actions:not(.bulkactions) {
   @include mixins.screen('post-type-page') {
-    float: right;
-    padding: 0;
+    @apply p-0;
   }
 }
 
 #post-query-submit {
   @include mixins.screen('post-type-page') {
-    margin-right: 0;
+    @apply mr-0;
   }
 }

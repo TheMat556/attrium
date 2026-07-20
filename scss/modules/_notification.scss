@@ -1,0 +1,12 @@
+@use '../mixins';
+
+// The `.notification-dialog` modal (edit.css:565) is core's file-editor warning
+// ("Heads up!") and filesystem-credentials prompt. It appears on several
+// screens (theme/plugin editor, font library), so it is gated as a module
+// rather than per-screen. Core gives it square corners — round them to match
+// the Attrium radius token.
+.notification-dialog {
+  @include mixins.module('notification') {
+    border-radius: var(--attrium-radius-md);
+  }
+}
