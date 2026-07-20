@@ -10,7 +10,7 @@
 // here as call-site extras.
 //
 // Everything is expressed through --attrium-* tokens (redefined under
-// #attrium-host.dark in _tokens.scss), so light/dark parity is automatic.
+// #attrium-host.dark in _tokens.css), so light/dark parity is automatic.
 
 .nav-tab-wrapper {
   @include mixins.screen('nav-menus-php') {
@@ -82,7 +82,7 @@
 // Section header row: token side-borders removed, token text, accent hover.
 // Core hardcodes background:#fff and border:#c3c4c7 here — both must be
 // overridden for dark mode parity (the --attrium-* tokens switch under
-// #attrium-host.dark in _tokens.scss).
+// #attrium-host.dark in _tokens.css).
 .accordion-section-title {
   @include mixins.screen('nav-menus-php') {
     @apply border-x-0 border-b border-[var(--attrium-border)];

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-vue/tailwind.css";
+/* Shared Attrium palette — single source of truth, also @use'd by the SCSS
+   admin theme (scss/admin-theme.scss). See scss/_tokens.css. */
+@import "../scss/_tokens.css";
 
 /*
  * Submenu slide-down animation using CSS grid `grid-template-rows`.
@@ -97,6 +100,10 @@
   --tw-ring-offset-color: #fff;
   --tw-ring-offset-shadow: 0 0 #0000;
   --background: oklch(0.985 0 0);
+  /* Card background for ignored pages: their WP content is left unstyled and
+     stays natively light, so this stays light in dark mode too (intentionally
+     not overridden in .dark) — a dark card behind light content reads worse. */
+  --attrium-ignored-background: oklch(0.985 0 0);
   --wp-content-foreground: #3c434a;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

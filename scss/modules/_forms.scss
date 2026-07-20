@@ -57,3 +57,19 @@ select {
     @include select-outline;
   }
 }
+
+input[type="file"] {
+  @include mixins.module('forms') {
+    @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
+           bg-transparent text-[var(--attrium-foreground)] transition-colors duration-150
+           py-1.5 px-1;
+
+    &::file-selector-button {
+      @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
+             text-sm font-medium border border-transparent
+             bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
+             transition-colors duration-150 h-9 min-h-9 px-3 cursor-pointer;
+      margin-inline-end: 0.75rem;
+    }
+  }
+}

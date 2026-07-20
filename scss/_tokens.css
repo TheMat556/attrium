@@ -1,0 +1,70 @@
+/*
+ * Single source of truth for the Attrium color palette.
+ *
+ * Consumed by BOTH build pipelines:
+ *   - scss/admin-theme.scss  (@use 'tokens')            → light-DOM WP pages
+ *   - src/style.css          (@import '../scss/_tokens.css') → shadow-DOM Vue app
+ *
+ * It is a plain .css file (not .scss) so the Vite/Tailwind CSS pipeline can
+ * @import it directly; dart-sass still resolves `@use 'tokens'` to this file.
+ *
+ * Each rule lists the selectors for BOTH contexts. A selector that matches
+ * nothing in one context (e.g. :host on a WP page, or #attrium-host inside the
+ * shadow root) is simply inert there, so the combined list is safe everywhere.
+ */
+
+:root,
+:host {
+  --attrium-primary: oklch(0.205 0 0);
+  --attrium-primary-foreground: oklch(0.985 0 0);
+  --attrium-secondary: oklch(0.925 0 0);
+  --attrium-secondary-foreground: oklch(0.205 0 0);
+  --attrium-foreground: oklch(0.145 0 0);
+  --attrium-muted-foreground: oklch(0.556 0 0);
+  --attrium-border: oklch(0.922 0 0);
+  --attrium-accent: oklch(0.97 0 0);
+  --attrium-accent-foreground: oklch(0.205 0 0);
+  --attrium-ring: oklch(0.708 0 0);
+  --attrium-radius-md: 0.5rem;
+
+  /* Semantic status colors (info, success, warning, error) — shared by notices,
+     site-health badges, and any future status indicators. */
+  --attrium-info: #3b82f6;
+  --attrium-success: #22c55e;
+  --attrium-warning: #f59e0b;
+  --attrium-error: #ef4444;
+
+  /* Recessed page-canvas surface, distinct from the elevated card surfaces.
+     Light mode: softened off-white, intentionally darker than the pure-white
+     Vue content card and the light sidebar. */
+  --attrium-background: oklch(0.965 0 0);
+}
+
+/*
+ * Dark mode. useTheme toggles `.dark` on #attrium-host only: on WP pages that
+ * matches #attrium-host.dark (the moved WP content inherits from it), and from
+ * inside the shadow root the same host is :host(.dark). A bare `.dark` is
+ * deliberately NOT listed — it would apply this palette to any foreign
+ * wp-admin element that happens to carry a `.dark` class. Values mirror the
+ * light block above. See src/composables/useTheme.ts + src/main.ts.
+ */
+#attrium-host.dark,
+:host(.dark) {
+  --attrium-primary: oklch(0.922 0 0);
+  --attrium-primary-foreground: oklch(0.205 0 0);
+  --attrium-secondary: oklch(0.269 0 0);
+  --attrium-secondary-foreground: oklch(0.985 0 0);
+  --attrium-foreground: oklch(0.985 0 0);
+  --attrium-muted-foreground: oklch(0.708 0 0);
+  --attrium-border: oklch(1 0 0 / 10%);
+  --attrium-accent: oklch(0.269 0 0);
+  --attrium-accent-foreground: oklch(0.985 0 0);
+  --attrium-ring: oklch(0.556 0 0);
+  --attrium-background: oklch(0.235 0 0);
+
+  /* Dark-mode semantic status colors — lighter hues for readability. */
+  --attrium-info: #60a5fa;
+  --attrium-success: #4ade80;
+  --attrium-warning: #fbbf24;
+  --attrium-error: #f87171;
+}

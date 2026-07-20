@@ -2,6 +2,7 @@
 
 namespace Attrium\App;
 
+use Attrium\Settings\Settings;
 use Attrium\Utility\Menu;
 use Attrium\Utility\Scripts;
 
@@ -43,6 +44,29 @@ class Attrium {
         }
 
         return true;
+    }
+
+    /**
+     * Whether the given screen is a page registered by a plugin/theme via
+     * add_menu_page()/add_submenu_page() (as opposed to a WordPress core admin
+     * screen). WordPress builds the screen id from the page's hook suffix:
+     * top-level pages get 'toplevel_page_{slug}' and submenu pages get
+     * '{parent-hook}_page_{slug}'. Core screens (edit, options-general, plugins,
+     * …) map to real PHP files and never contain '_page_', so that marker
+     * reliably distinguishes both top-level and submenu plugin pages.
+     */
+    private static function is_plugin_screen( $screen ): bool {
+        if ( ! $screen || ! isset($screen->id) ) {
+            return false;
+        }
+
+        // Attrium's own screens are not third-party plugin pages.
+        if ( str_contains($screen->id, 'attrium') ) {
+            return false;
+        }
+
+        return str_starts_with($screen->id, 'toplevel_page_')
+            || str_contains($screen->id, '_page_');
     }
 
     /**
@@ -129,7 +153,9 @@ class Attrium {
 
         $menu_items = Menu::get_items();
 
-        $logout_url = wp_logout_url();
+        $logout_url     = wp_logout_url();
+        $is_ignored     = Settings::is_ignored_url() ? 'true' : 'false';
+        $is_plugin_page = self::is_plugin_screen($screen) ? 'true' : 'false';
 
         $scripts_tag = [
             'id'               => 'attrium-data',
@@ -148,6 +174,8 @@ class Attrium {
             'menu'             => wp_json_encode($menu_items),
             'plugin-version'   => esc_attr(ATTRIUM_VERSION),
             'plugin-base'      => esc_url(ATTRIUM_URL),
+            'is-ignored'       => esc_attr($is_ignored),
+            'is-plugin-page'   => esc_attr($is_plugin_page),
         ];
 
         wp_print_script_tag($scripts_tag);

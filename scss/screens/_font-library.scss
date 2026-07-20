@@ -15,7 +15,7 @@
 // Instead we reskin by REMAPPING those variables onto Attrium's --attrium-*
 // tokens. Because every override below is a var() reference, light/dark parity
 // is automatic: the slotted content lives inside #attrium-host, so the token
-// redefinitions under #attrium-host.dark (in _tokens.scss) resolve here with no
+// redefinitions under #attrium-host.dark (in _tokens.css) resolve here with no
 // separate dark block.
 //
 // Specificity: the app declares its variables on

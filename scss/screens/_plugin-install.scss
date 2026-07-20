@@ -6,7 +6,7 @@
 // (wp-admin/css/{common,plugin-install}.css) hardcodes #fff surfaces, #c3c4c7 /
 // #dcdcde borders, drop shadows, and a #f6f7f7 card footer — all read as bright
 // bands in dark mode. Everything below is token-driven (--attrium-* tokens are
-// redefined under #attrium-host.dark in _tokens.scss), so light/dark parity is
+// redefined under #attrium-host.dark in _tokens.css), so light/dark parity is
 // automatic with no separate dark-mode block. Distinct from _plugins.scss,
 // which targets the installed-plugins list (body.plugins-php).
 
@@ -24,6 +24,16 @@
       @include ui.field-outline;
       @apply px-3;
     }
+  }
+}
+
+// ---- Upload card (Upload Plugin form) ----
+.wp-upload-form {
+  @include mixins.screen('plugin-install-php') {
+    background: var(--attrium-primary-foreground);
+    border: 1px dashed var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    padding: 1rem;
   }
 }
 

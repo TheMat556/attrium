@@ -2,6 +2,8 @@
 
 namespace Attrium\Modules;
 
+use Attrium\Settings\Settings;
+
 defined('ABSPATH') || exit();
 
 class ModuleRegistry {
@@ -52,7 +54,7 @@ class ModuleRegistry {
     }
 
     public function body_classes( string $classes ): string {
-        if ( $this->is_excluded_screen() ) {
+        if ( $this->is_excluded_screen() || Settings::is_ignored_url() ) {
             return $classes;
         }
 
@@ -64,7 +66,7 @@ class ModuleRegistry {
     }
 
     public function enqueue_styles(): void {
-        if ( $this->is_excluded_screen() ) {
+        if ( $this->is_excluded_screen() || Settings::is_ignored_url() ) {
             return;
         }
 

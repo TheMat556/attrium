@@ -4,7 +4,7 @@
 // mixins + a size modifier, then a one-line map from native WP button classes
 // to a variant. Bodies use Tailwind `@apply` (expanded by the Tailwind CLI
 // stage of build:css) reading the --attrium-* design tokens, so light/dark is
-// handled entirely by the token overrides in _tokens.scss.
+// handled entirely by the token overrides in _tokens.css.
 
 // ---- Base: shared by every reskinned button, regardless of variant ----
 @mixin btn-base {
@@ -12,6 +12,11 @@
          text-sm font-medium border border-transparent transition-colors duration-150
          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
          focus-visible:ring-[var(--attrium-ring)] h-9 min-h-9;
+
+  &:disabled {
+    @apply opacity-50 cursor-default pointer-events-none;
+    border-color: var(--attrium-muted-foreground) !important;
+  }
 }
 
 // ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
@@ -23,15 +28,30 @@
     @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
            border-transparent opacity-90;
   }
+
+  &:focus,
+  &:active {
+    @apply inline-flex items-center justify-center
+           bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
+           rounded-[var(--attrium-radius-md)] text-sm;
+  }
 }
 
 @mixin btn-secondary {
-  @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)];
+  @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
+         border-[var(--attrium-border)];
 
   &:hover,
   &:focus {
     @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
            border-transparent opacity-90;
+  }
+
+  &:focus,
+  &:active {
+    @apply inline-flex items-center justify-center
+           bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
+           rounded-[var(--attrium-radius-md)] text-sm;
   }
 }
 

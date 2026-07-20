@@ -29,6 +29,8 @@ export interface ServerData {
 	pluginVersion: string
 	pluginBase: string
 	menu: MenuItem[]
+	isIgnored: boolean
+	isPluginPage: boolean
 }
 
 export function useServerData(): ServerData {
@@ -53,6 +55,8 @@ export function useServerData(): ServerData {
 		menu: parseMenu(get('menu')),
 		pluginVersion: get('plugin-version'),
 		pluginBase: get('plugin-base'),
+		isIgnored: get('is-ignored') === 'true',
+		isPluginPage: get('is-plugin-page') === 'true',
 	}
 }
 

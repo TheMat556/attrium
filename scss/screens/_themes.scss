@@ -8,7 +8,7 @@
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
 // borders, and a white `.theme-id-container` footer — all of which read as
 // bright bands in dark mode. Everything below is expressed through the
-// --attrium-* tokens (redefined under #attrium-host.dark in _tokens.scss), so
+// --attrium-* tokens (redefined under #attrium-host.dark in _tokens.css), so
 // light/dark parity is automatic with no separate dark-mode block.
 
 @mixin theme-cards {

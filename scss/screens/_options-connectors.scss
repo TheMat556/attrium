@@ -17,7 +17,7 @@
 // emits.
 //
 // All colors flow through the --attrium-* tokens (redefined under
-// #attrium-host.dark in _tokens.scss), so light/dark parity is automatic with
+// #attrium-host.dark in _tokens.css), so light/dark parity is automatic with
 // no separate dark-mode block. Setting the base `color` on the container also
 // fixes icons that paint with `fill="currentColor"` (e.g. the OpenAI logo),
 // which would otherwise be invisible in one mode.
