@@ -9,15 +9,15 @@ class ModuleRegistry {
 
     public function __construct() {
         $defaults = [
-            'buttons' => true,
-            'tables'  => true,
-            'tabs'    => true,
-            'forms'   => true,
-            'notices' => true,
+            'buttons'      => true,
+            'tables'       => true,
+            'tabs'         => true,
+            'forms'        => true,
+            'notices'      => true,
             'notification' => true,
-            'postbox' => false,
-            'menu'    => false,
-            'screens' => true,
+            'postbox'      => false,
+            'menu'         => false,
+            'screens'      => true,
         ];
 
         $this->modules = apply_filters('attrium_enabled_modules', $defaults);
@@ -51,12 +51,12 @@ class ModuleRegistry {
         return 0 === strpos($page, 'bricks');
     }
 
-    public function body_classes(string $classes): string {
+    public function body_classes( string $classes ): string {
         if ( $this->is_excluded_screen() ) {
             return $classes;
         }
 
-        foreach ($this->get_enabled_modules() as $module) {
+        foreach ( $this->get_enabled_modules() as $module ) {
             $classes .= " attrium-mod-{$module}";
         }
 
