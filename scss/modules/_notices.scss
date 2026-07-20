@@ -10,6 +10,7 @@
            p-4 flex items-start gap-4 pr-8
            bg-[var(--attrium-primary-foreground)]
            text-[var(--attrium-foreground)];
+
     border-left-width: 6px;
     border-left-style: solid;
 
@@ -40,6 +41,7 @@
 
     p {
       @apply text-sm;
+
       color: var(--attrium-foreground);
     }
 
@@ -62,6 +64,7 @@
       // color token instead of core's hardcoded #787c82.
       &::before {
         @apply block;
+
         color: inherit;
       }
     }

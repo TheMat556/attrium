@@ -7,6 +7,7 @@
 .health-check-header {
   @include mixins.screen('site-health-php') {
     @apply rounded-[var(--attrium-radius-md)] border-0;
+
     background: transparent;
   }
 }

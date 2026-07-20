@@ -45,7 +45,7 @@ This runs independently of the overlay `Attrium` class.
 ### 3. SCSS Structure
 
 **Tree:**
-```
+```plaintext
 scss/
   admin-theme.scss       ← entry point, compiles to app/dist/admin-theme.css
   _tokens.scss           ← CSS custom properties (design tokens)

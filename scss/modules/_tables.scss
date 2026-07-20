@@ -24,6 +24,7 @@
 
 @mixin table-base {
   @apply text-sm w-full;
+
   border-collapse: separate;
   border-spacing: 0;
   border: 1px solid var(--attrium-border);
@@ -74,6 +75,7 @@
     tbody {
       td {
         @include td-base;
+
         color: var(--attrium-foreground);
         background: var(--attrium-primary-foreground);
 
@@ -84,6 +86,7 @@
 
       th {
         @include td-base;
+
         color: var(--attrium-foreground);
         background: var(--attrium-primary-foreground);
       }
@@ -119,6 +122,7 @@
 
     .row-actions {
       @apply mt-1 text-xs;
+
       color: var(--attrium-foreground);
       opacity: 0.5;
 
@@ -241,6 +245,7 @@
     tr.inactive th,
     tr.inactive td {
       @apply shadow-none;
+
       background-color: var(--attrium-primary-foreground);
     }
 

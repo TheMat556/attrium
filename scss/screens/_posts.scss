@@ -12,6 +12,8 @@
 }
 
 #post-query-submit {
-  @apply mr-0;
+  @include mixins.screen('post-type-post') {
+    @apply mr-0;
+  }
 }
 

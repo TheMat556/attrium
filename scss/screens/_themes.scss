@@ -4,7 +4,6 @@
 // (themes.php → body.themes-php) and the theme installer
 // (theme-install.php → body.theme-install-php). The markup is shared, so the
 // same reskin is applied under both screen gates via the theme-cards mixin.
-//
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
 // borders, and a white `.theme-id-container` footer — all of which read as
 // bright bands in dark mode. Everything below is expressed through the
@@ -17,6 +16,7 @@
     @apply rounded-[var(--attrium-radius-md)] overflow-hidden
            border border-[var(--attrium-border)] shadow-none
            transition-colors duration-150;
+
     background: var(--attrium-primary-foreground);
 
     &:hover,

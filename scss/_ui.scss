@@ -83,6 +83,7 @@
     li > a {
       @include mixins.screen($screen) {
         @apply border-b-4 border-transparent font-medium;
+
         color: var(--attrium-foreground);
         opacity: 0.65;
 

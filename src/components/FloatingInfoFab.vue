@@ -15,6 +15,12 @@ const panelOpen = ref(false)
 onClickOutside(root, () => {
 	panelOpen.value = false
 })
+
+function onKeydownEsc(e: KeyboardEvent) {
+	if (e.key === 'Escape') {
+		panelOpen.value = false
+	}
+}
 </script>
 
 <template>
@@ -22,6 +28,8 @@ onClickOutside(root, () => {
 		ref="root"
 		class="fixed bottom-6 right-6 z-50 group"
 		:class="{ 'is-open': panelOpen }"
+		role="none"
+		@keydown="onKeydownEsc"
 	>
 		<div
 			class="absolute bottom-12 right-0 mb-2 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-[.is-open]:opacity-100 group-[.is-open]:visible transition-all duration-200 ease-in-out translate-y-1 group-hover:translate-y-0 group-[.is-open]:translate-y-0"
@@ -64,7 +72,6 @@ onClickOutside(root, () => {
 			aria-label="Page info"
 			:aria-expanded="panelOpen"
 			@click="panelOpen = !panelOpen"
-			@keydown.esc="panelOpen = false"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"

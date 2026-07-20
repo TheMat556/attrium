@@ -8,7 +8,6 @@
 // scss/_ui.scss) so the tab styles match across the admin. Only the resets that
 // undo core's folder chrome (the tab float, the active-tab margin nudge) stay
 // here as call-site extras.
-//
 // Everything is expressed through --attrium-* tokens (redefined under
 // #attrium-host.dark in _tokens.css), so light/dark parity is automatic.
 
@@ -55,6 +54,7 @@
   @include mixins.screen('nav-menus-php') {
     @apply rounded-[var(--attrium-radius-md)] overflow-hidden shadow-none
            border border-[var(--attrium-border)];
+
     background: var(--attrium-primary-foreground);
   }
 }
@@ -64,6 +64,7 @@
   @include mixins.screen('nav-menus-php') {
     @apply rounded-[var(--attrium-radius-md)]
            border border-[var(--attrium-border)];
+
     background: var(--attrium-primary-foreground);
   }
 }
@@ -86,6 +87,7 @@
 .accordion-section-title {
   @include mixins.screen('nav-menus-php') {
     @apply border-x-0 border-b border-[var(--attrium-border)];
+
     background: var(--attrium-primary-foreground);
 
     button.accordion-trigger {
@@ -123,6 +125,7 @@
 .category-tabs li.tabs {
   @include mixins.screen('nav-menus-php') {
     @apply rounded-t-md;
+
     border: 1px solid var(--attrium-border);
     border-bottom-color: var(--attrium-primary-foreground);
     background: var(--attrium-primary-foreground);
@@ -133,6 +136,7 @@
 .tabs-panel {
   @include mixins.screen('nav-menus-php') {
     @apply rounded-md;
+
     border: 1px solid var(--attrium-border);
     background: var(--attrium-primary-foreground);
   }
@@ -143,10 +147,12 @@
   @include mixins.screen('nav-menus-php') {
     @apply rounded-[var(--attrium-radius-md)]
            border border-[var(--attrium-border)];
+
     background: var(--attrium-primary-foreground);
 
     h3 {
       @apply text-sm font-semibold m-0 p-3;
+
       color: var(--attrium-foreground);
     }
 

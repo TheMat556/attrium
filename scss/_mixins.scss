@@ -13,7 +13,6 @@
 // whole per-screen axis (general base + every per-screen file) at once — no
 // rebuild. For the all-screens base rules (no specific screen), use
 // `module('screens')` directly.
-//
 // Variadic: pass more than one body class to apply the same rules to several
 // screens that share markup (e.g. `screen('theme-editor-php', 'plugin-editor-php')`)
 // — each becomes its own compound selector in a comma-joined list, so no rule

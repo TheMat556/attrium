@@ -5,7 +5,6 @@
 // flag via module('screens') — no specific WP body class. Per-screen overrides
 // live in their own files (e.g. _pages.scss) and use the screen('<class>')
 // mixin, which also requires this same flag so the whole axis toggles together.
-//
 // Example (uncomment / extend as shared screen rules are added):
 // .tablenav {
 //   @include mixins.module('screens') {
@@ -43,11 +42,15 @@ p {
 }
 
 #screen-meta-links {
-  display: none;
+  @include mixins.module('screens') {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 600px) {
   #wpbody {
-    padding-top: 0;
+    @include mixins.module('screens') {
+      padding-top: 0;
+    }
   }
 }
