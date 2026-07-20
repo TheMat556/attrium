@@ -42,6 +42,16 @@ class Attrium {
             return false;
         }
 
+        // Skip the full Attrium shell on Bricks admin pages (settings, license,
+        // elements, sidebars, system-information) — they get styled by the
+        // shared admin-theme.css but keep their own page layout without the
+        // Attrium sidebar/header wrapper.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        if ( 0 === strpos($page, 'bricks' ) ) {
+            return false;
+        }
+
         return true;
     }
 

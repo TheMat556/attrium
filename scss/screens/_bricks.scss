@@ -1,0 +1,402 @@
+@use '../mixins';
+@use '../ui';
+
+// ---- Bricks Builder admin pages ----
+// Bricks registers admin pages under admin.php?page=bricks-* (settings, license,
+// elements, sidebars, system-information). These pages use a custom table-based
+// form layout and unique tab navigation. This file styles them to match the
+// Attrium card + pill surface design language.
+
+// Main card wrapper for all Bricks admin pages.
+.bricks-admin-wrapper {
+  @include mixins.module('screens') {
+    max-width: 960px;
+  }
+}
+
+// Title area: page heading + action links (Export/Import).
+.bricks-admin-title-wrapper {
+  @include mixins.module('screens') {
+    @apply flex items-center gap-3 mb-6;
+  }
+
+  .page-title-action {
+    @include mixins.module('screens') {
+      @apply no-underline;
+    }
+  }
+}
+
+// ---- Tab navigation ----
+// Bricks uses a <ul> with <li><a> tabs, unlike WP's flat .nav-tab-wrapper.
+#bricks-settings-tabs-wrapper {
+  @include mixins.module('screens') {
+    @include ui.pill-track;
+    @apply mb-6 gap-0;
+
+    li {
+      @apply m-0 list-none;
+    }
+
+    .nav-tab {
+      @include ui.pill-segment;
+      @apply rounded-none cursor-pointer;
+
+      &:first-child {
+        @apply rounded-l-md;
+      }
+
+      &:last-child {
+        @apply rounded-r-md;
+      }
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: var(--attrium-foreground);
+      }
+    }
+
+    .nav-tab-active {
+      @include ui.pill-segment-active;
+    }
+  }
+}
+
+// ---- Tab content tables ----
+// Each settings tab is a separate <table> with <th> labels and <td> controls.
+table[id^="tab-"] {
+  @include mixins.module('screens') {
+    @apply w-full border-separate;
+    border-spacing: 0;
+
+    tbody tr {
+      th {
+        @apply text-sm font-medium py-3 pr-4 align-top whitespace-nowrap;
+        color: var(--attrium-foreground);
+        width: 220px;
+      }
+
+      td {
+        @apply py-3;
+      }
+    }
+  }
+}
+
+// Setting groups inside table cells.
+.setting-wrapper {
+  @include mixins.module('screens') {
+    @apply mb-2;
+  }
+}
+
+.section-wrapper {
+  @include mixins.module('screens') {
+    @apply mb-2;
+  }
+}
+
+.separator {
+  @include mixins.module('screens') {
+    @apply border-t;
+    border-color: var(--attrium-border);
+    margin: 0.75rem 0;
+  }
+}
+
+// Section titles within controls.
+table[id^="tab-"] .title {
+  @include mixins.module('screens') {
+    @apply font-semibold text-sm mb-1;
+    color: var(--attrium-foreground);
+  }
+}
+
+.sub {
+  @include mixins.module('screens') {
+    @apply text-xs;
+    color: var(--attrium-muted-foreground);
+  }
+}
+
+// Description text.
+.description,
+.desc {
+  @include mixins.module('screens') {
+    @apply text-sm mt-1;
+    color: var(--attrium-muted-foreground);
+  }
+}
+
+// ---- Form controls within Bricks tables ----
+// Inputs, selects, textareas inside Bricks settings.
+table[id^="tab-"] {
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="email"],
+  input[type="url"],
+  select,
+  textarea {
+    @include mixins.module('screens') {
+      @include ui.field-outline;
+      @apply px-3;
+    }
+  }
+
+  textarea {
+    @apply min-h-[80px];
+  }
+
+  input[type="checkbox"] {
+    @include mixins.module('screens') {
+      @apply rounded;
+      border-color: var(--attrium-border);
+      accent-color: var(--attrium-primary);
+
+      &:checked {
+        background-color: var(--attrium-primary);
+        border-color: var(--attrium-primary);
+      }
+    }
+  }
+
+  input.small {
+    @include mixins.module('screens') {
+      width: 80px;
+    }
+  }
+}
+
+// Code textareas (monospace field).
+.bricks-code {
+  @include mixins.module('screens') {
+    @apply font-mono text-sm;
+  }
+}
+
+// ---- Submit button row ----
+.submit-wrapper {
+  @include mixins.module('screens') {
+    @apply flex items-center gap-3 mt-6 pt-4 border-t;
+    border-color: var(--attrium-border);
+  }
+
+  .spinner.saving {
+    @include mixins.module('screens') {
+      @apply float-none mt-0;
+    }
+  }
+}
+
+// ---- License page ----
+.bricks-admin-inner {
+  @include mixins.module('screens') {
+    @apply mt-6;
+  }
+}
+
+.form-group {
+  @include mixins.module('screens') {
+    @apply flex items-center gap-3 mb-4;
+  }
+}
+
+.input-wrapper {
+  @include mixins.module('screens') {
+    @apply relative;
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    @include mixins.module('screens') {
+      @include ui.field-outline;
+      @apply px-10 pr-10;
+    }
+  }
+}
+
+// License key toggle visibility icon.
+#bricks-toggle-license-key {
+  @include mixins.module('screens') {
+    @apply absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--attrium-muted-foreground);
+
+    &:hover {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+// License activation result messages.
+.error-message,
+.success-message {
+  @include mixins.module('screens') {
+    @apply text-sm mt-2;
+  }
+}
+
+.error-message {
+  @include mixins.module('screens') {
+    color: var(--attrium-error);
+  }
+}
+
+.success-message {
+  @include mixins.module('screens') {
+    color: var(--attrium-success);
+  }
+}
+
+// ---- Import overlay ----
+#bricks-admin-import-wrapper {
+  @include mixins.module('screens') {
+    @apply fixed inset-0 z-50 flex items-center justify-center;
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+#bricks-admin-import-form-wrapper {
+  @include mixins.module('screens') {
+    @include ui.card-surface;
+    @apply relative p-8 max-w-md w-full shadow-lg;
+  }
+}
+
+#bricks-admin-import-wrapper .close {
+  @include mixins.module('screens') {
+    @apply absolute top-3 right-3 cursor-pointer;
+    color: var(--attrium-muted-foreground);
+
+    &:hover {
+      color: var(--attrium-foreground);
+    }
+  }
+}
+
+// ---- Badges ----
+.badge {
+  @include mixins.module('screens') {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+    background: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
+  }
+}
+
+// ---- Capabilities UI (Builder Access tab) ----
+.bricks-custom-capabilities-wrapper {
+  @include mixins.module('screens') {
+    @apply mb-4;
+  }
+}
+
+.bricks-custom-capabilities-list {
+  @include mixins.module('screens') {
+    @apply space-y-2;
+  }
+}
+
+.capability-item {
+  @include mixins.module('screens') {
+    @include ui.card-surface;
+    @apply p-4;
+  }
+}
+
+.capability-header {
+  @include mixins.module('screens') {
+    @apply flex items-center justify-between mb-2;
+  }
+}
+
+.capability-name {
+  @include mixins.module('screens') {
+    @apply font-semibold text-sm;
+    color: var(--attrium-foreground);
+  }
+}
+
+.capability-id {
+  @include mixins.module('screens') {
+    @apply text-xs;
+    color: var(--attrium-muted-foreground);
+  }
+}
+
+.capability-actions {
+  @include mixins.module('screens') {
+    @apply flex gap-2;
+  }
+}
+
+.bricks-custom-capabilities-actions {
+  @include mixins.module('screens') {
+    @apply mt-4;
+  }
+}
+
+// ---- Inline messages ----
+.message {
+  @include mixins.module('screens') {
+    @apply rounded-md px-4 py-3 text-sm border;
+    border-color: var(--attrium-border);
+    background: var(--attrium-secondary);
+    color: var(--attrium-foreground);
+  }
+
+  &.error {
+    @include mixins.module('screens') {
+      border-color: var(--attrium-error);
+      background: oklch(from var(--attrium-error) l c h / 10%);
+      color: var(--attrium-error);
+    }
+  }
+
+  &.info {
+    @include mixins.module('screens') {
+      border-color: var(--attrium-info);
+      background: oklch(from var(--attrium-info) l c h / 10%);
+      color: var(--attrium-info);
+    }
+  }
+}
+
+// ---- Remote template fields ----
+.remote-template-wrapper {
+  @include mixins.module('screens') {
+    @include ui.card-surface;
+    @apply p-4 mb-3;
+  }
+}
+
+.chained {
+  @include mixins.module('screens') {
+    @apply text-xs;
+    color: var(--attrium-muted-foreground);
+  }
+}
+
+// ---- License notice banner ----
+.notice-license-activation {
+  @include mixins.module('screens') {
+    @include ui.card-surface;
+    @apply p-6 mb-6;
+
+    .content-wrapper {
+      .title {
+        @apply text-lg font-semibold mb-2;
+        color: var(--attrium-foreground);
+      }
+
+      p {
+        @apply text-sm mb-4;
+        color: var(--attrium-muted-foreground);
+      }
+    }
+  }
+}
