@@ -7,7 +7,7 @@
  * Author:          Matthias Hader
  * Text Domain:     attrium
  * Domain Path:     /languages
- * Requires PHP:    7.4
+ * Requires PHP:    8.0
  * License:         GPLv2 or later
  */
 
