@@ -9,13 +9,15 @@
 // ---- Base: shared by every reskinned button, regardless of variant ----
 @mixin btn-base {
   @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-         text-sm font-medium border border-transparent transition-colors duration-150
-         focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2
-         focus-visible:ring-[var(--attrium-ring)] h-9 min-h-9;
+         text-sm font-medium h-9 min-h-9 duration-150 transition-colors;
 
   &:disabled {
     @apply opacity-50 cursor-default pointer-events-none;
     border-color: var(--attrium-muted-foreground) !important;
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(1px);
   }
 }
 

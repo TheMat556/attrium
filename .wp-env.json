@@ -1,0 +1,15 @@
+{
+	"core": "WordPress/WordPress#6.7",
+	"plugins": ["."],
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/visual/mu-plugins"
+	},
+	"testsEnvironment": false,
+	"lifecycleScripts": {
+		"afterStart": "wp-env run cli wp post list --post_type=post,page --format=ids | tr -d '\\r' | xargs -r wp-env run cli wp post update --post_date='2024-01-01 12:00:00' --post_date_gmt='2024-01-01 12:00:00'"
+	},
+	"config": {
+		"WP_DEBUG": true,
+		"SCRIPT_DEBUG": false
+	}
+}

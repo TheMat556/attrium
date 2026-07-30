@@ -32,29 +32,9 @@ class ModuleRegistry {
         return array_keys(array_filter($this->modules));
     }
 
-    /**
-     * Whether the current request is a Bricks (third-party page builder) admin
-     * page. Bricks registers every one of its admin screens under
-     * admin.php?page=bricks-* (bricks-getting-started, bricks-settings,
-     * bricks-license, bricks-templates, …), so the `page` query var prefix is a
-     * stable signal for the whole Bricks menu.
-     *
-     * The reskin is entirely opt-in via the `attrium-mod-*` body classes and the
-     * admin-theme.css enqueue below; skipping both on Bricks pages leaves the
-     * builder's own admin UI completely untouched (self-contained styling),
-     * without any CSS `:not()` overrides.
-     */
-    private function is_excluded_screen(): bool {
-        // Read-only page-routing check for style gating; no state change, so no
-        // nonce verification is warranted.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-
-        return 0 === strpos($page, 'bricks');
-    }
 
     public function body_classes( string $classes ): string {
-        if ( $this->is_excluded_screen() || Settings::is_ignored_url() ) {
+        if (Settings::is_ignored_url() ) {
             return $classes;
         }
 
@@ -66,7 +46,7 @@ class ModuleRegistry {
     }
 
     public function enqueue_styles(): void {
-        if ( $this->is_excluded_screen() || Settings::is_ignored_url() ) {
+        if ( Settings::is_ignored_url() ) {
             return;
         }
 
