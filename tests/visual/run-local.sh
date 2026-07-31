@@ -50,6 +50,7 @@ bun run build
 
 # --- Run wp-env + Playwright ------------------------------------------------
 run_suite() {
+	echo y | bun run wp-env destroy 2>/dev/null || true
 	bun run wp-env start
 	# shellcheck disable=SC2064
 	trap "bun run wp-env stop" EXIT
@@ -63,19 +64,24 @@ if [ -n "$RUN_USER" ]; then
 	# for the duration, then restore ownership.
 	ORIG_OWNER="$(stat -c '%U:%G' "$PROJECT_DIR")"
 	chown -R "$RUN_USER" "$PROJECT_DIR"
-	trap "chown -R $ORIG_OWNER $PROJECT_DIR" EXIT
+	# A function, not a string: an expanded-at-trap-time command would split a
+	# $PROJECT_DIR containing whitespace into several chown arguments.
+	restore_owner() { chown -R "$ORIG_OWNER" "$PROJECT_DIR"; }
+	trap restore_owner EXIT
+	# Args go through `bash -s -- "$@"` as real positional parameters. Flattening
+	# them into one PW_ARGS string and re-splitting on whitespace would break any
+	# argument that contains a space (e.g. --grep 'buttons dark').
 	sudo -u "$RUN_USER" env \
 		HOME="/home/$RUN_USER" \
 		PATH="/usr/local/bin:/usr/bin:/bin" \
 		WP_BASE_URL="${WP_BASE_URL:-http://localhost:8888}" \
-		PW_ARGS="${PW_ARGS[*]}" \
-		bash -lc '
+		bash -ls -- "${PW_ARGS[@]}" <<-'EOF'
 			set -e
+			echo y | bun run wp-env destroy 2>/dev/null || true
 			bun run wp-env start
 			trap "bun run wp-env stop" EXIT
-			# shellcheck disable=SC2086
-			bash tests/visual/run-in-docker.sh $PW_ARGS
-		'
+			bash tests/visual/run-in-docker.sh "$@"
+		EOF
 else
 	run_suite
 fi

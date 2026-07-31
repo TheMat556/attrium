@@ -32,6 +32,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Nothing here pushes; don't leave the job token in .git/config where
+          # a build script could reuse it.
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -63,8 +67,10 @@ jobs:
       # which freezes WordPress's update transients. Without it the live
       # "WordPress X.Y.Z is available!" nag renders on every screen and every
       # baseline breaks whenever WordPress ships a release.
+      # Destroy first so every run starts from a pristine database —
+      # baselines must not depend on accumulated wp-env state.
       - name: Start WordPress (wp-env)
-        run: bunx wp-env start
+        run: echo y | bunx wp-env destroy 2>/dev/null; bunx wp-env start
 
       - name: Run visual regression
         run: bash tests/visual/run-in-docker.sh

@@ -55,7 +55,7 @@ for (const { theme } of THEMES) {
 
 		for (const { name, path } of ADMIN_PAGES) {
 			test(`screen: ${name}`, async ({ page }) => {
-				await page.goto(path, { waitUntil: 'domcontentloaded' })
+				await page.goto(path, { waitUntil: 'networkidle' })
 				await stabilize(page)
 
 				// Grows the viewport and captures #attrium-host, the real

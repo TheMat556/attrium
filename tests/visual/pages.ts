@@ -28,14 +28,9 @@ export const ADMIN_PAGES: AdminPage[] = [
 	{ name: 'media-new', path: '/wp-admin/media-new.php' },
 	{ name: 'import', path: '/wp-admin/import.php' },
 	{ name: 'themes', path: '/wp-admin/themes.php' },
-	{ name: 'theme-editor', path: '/wp-admin/theme-editor.php' },
 	{ name: 'nav-menus', path: '/wp-admin/nav-menus.php' },
 	{ name: 'tools', path: '/wp-admin/tools.php' },
 	{ name: 'privacy', path: '/wp-admin/options-privacy.php' },
-	// `_theme-editor.scss` gates on both `theme-editor-php` AND
-	// `plugin-editor-php` via the variadic `screen()`, so the plugin editor
-	// exercises the same rules against different markup.
-	{ name: 'plugin-editor', path: '/wp-admin/plugin-editor.php' },
 	// `_profile.scss` gates on `profile-php` and `user-edit-php`. user-edit is
 	// reached with an explicit user_id; 1 is the wp-env admin.
 	{ name: 'user-edit', path: '/wp-admin/user-edit.php?user_id=1' },
@@ -59,6 +54,12 @@ export const NETWORKED_PAGES: AdminPage[] = [
 /**
  * Known coverage gaps, recorded so they are not mistaken for "verified".
  *
+ * - `scss/screens/_theme-editor.scss` — Theme Editor and Plugin Editor screens.
+ *   Excluded because both render a **file tree** that reflects the actual
+ *   filesystem. The tree differs between local (untracked files, extra
+ *   directories) and CI (clean checkout, test-results/ from Playwright), so
+ *   the page height and content are inherently non-deterministic across
+ *   environments.
  * - `scss/screens/_font-library.scss` (138 lines) — Appearance → Fonts. Gated
  *   with `module('screens')` rather than a body class, and driven entirely by
  *   remapped `--wpds-*` variables on a React app whose class names are
