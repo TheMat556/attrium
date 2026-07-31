@@ -74,7 +74,12 @@
 // ---- Mapping: which native WP element gets which variant ----
 // Adding a new WP element to a variant later is a one-line addition here,
 // with no property duplication.
-.button,
+// `:not()` matters: core's `submit_button()` emits `class="button button-primary"`,
+// so a bare `.button` here would also match primary buttons. Same specificity as
+// the `.button-primary` rule below means only *unset* properties leak — but
+// `btn-secondary` sets `border-color` and `btn-primary` does not, so primaries
+// would render with the secondary (light grey) border over the primary fill.
+.button:not(.button-primary):not(.page-title-action),
 .button-secondary {
   @include mixins.module('buttons') {
     @include btn-base;

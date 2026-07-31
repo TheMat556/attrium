@@ -6,7 +6,7 @@ from SCSS/theme edits.
 
 ## How it fits together
 
-```
+```text
 @wordpress/env  →  bun run build  →  Playwright (Docker image)  →  diff vs baseline
  disposable WP     builds theme CSS    renders + compares            fail on diff
  on :8888          (admin-theme.css)   in a fixed container
@@ -134,4 +134,3 @@ why it can't be pinned.
 **fails the build** on any diff over threshold, uploading the report and diff
 images as artifacts. Regenerate baselines locally and commit when a change is
 intentional.
-```

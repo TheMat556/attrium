@@ -8,9 +8,11 @@
 # wp-env dev server on the host's port 8888). Uses --network host so the
 # container can reach it.
 #
-# NOTE: --network host only works on Linux. On Docker Desktop (macOS/Windows)
-# set WP_BASE_URL=http://host.docker.internal:8888 and drop --network host, or
-# run the suite on a Linux host / in CI (which is Linux).
+# NOTE: --network host only works on Linux, so it is the default but not
+# hard-coded. On Docker Desktop (macOS/Windows) run:
+#   DOCKER_NETWORK= WP_BASE_URL=http://host.docker.internal:8888 bash …
+# An empty DOCKER_NETWORK omits the flag entirely (default bridge); any other
+# value is passed through as-is.
 #
 # The image tag MUST match the @playwright/test version in package.json;
 # override with PLAYWRIGHT_IMAGE if you bump the dependency. This is checked
@@ -21,6 +23,12 @@ set -euo pipefail
 
 IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.61.1-jammy}"
 BASE_URL="${WP_BASE_URL:-http://localhost:8888}"
+
+# Set to "" to drop the flag (Docker Desktop), or to another mode e.g. "bridge".
+NETWORK_ARGS=()
+if [ -n "${DOCKER_NETWORK-host}" ]; then
+	NETWORK_ARGS=(--network "${DOCKER_NETWORK-host}")
+fi
 
 # --- Guard: image tag vs installed @playwright/test ---------------------------
 # Only enforced for the default image; an explicit PLAYWRIGHT_IMAGE is trusted.
@@ -40,7 +48,7 @@ if [ -z "${PLAYWRIGHT_IMAGE:-}" ] && [ -r node_modules/@playwright/test/package.
 fi
 
 exec docker run --rm --init \
-	--network host \
+	"${NETWORK_ARGS[@]}" \
 	--ipc=host \
 	-v "$PWD":/work \
 	-w /work \
