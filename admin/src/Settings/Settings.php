@@ -99,7 +99,7 @@ class Settings {
      * full URL or a partial path (e.g. edit.php?post_type=page).
      */
     public static function is_ignored_url(): bool {
-        static $cached    = null; // null = uninitialized, false = no match
+        static $cached       = null; // null = uninitialized, false = no match
         static $cached_value = false;
 
         if ( null !== $cached ) {
@@ -108,8 +108,8 @@ class Settings {
 
         $raw = (string) get_option(self::OPTION_NAME, '');
         if ( '' === trim($raw) ) {
-            $cached        = true;
-            $cached_value  = false;
+            $cached       = true;
+            $cached_value = false;
             return false;
         }
 
@@ -125,14 +125,14 @@ class Settings {
             }
 
             if ( str_contains($current, $needle) ) {
-                $cached        = true;
-                $cached_value  = true;
+                $cached       = true;
+                $cached_value = true;
                 return true;
             }
         }
 
-        $cached        = true;
-        $cached_value  = false;
+        $cached       = true;
+        $cached_value = false;
         return false;
     }
 }

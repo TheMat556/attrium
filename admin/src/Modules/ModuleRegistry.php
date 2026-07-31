@@ -34,7 +34,7 @@ class ModuleRegistry {
 
 
     public function body_classes( string $classes ): string {
-        if (Settings::is_ignored_url() ) {
+        if ( Settings::is_ignored_url() ) {
             return $classes;
         }
 
