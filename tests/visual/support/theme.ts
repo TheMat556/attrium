@@ -134,27 +134,48 @@ const MAX_CAPTURE_HEIGHT = 8000
  */
 export async function snapshotTarget(page: Page): Promise<Locator> {
 	const host = page.locator(HOST)
+	const { width, height: vpHeight } = page.viewportSize() ?? {
+		width: 1440,
+		height: 900,
+	}
 
-	const needed = await host.evaluate((el) => el.scrollHeight)
-	const { width } = page.viewportSize() ?? { width: 1440 }
-	const height = Math.min(needed, MAX_CAPTURE_HEIGHT)
+	// Wait for the host's scrollHeight to exceed the viewport. After the
+	// Attrium shell mounts and #wpcontent is reparented, the embedded
+	// WordPress page may still be laying out (async scripts, lazy images,
+	// reflows from shadow-root style application). If we measure
+	// scrollHeight too early, it equals the viewport height and the
+	// capture is cropped. Poll until it stabilises above the viewport or
+	// we time out (a short timeout is fine — most screens settle in <1s).
+	const MAX_WAIT_MS = 5000
+	const POLL_MS = 100
+	let scrollHeight = await host.evaluate((el) => el.scrollHeight)
+	for (let waited = 0; waited < MAX_WAIT_MS && scrollHeight <= vpHeight; waited += POLL_MS) {
+		await page.waitForTimeout(POLL_MS)
+		scrollHeight = await host.evaluate((el) => el.scrollHeight)
+	}
 
-	if (height > (page.viewportSize()?.height ?? 0)) {
+	// Growing the viewport reflows the embedded WP page (media grids,
+	// responsive tables), which can reveal more content and push scrollHeight
+	// up again — so the height must be RE-MEASURED after each resize, not
+	// assumed from the first reading. Loop until it stops growing (or we hit
+	// the cap); a handful of iterations is plenty, the bound is just a
+	// guard against a page that grows on every reflow forever.
+	let needed = scrollHeight
+	let height = Math.min(needed, MAX_CAPTURE_HEIGHT)
+
+	for (let i = 0; i < 5; i++) {
+		if (height <= (page.viewportSize()?.height ?? 0)) break
+
 		await page.setViewportSize({ width, height })
-		// Growing the viewport reflows the embedded WP page (media grids,
-		// responsive tables), which can reveal more content and change the
-		// scroll height again. Settle on the final value before capturing.
-		await page.waitForFunction(
-			(h) => {
-				const el = document.getElementById('attrium-host')
-				return !!el && el.clientHeight >= Math.min(h, el.scrollHeight)
-			},
-			height,
-			{ timeout: 5_000 },
-		)
 		await page.evaluate(async () => {
 			await document.fonts.ready
 		})
+
+		const remeasured = await host.evaluate((el) => el.scrollHeight)
+		if (remeasured <= height) break
+
+		needed = remeasured
+		height = Math.min(remeasured, MAX_CAPTURE_HEIGHT)
 	}
 
 	if (needed > MAX_CAPTURE_HEIGHT) {
