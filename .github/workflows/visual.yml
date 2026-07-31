@@ -67,10 +67,9 @@ jobs:
       # which freezes WordPress's update transients. Without it the live
       # "WordPress X.Y.Z is available!" nag renders on every screen and every
       # baseline breaks whenever WordPress ships a release.
-      # Destroy first so every run starts from a pristine database —
-      # baselines must not depend on accumulated wp-env state.
+      # CI runners are ephemeral, so the environment is always pristine.
       - name: Start WordPress (wp-env)
-        run: echo y | bunx wp-env destroy 2>/dev/null; bunx wp-env start
+        run: bunx wp-env start
 
       - name: Run visual regression
         run: bash tests/visual/run-in-docker.sh
