@@ -39,10 +39,6 @@
   .theme-screenshot {
     @apply border-b border-[var(--attrium-border)];
     background: var(--attrium-secondary);
-
-    img {
-      @apply block w-full h-auto;
-    }
   }
 
   // ---- "Details & Preview" hover overlay ----
@@ -59,16 +55,20 @@
     border-top: 1px solid var(--attrium-border);
   }
 
-  // Core (themes.css:83) sets background:#fff, a border-top, and padding
-  // directly on the `.theme-name` element itself — not on a wrapper. Left
-  // alone, that paints a white band across the card footer in dark mode and
-  // makes the light-mode footer look untouched. Reset those here so the name
-  // blends into the token-styled `.theme-id-container`.
-  // The active card adds `box-shadow: inset 0 1px 1px` (themes.css:244), which
-  // paints a dark line across the top of the name — reset it here too so no
-  // faux border-top shows on the active theme.
+  // Core (themes.css:77) sets background:#fff, an 18px height, and a faux
+  // top edge (box-shadow inset) directly on the `.theme-name` element itself —
+  // not on a wrapper. Left alone, that paints a white band across the card
+  // footer in dark mode and makes the light-mode footer look untouched. Reset
+  // the surface here so the name blends into the token-styled
+  // `.theme-id-container`.
+  // `m-0` is not redundant despite the base rule's `margin: 0`: the Add New
+  // Theme card's name gets `margin-top: -18px` (themes.css:353) to overlap the
+  // dashed placeholder border. Our rule normalizes that so the card footer
+  // stays in flow with the rest. The active card adds `box-shadow: inset 0 1px
+  // 1px` (themes.css:212) which paints a dark line across the top of the name —
+  // reset it here too so no faux border-top shows on the active theme.
   .theme-name {
-    @apply text-sm font-semibold m-0 px-4 py-3 border-t-0 shadow-none;
+    @apply text-sm font-semibold m-0 px-4 py-3 shadow-none;
     height: auto;
     background: transparent;
     color: var(--attrium-foreground);
@@ -88,9 +88,10 @@
   // non-black text. Re-style the secondary action here with a selector deep
   // enough (nested under `.theme-browser .theme`) to win, using tokens so it
   // reads correctly in both modes.
-  // Core gives the actions container a faux top border via
-  // `box-shadow: inset 0 1px 0` (themes.css:278) on non-active cards — reset it
-  // together with any border so the row blends into the footer.
+  // Core gives the actions container a real `border-left: 1px`
+  // (themes.css:96) and a faux top edge via `box-shadow: inset 0 1px 0`
+  // (themes.css:240) on non-active cards — reset both so the row blends into
+  // the footer.
   .theme-actions {
     @apply flex items-center gap-2 border-0 shadow-none;
     background: transparent;
@@ -104,12 +105,13 @@
 
     // Core draws the apparent "border" on hover/focus as a box-shadow ring
     // (buttons.css:174 `box-shadow: 0 0 0 1.5px`), not a real border — reset it
-    // alongside the border so no ring appears.
+    // alongside the border so no ring appears. `opacity-100` cancels the shared
+    // buttons module's hover opacity-90 dim so the accent fill isn't translucent.
     &:hover,
     &:focus {
       background: var(--attrium-accent);
       color: var(--attrium-secondary-foreground);
-      @apply border-transparent shadow-none;
+      @apply border-transparent shadow-none opacity-100;
     }
   }
 

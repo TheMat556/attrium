@@ -2,28 +2,42 @@
 @use '../ui';
 
 // Plugin installer (plugin-install.php → body.plugin-install-php): reskins the
-// `.wp-filter` tab/search toolbar and the `.plugin-card` result cards. Core
-// (wp-admin/css/{common,plugin-install}.css) hardcodes #fff surfaces, #c3c4c7 /
-// #dcdcde borders, drop shadows, and a #f6f7f7 card footer — all read as bright
-// bands in dark mode. Everything below is token-driven (--attrium-* tokens are
-// redefined under #attrium-host.dark in _tokens.css), so light/dark parity is
-// automatic with no separate dark-mode block. Distinct from _plugins.scss,
-// which targets the installed-plugins list (body.plugins-php).
+// `.wp-filter` tab/search toolbar, the `.plugin-card` result cards, and the
+// Featured tab's `.popular-tags` tag cloud as pill badges. Core
+// (wp-admin/css/common.css + list-tables.css) hardcodes #fff surfaces and
+// #c3c4c7 / #dcdcde borders on the cards and a #f6f7f7 card footer — all read
+// as bright bands in dark mode. Everything below is token-driven (--attrium-*
+// tokens are redefined under #attrium-host.dark in _tokens.css), so light/dark
+// parity is automatic with no separate dark-mode block. Distinct from
+// _plugins.scss, which targets the installed-plugins list (body.plugins-php).
 
 // ---- Filter toolbar (Featured / Popular / Recommended / Favorites + search) ----
 // Same shared markup as the theme installer's toolbar (see _theme-install.scss),
 // so both pull the identical tab bar from ui.filter-toolbar().
 @include ui.filter-toolbar('plugin-install-php');
 
-// ---- Search field + Keyword/Author/Tag selector ----
+// ---- Search field (the selector is styled by the shared select module) ----
+// `#typeselector` is deliberately excluded here: the forms module already skins
+// every `select` with ui.select-base (dropdown chevron + `padding-right: 2rem`)
+// + ui.select-outline. Styling it in this group would apply `.wp-filter
+// #typeselector` > `select`, and the `.px-3` (specificity (0,1,1)) would
+// override the module's right padding — letting the chevron sit under the text.
 .wp-filter {
   .wp-filter-search,
-  input[type="search"],
-  #typeselector {
+  input[type="search"] {
     @include mixins.screen('plugin-install-php') {
       @include ui.field-outline;
       @apply px-3;
     }
+  }
+}
+
+// ---- Hide the redundant top tablenav (Filter + "X items" + pagination) ----
+// The type tabs + search live in `.wp-filter`; the mirrored bulk/pagination bar
+// at `.tablenav.top` is duplicate chrome above the result grid, so remove it.
+.tablenav.top {
+  @include mixins.screen('plugin-install-php') {
+    display: none;
   }
 }
 
@@ -38,12 +52,17 @@
 }
 
 // ---- Results grid container ----
-// The cards float inside `#the-list` (and its `.wp-list-table` wrapper on some
-// tabs). Core leaves it on the page's default light background, which reads as
-// a bright band behind/between the cards in dark mode. Set it to the app's base
-// surface so the gaps around the cards match the theme in both modes.
-#the-list,
-.wp-list-table.plugin-install {
+// The cards float inside `#the-list`, which sits inside a layout-only
+// `div.widefat.plugin-install` wrapper. Core only sets flex layout here
+// (list-tables.css `.plugin-install-php #the-list`) — no border, no background —
+// but our own tables module styles the generic `.widefat` class with a surface
+// border + `--attrium-border` background (it expects a real `<table>`), which
+// paints the plugin-install wrapper as a boxed strip. Both wrapper and list must
+// stay invisible so the page surface shows through the card gaps in both modes:
+// kill any border/background regardless of which stylesheet (tables module,
+// core, other plugins) targets the generic classes.
+.wp-list-table.widefat.plugin-install,
+#the-list {
   @include mixins.screen('plugin-install-php') {
     background: transparent;
     border: none;
@@ -57,22 +76,17 @@
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     overflow: hidden;
-    @apply shadow-none transition-colors duration-150;
+    @apply transition-colors duration-150;
 
     &:hover {
       border-color: var(--attrium-ring);
-      @apply shadow-none;
     }
   }
 }
 
-// Card top section carries the same #fff bg as the card in core — align it to
-// the token surface so the top/bottom split stays seamless.
-.plugin-card .plugin-card-top {
-  @include mixins.screen('plugin-install-php') {
-    background: var(--attrium-primary-foreground);
-  }
-}
+// Card top section carries the same #fff bg as the card in core — the card's
+// own token background shows through it (transparent), so there is nothing to
+// override here.
 
 // Plugin title link — core paints it link-blue; use the plain foreground token
 // so it reads as a heading in both modes (base.scss already whitens h3 text in
@@ -113,9 +127,7 @@
 
     &:hover,
     &:focus {
-      background: var(--attrium-primary);
-      color: var(--attrium-primary-foreground);
-      @apply border-transparent opacity-90;
+      @apply opacity-90;
     }
   }
 }
@@ -130,5 +142,60 @@
     background: var(--attrium-secondary);
     border-top: 1px solid var(--attrium-border);
     color: var(--attrium-foreground);
+  }
+}
+
+// ---- Popular tags tag-cloud (Featured tab) ----
+// `install_dashboard()` renders the "Popular tags" cloud via
+// `wp_generate_tag_cloud()`, which writes an INLINE `font-size: Npt` on every
+// `.tag-cloud-link` (proportional to the tag count) and core paints it as
+// justified running text (`p.popular-tags { line-height:2em; text-align:justify }`).
+// Core ALSO hardcodes the whole cloud on a #fff surface — `edit.css` lists
+// `.popular-tags, p.popular-tags` among the white-boxed blocks — which reads as
+// a bright band in dark mode. Normalise the cloud into uniform shadcn-style
+// secondary pills: a filled --attrium-secondary surface (so the pill shape reads
+// at rest — a fully transparent bg would read as faint text until hover), with a
+// --attrium-border edge and the token ring-border on hover/focus. The inline
+// style beats any stylesheet rule, so the font-size reset needs `!important`;
+// every other rule wins on specificity (0,2,0 > core's 0,1,0 / 0,1,1).
+// Light/dark parity comes from the (own-token) --attrium-secondary /
+// --attrium-secondary-foreground / --attrium-border / --attrium-ring pair, so
+// no separate dark block is needed.
+.plugins-popular-tags-wrapper .popular-tags {
+  @include mixins.screen('plugin-install-php') {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+.plugins-popular-tags-wrapper .popular-tags .tag-cloud-link {
+  @include mixins.screen('plugin-install-php') {
+    display: inline-flex;
+    align-items: center;
+    height: 1.5rem;
+    padding: 0 0.625rem;
+    border: 1px solid var(--attrium-border);
+    border-radius: 9999px;
+    font-size: 0.75rem !important;
+    font-weight: 600;
+    line-height: 1.5rem;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--attrium-secondary-foreground);
+    background: var(--attrium-secondary);
+    @apply transition-colors duration-150;
+
+    // The tag cloud links are real links, so core's `a:hover` would underline
+    // them and core's `a:focus` paints a 2px #2271b1 box-shadow ring. Replace
+    // both with a token border + text emphasis, consistent with the rest of the
+    // theme (which suppresses the blue ring in favour of colour changes).
+    &:hover,
+    &:focus {
+      border-color: var(--attrium-ring);
+      @apply shadow-none outline-none;
+    }
   }
 }

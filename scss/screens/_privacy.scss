@@ -6,7 +6,10 @@
 
 .privacy-settings-header {
   @include mixins.screen('options-privacy-php') {
-    @apply rounded-[var(--attrium-radius-md)] border-0;
+    // Core paints this #fff with a 1px bottom border (edit.css:759). Drop both
+    // so the card surface shows through. No radius here: the header is
+    // transparent and borderless, so corner rounding is invisible.
+    @apply border-0;
     background: transparent;
   }
 }
@@ -17,6 +20,9 @@
   }
 }
 
+// Dark mode is covered by _base.scss's `#attrium-host.dark h1 { text-white }`
+// (an ID wins here), but the h1 still needs the token color in light mode,
+// where core leaves it #3c434a — keep for light parity.
 .privacy-settings-title-section h1 {
   @include mixins.screen('options-privacy-php') {
     color: var(--attrium-foreground);

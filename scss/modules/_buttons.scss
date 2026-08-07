@@ -19,22 +19,37 @@
   &:not(:disabled):active {
     transform: translateY(1px);
   }
+
+  &:focus {
+    // Core paints a blue focus ring (box-shadow) on every .button /
+    // .button-primary via --wp-admin-theme-color. Attrium buttons have no
+    // focus ring — remove it.
+    box-shadow: none;
+    outline: none;
+  }
 }
 
 // ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
 @mixin btn-primary {
-  @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)];
+  @apply text-[var(--attrium-primary-button-foreground)]
+         border-[var(--attrium-border)];
+  background-color: var(--attrium-primary-button);
 
   &:hover,
   &:focus {
-    @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
-           border-transparent opacity-90;
+    // Hover lightens the fill (dedicated -hover token, clearly visible in both
+    // modes) instead of dimming via opacity — no translucency — and keeps the
+    // border (it never vanishes).
+    @apply text-[var(--attrium-primary-button-foreground)]
+           border-[var(--attrium-border)];
+    background-color: var(--attrium-primary-button-hover);
   }
 
   &:focus,
   &:active {
     @apply inline-flex items-center justify-center
-           bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
+           bg-[var(--attrium-primary-button)]
+           text-[var(--attrium-primary-button-foreground)]
            rounded-[var(--attrium-radius-md)] text-sm;
   }
 }
@@ -45,8 +60,9 @@
 
   &:hover,
   &:focus {
-    @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
-           border-transparent opacity-90;
+    background-color: color-mix(in oklab, var(--attrium-secondary) 90%, white);
+    @apply text-[var(--attrium-secondary-foreground)]
+           border-[var(--attrium-border)];
   }
 
   &:focus,
@@ -79,16 +95,19 @@
 // the `.button-primary` rule below means only *unset* properties leak — but
 // `btn-secondary` sets `border-color` and `btn-primary` does not, so primaries
 // would render with the secondary (light grey) border over the primary fill.
+// `.page-title-action` (the "Add New" header link on list screens) is demoted to
+// the secondary variant on purpose: every other control in that toolbar is a
+// secondary button, so a dark primary "Add New" reads as misaligned next to them.
 .button:not(.button-primary):not(.page-title-action),
-.button-secondary {
+.button-secondary,
+.page-title-action {
   @include mixins.module('buttons') {
     @include btn-base;
     @include btn-secondary;
   }
 }
 
-.button-primary,
-.page-title-action {
+.button-primary {
   @include mixins.module('buttons') {
     @include btn-base;
     @include btn-primary;
@@ -111,4 +130,31 @@
   @include mixins.module('buttons') {
     @include btn-size-lg;
   }
+}
+
+// Media-library grid "Menu" toggle (`.button.button-link.media-frame-menu-toggle`).
+// The buttons module matches it via `.button:not(.button-primary)...` (the rule
+// above, specificity (0,4,1)) and would force `display:inline-flex` at every
+// width — which overrides core's desktop hiding and un-hides a toggle core only
+// intends to show at ≤900px. Re-assert `display:none` with equal specificity,
+// later in the cascade, so it stays hidden on desktop. On mobile this still
+// loses to core's `@media (max-width:900px)` rule (`.wp-core-ui .media-frame:
+// not(.hide-menu) .button.media-frame-menu-toggle`, (0,5,0) > ours), so the
+// toggle is preserved where core actually uses it.
+body.attrium-mod-buttons.wp-core-ui .button.media-frame-menu-toggle {
+  display: none;
+}
+
+// Buttons WordPress has stowed with its `.hidden` utility (`common.css`:
+// `.hidden, … { display:none }`) must stay hidden. `btn-base` forces
+// `display:inline-flex`, whose higher specificity re-exposes them — e.g. the
+// media grid's `.button.load-more-jump.hidden` renders as a full visible button
+// on an empty library. `!important` beats the module rule and any inline style,
+// and we only match while the `.hidden` class is present, so removing it (the
+// way WP shows a control again) restores the button unchanged.
+body.attrium-mod-buttons .button.hidden,
+body.attrium-mod-buttons .button-primary.hidden,
+body.attrium-mod-buttons .button-secondary.hidden,
+body.attrium-mod-buttons .button-link.hidden {
+  display: none !important;
 }

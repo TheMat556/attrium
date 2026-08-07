@@ -28,38 +28,33 @@ export const ADMIN_PAGES: AdminPage[] = [
 	{ name: 'media-new', path: '/wp-admin/media-new.php' },
 	{ name: 'import', path: '/wp-admin/import.php' },
 	{ name: 'themes', path: '/wp-admin/themes.php' },
+	// Theme editor edits the active theme's files (default: style.css). The
+	// tree reflects the fixed default theme in the disposable wp-env install,
+	// so it is deterministic here even though the host dev tree is not.
+	{ name: 'theme-editor', path: '/wp-admin/theme-editor.php' },
 	{ name: 'nav-menus', path: '/wp-admin/nav-menus.php' },
 	{ name: 'tools', path: '/wp-admin/tools.php' },
 	{ name: 'privacy', path: '/wp-admin/options-privacy.php' },
 	// `_profile.scss` gates on `profile-php` and `user-edit-php`. user-edit is
 	// reached with an explicit user_id; 1 is the wp-env admin.
 	{ name: 'user-edit', path: '/wp-admin/user-edit.php?user_id=1' },
-]
-
-/**
- * Screens that may be flaky in CI due to network dependency (wp.org API calls).
- * Excluded from the automated audit loop but listed here for manual review.
- *
- * These render remote search results, so their content is not ours to pin —
- * unlike the update banners, which `mu-plugins/attrium-visual-determinism.php`
- * freezes. Covering them would mean stubbing the wp.org HTTP responses via a
- * `pre_http_request` filter in that same mu-plugin; worth doing, but it is a
- * larger fixture job than the rest of this suite.
- */
-export const NETWORKED_PAGES: AdminPage[] = [
+	// plugin-install renders live wp.org results; the determinism mu-plugin now
+	// stubs `plugins_api` with a fixed catalog, so it is offline and stable.
 	{ name: 'plugin-install', path: '/wp-admin/plugin-install.php' },
+	// Same for theme-install: `themes_api` is stubbed with a fixed catalog.
 	{ name: 'theme-install', path: '/wp-admin/theme-install.php' },
 ]
 
 /**
  * Known coverage gaps, recorded so they are not mistaken for "verified".
  *
- * - `scss/screens/_theme-editor.scss` — Theme Editor and Plugin Editor screens.
- *   Excluded because both render a **file tree** that reflects the actual
- *   filesystem. The tree differs between local (untracked files, extra
- *   directories) and CI (clean checkout, test-results/ from Playwright), so
- *   the page height and content are inherently non-deterministic across
- *   environments.
+ * - `scss/screens/_theme-editor.scss` — the Plugin Editor screen
+ *   (plugin-editor.php) shares `_theme-editor.scss`'s markup but points at the
+ *   plugin's own file tree; the theme editor itself is now a fixture
+ *   (`theme-editor`), so the shared rules are covered under the
+ *   `theme-editor-php` body class. `plugin-editor-php` stays unverified because
+ *   its tree reflects the attrium plugin's source (build output, node_modules),
+ *   which is not deterministic across environments.
  * - `scss/screens/_font-library.scss` (138 lines) — Appearance → Fonts. Gated
  *   with `module('screens')` rather than a body class, and driven entirely by
  *   remapped `--wpds-*` variables on a React app whose class names are

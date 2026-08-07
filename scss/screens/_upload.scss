@@ -65,31 +65,3 @@
     @include ui.field-outline;
   }
 }
-
-.wp-filter .filter-items .button,
-.wp-filter .search-form .button {
-  @include mixins.screen('upload-php') {
-    @apply rounded-[var(--attrium-radius-md)] text-sm h-9
-           transition-colors duration-150 border
-           focus-visible:outline-none focus-visible:ring-2
-           focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
-
-    background: var(--attrium-secondary);
-    color: var(--attrium-secondary-foreground);
-    border-color: var(--attrium-border);
-
-    &:hover {
-      background: var(--attrium-accent);
-      color: var(--attrium-accent-foreground);
-      border-color: transparent;
-    }
-  }
-}
-
-.wp-filter .search-form {
-  @include mixins.screen('upload-php') {
-    .search-box {
-      @apply flex items-center gap-2;
-    }
-  }
-}

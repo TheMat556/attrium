@@ -6,22 +6,25 @@
 // applies. The markup (#templateside file tree + heading) is identical on both,
 // so each rule is gated under both screen classes via the variadic screen()
 // mixin (one call, comma-joined selectors — see scss/_mixins.scss).
-// Minimal reskin: round the tree scroll box, shrink the oversized default admin
-// heading, and drop the stray margin core leaves around the heading. The
-// #templateside id anchor keeps these ahead of the enabled notices module,
-// which otherwise turns the current-file `span.notice` into a padded card.
+// Minimal reskin: round the tree scroll box and the editor pane's facing edges,
+// and slim down the oversized default admin heading (core zeroes its margin at
+// common.css:3300; we override the padding). The #templateside id anchor keeps
+// these ahead of the enabled notices module, which otherwise turns the
+// current-file `span.notice` into a padded card.
 
 // #templateside floats right, so its outer edge is the right side — round only
 // the right corners to mirror the editor pane's left-only rounding.
 #templateside > ul {
   @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
-    @apply rounded-r-[var(--attrium-radius-md)] rounded-l-none overflow-hidden;
+    @apply rounded-r-[var(--attrium-radius-md)];
   }
 }
 
 #templateside > h2 {
   @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
-    @apply text-sm font-semibold m-0 pt-0 pb-3;
+    // Core already zeroes the margin (common.css:3300 `#templateside > h2`);
+    // only the padding overrides are ours here.
+    @apply text-sm font-semibold pt-0 pb-3;
   }
 }
 
@@ -36,12 +39,14 @@
 }
 
 // Editor pane: core gives `#template .CodeMirror` (and the textarea fallback) a
-// square `1px solid #dcdcde` border. overflow-hidden clips CodeMirror's inner
-// scroll layers to the rounded frame.
+// square `1px solid #dcdcde` border. Round only the left corners to mirror the
+// tree's right-only rounding. (Core already clips content to the rounded box —
+// overflow:auto on #templateside > ul, hidden inside CodeMirror — so no
+// overflow override is needed.)
 #template .CodeMirror,
 #template textarea {
   @include mixins.screen('theme-editor-php', 'plugin-editor-php') {
-    @apply rounded-l-[var(--attrium-radius-md)] rounded-r-none overflow-hidden;
+    @apply rounded-l-[var(--attrium-radius-md)];
   }
 }
 

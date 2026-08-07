@@ -153,6 +153,13 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 		await page.waitForTimeout(POLL_MS)
 		scrollHeight = await host.evaluate((el) => el.scrollHeight)
 	}
+	if (scrollHeight <= vpHeight) {
+		console.warn(
+			`[visual] scrollHeight (${scrollHeight}px) did not exceed viewport ` +
+				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
+				`This usually means the page did not fully layout before snapshotting.`,
+		)
+	}
 
 	// Growing the viewport reflows the embedded WP page (media grids,
 	// responsive tables), which can reveal more content and push scrollHeight

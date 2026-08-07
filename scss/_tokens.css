@@ -17,6 +17,15 @@
 :host {
   --attrium-primary: oklch(0.205 0 0);
   --attrium-primary-foreground: oklch(0.985 0 0);
+
+  /* Primary button fill — a solid, emphasized action surface distinct from the
+     page card behind it. Mode-specific: in light it's a near-black button on a
+     near-white card; in dark it's a mid-gray (clear of the oklch(0.235) card,
+     not the near-white token) that reads as a button without being harsh.
+     `-hover` lightens each mode's fill so the interaction is obvious. */
+  --attrium-primary-button: oklch(0.26 0 0);
+  --attrium-primary-button-hover: oklch(0.36 0 0);
+  --attrium-primary-button-foreground: oklch(0.985 0 0);
   --attrium-secondary: oklch(0.925 0 0);
   --attrium-secondary-foreground: oklch(0.205 0 0);
   --attrium-foreground: oklch(0.145 0 0);
@@ -52,6 +61,10 @@
 :host(.dark) {
   --attrium-primary: oklch(0.922 0 0);
   --attrium-primary-foreground: oklch(0.205 0 0);
+
+  --attrium-primary-button: oklch(0.42 0 0);
+  --attrium-primary-button-hover: oklch(0.52 0 0);
+  --attrium-primary-button-foreground: oklch(0.985 0 0);
   --attrium-secondary: oklch(0.269 0 0);
   --attrium-secondary-foreground: oklch(0.985 0 0);
   --attrium-foreground: oklch(0.985 0 0);

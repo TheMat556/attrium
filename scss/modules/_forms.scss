@@ -2,25 +2,43 @@
 
 
 @mixin select-base {
-  @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-         text-sm font-medium border transition-colors duration-150
-         focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2
-         focus-visible:ring-[var(--attrium-ring)] appearance-none h-9 min-h-9;
+  @apply rounded-[var(--attrium-radius-md)]
+         text-sm font-medium transition-colors duration-150
+         appearance-none h-9 min-h-9;
 
-  -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23232323' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1rem;
   padding-right: 2rem;
-  cursor: pointer;
 }
 
 @mixin select-outline {
   @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)];
 
+  &:hover,
+  &:focus {
+    // Core tints select text to a dark blue on hover/focus
+    // (forms.min.css `select:hover{color:#2271b1}`), unreadable against the
+    // dark-mode accent background. Re-pin the token foreground. (Our
+    // `select:hover`/`:focus` are (0,2,2) > core's (0,2,1), so these win.)
+    background-color: var(--attrium-accent);
+    color: var(--attrium-foreground);
+  }
+
   &:hover {
-    @apply bg-[var(--attrium-accent)];
+    // The token border is near-invisible over the accent fill (and 10%-white
+    // in dark), so bump it to the ring token to stay clearly visible — same
+    // hover treatment as `label.bulk-select-button` in _nav-menus.scss.
+    border-color: var(--attrium-ring);
+  }
+
+  &:focus {
+    // Core paints a blue border + box-shadow ring on `select:focus`
+    // (border-color:#2271b1, box-shadow:0 0 0 1px #2271b1). Attrium selects
+    // keep the token border and have no focus ring — remove both.
+    border-color: var(--attrium-border);
+    box-shadow: none;
+    outline: none;
   }
 }
 
@@ -28,8 +46,8 @@
 // (inputs aren't clickable surfaces like buttons; hover shouldn't change them).
 
 @mixin input-base {
-  @apply rounded-[var(--attrium-radius-md)] text-sm font-medium border
-         transition-colors duration-150 px-3 py-1.5
+  @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
+         px-3 py-1.5
          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2
          focus-visible:ring-[var(--attrium-ring)];
 }
@@ -68,14 +86,14 @@ select {
 input[type="file"] {
   @include mixins.module('forms') {
     @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
-           bg-transparent text-[var(--attrium-foreground)] transition-colors duration-150
+           bg-transparent text-[var(--attrium-foreground)]
            py-1.5 px-1;
 
     &::file-selector-button {
-      @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-             text-sm font-medium border border-transparent
+      @apply rounded-[var(--attrium-radius-md)]
+             border border-transparent
              bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
-             transition-colors duration-150 h-9 min-h-9 px-3 cursor-pointer;
+             h-9 min-h-9 px-3 cursor-pointer;
       margin-inline-end: 0.75rem;
     }
   }

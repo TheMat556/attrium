@@ -15,6 +15,7 @@ class ModuleRegistry {
             'tables'       => true,
             'tabs'         => true,
             'forms'        => true,
+            'checkbox'     => true,
             'notices'      => true,
             'notification' => true,
             'postbox'      => false,

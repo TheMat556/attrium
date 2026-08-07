@@ -1,11 +1,7 @@
 @use '../mixins';
 
 @mixin table-reset {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
   box-shadow: none;
-
 
   thead,
   tbody,
@@ -13,20 +9,14 @@
   tr,
   th,
   td {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
     background: none;
     box-shadow: none;
   }
 }
 
 @mixin table-base {
-  @apply text-sm w-full;
+  @apply w-full;
 
-  border-collapse: separate;
-  border-spacing: 0;
   border: 1px solid var(--attrium-border);
   border-radius: var(--attrium-radius-md);
   overflow: hidden;
@@ -73,15 +63,18 @@
     }
 
     tbody {
+      // Row-level hover: the whole row lights up together (the row is the
+      // interactive unit), rather than each cell lighting up independently.
+      tr:hover td,
+      tr:hover th {
+        background: var(--attrium-accent);
+      }
+
       td {
         @include td-base;
 
         color: var(--attrium-foreground);
         background: var(--attrium-primary-foreground);
-
-        &:hover {
-          background: var(--attrium-accent);
-        }
       }
 
       th {
@@ -102,18 +95,10 @@
 
     .check-column {
       @apply w-10 px-2 text-center;
-
-      input[type="checkbox"] {
-        @apply rounded border-[var(--attrium-border)]
-               text-[var(--attrium-primary)]
-               focus:ring-[var(--attrium-ring)]
-               focus:ring-2 focus:ring-offset-2;
-      }
     }
 
     .row-title {
-      @apply font-medium text-[var(--attrium-foreground)]
-             no-underline;
+      @apply font-medium text-[var(--attrium-foreground)];
 
       &:hover {
         @apply underline;
@@ -127,7 +112,7 @@
       opacity: 0.5;
 
       a {
-        @apply text-[var(--attrium-foreground)] no-underline;
+        @apply text-[var(--attrium-foreground)];
 
         &:hover {
           @apply underline;
@@ -200,7 +185,7 @@
     th.sortable {
       a {
         @apply text-[var(--attrium-primary)]
-               no-underline flex items-center;
+               flex items-center;
       }
     }
 
@@ -249,6 +234,13 @@
       background-color: var(--attrium-primary-foreground);
     }
 
+    // Plugins repaint every cell (above) after the shared row-hover rule, so
+    // repeat the row-hover here to keep whole-row highlighting working here.
+    tbody tr:hover th,
+    tbody tr:hover td {
+      background-color: var(--attrium-accent);
+    }
+
     // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
     // restore the secondary header fill on the actual header cells.
     thead th,
@@ -276,7 +268,6 @@
 p.search-box {
   @include mixins.module('tables') {
     margin-top: 0.5rem;
-    float: right;
 
     input[type="search"] {
       @apply h-8 text-xs w-32;
@@ -291,8 +282,6 @@ p.search-box {
       width: 100%;
       margin-bottom: 0.5rem;
       margin-top: 0;
-      flex-wrap: wrap;
-      display: flex;
 
       input[type="search"] {
         @apply w-auto flex-1;
@@ -308,7 +297,6 @@ p.search-box {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    clear: both;
     height: auto;
     margin: 0 0 1rem;
 

@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from '@playwright/test'
-import { applyTheme, stabilize, THEMES } from './support/theme'
+import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
  * Button interaction-state regression.
@@ -31,6 +31,8 @@ for (const { theme } of THEMES) {
 		})
 
 		test('normal', async () => {
+			// No per-call options: the tight maxDiffPixels for element captures
+			// comes from the components config (playwright.components.config.ts).
 			await expect(button).toHaveScreenshot(
 				`button-primary-normal-${theme}.png`,
 			)

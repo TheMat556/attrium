@@ -1,0 +1,97 @@
+@use '../mixins';
+
+// Checkbox + radio component.
+// Core paints a checkbox with a `#8c8f94` border on a hard-coded `#fff` face
+// and a `#3582c4` (blue) check (forms.css:112), plus a 2px blue focus ring on
+// :focus (forms.css:96 — `border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1`).
+// On a dark surface the white face reads as a bright white pixel and the blue
+// ring clashes with Attrium's "no blue" treatment elsewhere. Re-express the face
+// and check through tokens for light/dark parity, and swap the focus ring for a
+// shadcn-style 2px ring in --attrium-ring (no blue, no outline).
+//
+// `#attrium-host.dark` redefines every --attrium-* token in _tokens.css, so no
+// separate dark block is needed here.
+
+// Base face: token border + token surface (the page-background card colour), flat
+// with no core inset shadow. Height/width intentionally left to core (1rem) so
+// column layouts (e.g. the check-column in tables) are stable.
+input[type='checkbox'],
+input[type='radio'] {
+  @include mixins.module('checkbox') {
+    position: relative;
+    border: 1px solid var(--attrium-border);
+    background: var(--attrium-background);
+    box-shadow: none;
+    color: var(--attrium-foreground);
+  }
+}
+
+// Square checkbox / round radio: shadcn checkbox is rounded-[6px]; radio stays a
+// circle.
+input[type='checkbox'] {
+  @include mixins.module('checkbox') {
+    border-radius: 0.375rem;
+  }
+}
+
+input[type='radio'] {
+  @include mixins.module('checkbox') {
+    border-radius: 9999px;
+  }
+}
+
+// Checked checkbox: filled primary face, and the check is drawn by the
+// ::before layer MASKED with a shadcn/lucide-style check silhouette and filled
+// with the primary-foreground token. Using the lucide "Check" stroke path makes
+// the mark visually distinct from core's filled dashicon "Yes" check. The mask
+// keeps both colours theme-driven — `--attrium-primary` inverts between light
+// and dark (dark primary is near-white), so a check hard-coded in one SVG colour
+// (white, core's blue) would vanish on one side. Mask-image ignores the SVG's
+// fill and keeps only its alpha silhouette, letting background-color paint it.
+input[type='checkbox']:checked {
+  @include mixins.module('checkbox') {
+    background-color: var(--attrium-primary);
+    border-color: var(--attrium-primary);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      height: auto;
+      width: auto;
+      background-color: var(--attrium-primary-foreground);
+      -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='3.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M20%206%209%2017l-5-5'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='3.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M20%206%209%2017l-5-5'/%3E%3C/svg%3E");
+      -webkit-mask-size: 0.75rem;
+      mask-size: 0.75rem;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+  }
+}
+
+// Checked radio keeps core's dot; only re-colour it (core hard-codes #3582c4
+// blue) and accent the border so it reads on the token surface.
+input[type='radio']:checked {
+  @include mixins.module('checkbox') {
+    border-color: var(--attrium-primary);
+
+    &::before {
+      background-color: var(--attrium-primary);
+    }
+  }
+}
+
+// Focus: replace the blue ring + outline with a token ring (shadcn-style).
+// Use :focus-visible so mouse users don't see a ring on every click.
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
+  @include mixins.module('checkbox') {
+    outline: none;
+    border-color: var(--attrium-ring);
+    box-shadow: 0 0 0 2px var(--attrium-ring);
+  }
+}

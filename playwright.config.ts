@@ -1,8 +1,16 @@
-import { defineConfig, devices } from '@playwright/test'
-import { AUTH_FILE } from './tests/visual/support/theme'
+import { defineConfig } from '@playwright/test'
+import {
+	chromiumProject,
+	SHARED_USE,
+	setupProject,
+} from './tests/visual/support/pw-base'
 
 /**
- * Visual regression config for the Attrium admin theme.
+ * Visual regression config for the Attrium admin theme — FULL-PAGE screen
+ * captures (screens.spec.ts). Small-element/component captures (hover/active
+ * states that never show in a full-page shot) live in
+ * playwright.components.config.ts, which has a tighter pixel budget; both
+ * configs must run for the full suite (run-in-docker.sh does this).
  *
  * Screenshots are pixel-sensitive to font antialiasing, which differs between
  * machines. Baselines are COMMITTED to git, so they must always be rendered in
@@ -14,12 +22,6 @@ import { AUTH_FILE } from './tests/visual/support/theme'
  * (`wp-env start`), which serves the dev instance on http://localhost:8888
  * with a deterministic fresh install (admin / password, default content).
  */
-/**
- * Capture viewport. Declared once and applied in two places (see `projects`) —
- * changing it invalidates every committed baseline.
- */
-const VIEWPORT = { width: 1440, height: 900 }
-
 export default defineConfig({
 	testDir: './tests/visual',
 	// Fail CI if a stray test.only is committed.
@@ -27,7 +29,9 @@ export default defineConfig({
 	// Screenshots must be deterministic — no retries masking flakiness.
 	retries: 0,
 	// Serial: a single WP instance with shared state; parallel navigation across
-	// admin screens can race on transient admin notices.
+	// admin screens can race on transient admin notices (and the determinism
+	// fixtures — e.g. the nav-menu creation in the mu-plugin — are not
+	// race-safe), so workers must stay at 1.
 	workers: 1,
 	reporter: [['html', { open: 'never' }], ['list']],
 
@@ -47,7 +51,9 @@ export default defineConfig({
 			// tall full-screen captures 0.01 meant ~13k freely-changing pixels —
 			// the border mutation above produced 15,360 and only barely tripped
 			// it. A flat count keeps sensitivity constant across screens of very
-			// different heights.
+			// different heights. (Element-scoped captures use a much smaller
+			// budget — see playwright.components.config.ts, where 200 would be
+			// ~4.6% of a 118x37 button.)
 			maxDiffPixels: 200,
 			animations: 'disabled',
 			// Hide the text caret and stop scroll position from leaking in.
@@ -56,33 +62,15 @@ export default defineConfig({
 		},
 	},
 
-	use: {
-		baseURL: process.env.WP_BASE_URL ?? 'http://localhost:8888',
-		viewport: VIEWPORT,
-		// wp-env uses a self-signed setup in some configs; harmless for http.
-		ignoreHTTPSErrors: true,
-		screenshot: 'only-on-failure',
-		// NOT 'on-first-retry': retries are 0, so that setting could never
-		// produce a trace. Retain on failure so a CI diff is debuggable.
-		trace: 'retain-on-failure',
-	},
+	use: SHARED_USE,
 
 	projects: [
-		// Logs in once and saves the session; every spec reuses it.
-		{ name: 'setup', testMatch: /auth\.setup\.ts/ },
-		{
-			name: 'chromium',
-			use: {
-				...devices['Desktop Chrome'],
-				// Must come AFTER the spread and match `use.viewport` above:
-				// devices['Desktop Chrome'] carries its own 1280x720 viewport,
-				// which would otherwise silently override the top-level value
-				// and invalidate every committed baseline. Load-bearing, not
-				// redundant.
-				viewport: VIEWPORT,
-				storageState: AUTH_FILE,
-			},
-			dependencies: ['setup'],
-		},
+		setupProject(),
+		chromiumProject({
+			// Component specs (tests/visual/components/) are small element
+			// captures with their own tighter-budget config; ignore them here so
+			// the 200-pixel budget can't silently absorb a real component change.
+			testIgnore: /components[/\\].*\.spec\.ts/,
+		}),
 	],
 })

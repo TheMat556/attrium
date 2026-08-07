@@ -12,7 +12,8 @@
   }
 
   // Some profile rows use a bare <th> (no scope attribute) that the shared
-  // th[scope="row"] rule in _base.scss does not catch.
+  // th[scope="row"] rule in _base.scss does not catch (12 of the 19 profile
+  // <th> are bare; the 7 scoped ones get white from _base.scss).
   .form-table th {
     @include mixins.screen('profile-php', 'user-edit-php') {
       @apply text-white;

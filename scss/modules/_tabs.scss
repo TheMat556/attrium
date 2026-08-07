@@ -11,10 +11,6 @@
 
       color: transparent;
 
-      &::after {
-        @apply hidden;
-      }
-
       a {
         @include ui.pill-segment;
 

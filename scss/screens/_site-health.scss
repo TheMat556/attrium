@@ -6,7 +6,10 @@
 
 .health-check-header {
   @include mixins.screen('site-health-php') {
-    @apply rounded-[var(--attrium-radius-md)] border-0;
+    // Core paints this #fff with a 1px bottom border (edit.css:759). Drop both
+    // so the card surface shows through. No radius here: the header is
+    // transparent and borderless, so corner rounding is invisible.
+    @apply border-0;
 
     background: transparent;
   }
@@ -29,10 +32,10 @@
 .health-check-tabs-wrapper {
   @include mixins.screen('site-health-php') {
     @include ui.pill-track;
+    @apply gap-[3px];
 
     .health-check-tab {
       @include ui.pill-segment;
-      @apply mx-1;
 
       &.active {
         @include ui.pill-segment-active;

@@ -28,14 +28,15 @@
   @apply inline-flex items-center justify-center
          rounded-md px-3 py-1.5 text-sm font-medium
          no-underline transition-all border-0 bg-transparent
-         text-[var(--attrium-secondary-foreground)]
-         focus-visible:outline-none
-         focus-visible:ring-2 focus-visible:ring-[var(--attrium-ring)]
-         focus-visible:ring-offset-2;
+         text-[var(--attrium-muted-foreground)];
 
-  &:hover,
-  &:focus {
+  &:hover {
     @apply bg-transparent text-[var(--attrium-foreground)];
+  }
+
+  &:focus {
+    @apply bg-transparent text-[var(--attrium-foreground)]
+           shadow-none outline-none;
   }
 }
 
@@ -103,6 +104,94 @@
         color: var(--attrium-foreground);
         opacity: 1;
         @apply shadow-none;
+      }
+    }
+  }
+}
+
+// ---- Installer feature-filter drawer (`.filter-drawer`) ----
+// The checkbox feature-filter panel shared verbatim by the plugin and theme
+// installers (same core `.wp-filter` drawer markup, revealed by the "Feature
+// Filter" button adding `show-filters`). Core paints the drawer #f6f7f7 with a
+// #f0f0f1 top border and white #dcdcde `.filter-group` boxes (common.css) —
+// both bright bands in dark mode. Re-skin as a token panel: transparent canvas
+// so the toolbar's surface shows through, card-style filter groups, foreground
+// text, and a promoted primary "Apply Filters" action. Light/dark parity comes
+// from the --attrium-* tokens (redefined under #attrium-host.dark), so there is
+// no separate dark block. Variadic like `filter-toolbar`: pass every installer's
+// body class so both screens pull the identical rules.
+@mixin filter-drawer($screens...) {
+  .filter-drawer {
+    @include mixins.screen($screens...) {
+      background: transparent;
+      border-top: 1px solid var(--attrium-border);
+
+      .filter-group {
+        background: var(--attrium-secondary);
+        border: 1px solid var(--attrium-border);
+        border-radius: var(--attrium-radius-md);
+        box-shadow: none;
+
+        legend,
+        label {
+          color: var(--attrium-foreground);
+        }
+      }
+
+      // Core lays each filter out by pulling the checkbox out of flow with
+      // `position:absolute` and letting the block label slide up beside it
+      // (`margin-left`). The `checkbox` module resets inputs to
+      // `position:relative` (so its checkmark overlay anchors to the box),
+      // which re-drops every checkbox onto its own line above the label.
+      // Restore absolute only here so the input and label share one row.
+      .filter-group-feature input[type='checkbox'],
+      .filter-group-feature input[type='radio'] {
+        position: absolute;
+      }
+
+      // Apply Filters is the drawer's primary action; Clear stays a secondary
+      // button. Core hangs a tiny loading indicator on Apply's child <span>.
+      .apply-filters.button {
+        background: var(--attrium-primary);
+        color: var(--attrium-primary-foreground);
+        border-color: var(--attrium-border);
+        @apply shadow-none;
+
+        &:hover,
+        &:focus {
+          @apply opacity-90;
+        }
+      }
+
+      .buttons .button span {
+        color: var(--attrium-foreground);
+        opacity: 0.8;
+      }
+    }
+  }
+
+  // Applied-filter pills ("Filtering by: …") shown once filters are applied.
+  .filter-drawer .filtered-by .tag {
+    @include mixins.screen($screens...) {
+      background: var(--attrium-secondary);
+      border: 1px solid var(--attrium-border);
+      border-radius: 9999px;
+      box-shadow: none;
+      color: var(--attrium-secondary-foreground);
+      font-weight: 600;
+    }
+  }
+
+  // "Edit Filters" link reverts to the drawer — underline on hover/focus.
+  .filter-drawer .button-link.edit-filters {
+    @include mixins.screen($screens...) {
+      color: var(--attrium-primary);
+      text-decoration: none;
+
+      &:hover,
+      &:focus {
+        text-decoration: underline;
+        @apply outline-none shadow-none;
       }
     }
   }

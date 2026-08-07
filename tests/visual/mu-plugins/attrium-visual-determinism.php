@@ -84,6 +84,56 @@ add_action(
 );
 
 /**
+ * Give the Menus screen a real, fixed menu to edit.
+ *
+ * a fresh install has "no menus", so nav-menus.php renders only the
+ * `#menu-settings-column` "add items" panels and an empty `#menu-management`
+ * "Menu structure" box — `.menu-item` / `.menu-item-handle` /
+ * `.menu-item-settings` rows never exist, and `_nav-menus.scss` has no rule for
+ * them (they'd keep core's #fff chrome and read as a white band when a real
+ * menu has items). Creating one deterministic menu fixtures the structure box
+ * so those rules can be written and the baseline can lock them down.
+ *
+ * Guarded by name so the (test-only) menu is created once and left untouched on
+ * subsequent loads; two custom-link items keep the row markup exercising a
+ * hierarchy with no dependence on post objects existing.
+ */
+add_action(
+	'admin_init',
+	static function () {
+		$menu_name = 'Attrium Menu';
+
+		if ( wp_get_nav_menu_object( $menu_name ) ) {
+			return;
+		}
+
+		$menu_id = wp_create_nav_menu( $menu_name );
+		if ( is_wp_error( $menu_id ) ) {
+			return;
+		}
+
+		$items = array(
+			array( 'title' => 'Home', 'url' => 'https://example.com/' ),
+			array( 'title' => 'About', 'url' => 'https://example.com/about/' ),
+		);
+
+		foreach ( $items as $position => $item ) {
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-title'    => $item['title'],
+					'menu-item-url'      => $item['url'],
+					'menu-item-status'   => 'publish',
+					'menu-item-type'     => 'custom',
+					'menu-item-position' => $position + 1,
+				)
+			);
+		}
+	}
+);
+
+/**
  * Ensure multiple active sessions so the "Log Out Everywhere Else" button
  * on profile.php / user-edit.php is always enabled with the longer text.
  *
@@ -153,5 +203,193 @@ add_action(
 			. '<p class="title">Attrium visual regression</p>'
 			. '<p>Fixed notice so the notices module stays under test.</p>'
 			. '</div>';
+	}
+);
+
+/**
+ * Stub the WordPress.org Plugin Installation API with three fixed plugins.
+ *
+ * plugin-install.php renders live wp.org results ("Featured", search, …) that
+ * change on WordPress.org's schedule, so without this stub it cannot be in the
+ * page suite. Short-circuiting `plugins_api` with a fixed catalog makes the
+ * screen deterministic and offline while exercising every card state the SCSS
+ * touches:
+ *   - fixture-card-one:   fully populated (rating stars, installs, updated) →
+ *                         the normal card layout,
+ *   - fixture-card-two:   zero rating / zero installs → no stars, "Less Than
+ *                         10" installs text,
+ *   - fixture-card-three: requires WP 99.0 / PHP 9.9 → the incompatible card
+ *                         with its error notice and no Install button.
+ *
+ * The plugin icon points at a local wp-admin asset so the card renders with no
+ * network round-trip and no remote-image drift. `plugins_api` runs only on
+ * plugin-install.php (and the install-plugin flow), so no other screen is
+ * affected.
+ *
+ * The Featured tab's "Popular tags" cloud is pinned too: `install_popular_tags()`
+ * calls `plugins_api( 'hot_tags' )` and caches the result in a `poptags_` site
+ * transient keyed by `md5( serialize( $args ) )` (empty args on the Featured
+ * tab). We stub `hot_tags` here AND pre-seed that transient so a stale live
+ * fetch cached by an earlier run cannot leak through before its 3-hour TTL.
+ */
+function attrium_visual_hot_tags() {
+	return array(
+		array( 'name' => 'accessibility', 'slug' => 'accessibility', 'count' => 542 ),
+		array( 'name' => 'admin', 'slug' => 'admin', 'count' => 2937 ),
+		array( 'name' => 'analytics', 'slug' => 'analytics', 'count' => 1406 ),
+		array( 'name' => 'cache', 'slug' => 'cache', 'count' => 534 ),
+		array( 'name' => 'chat', 'slug' => 'chat', 'count' => 876 ),
+		array( 'name' => 'ecommerce', 'slug' => 'ecommerce', 'count' => 1897 ),
+		array( 'name' => 'gallery', 'slug' => 'gallery', 'count' => 1467 ),
+		array( 'name' => 'gutenberg', 'slug' => 'gutenberg', 'count' => 1411 ),
+		array( 'name' => 'seo', 'slug' => 'seo', 'count' => 3064 ),
+		array( 'name' => 'shortcode', 'slug' => 'shortcode', 'count' => 2343 ),
+		array( 'name' => 'video', 'slug' => 'video', 'count' => 1140 ),
+		array( 'name' => 'widget', 'slug' => 'widget', 'count' => 5098 ),
+		array( 'name' => 'woocommerce', 'slug' => 'woocommerce', 'count' => 10529 ),
+	);
+}
+
+add_filter(
+	'plugins_api',
+	static function ( $result, $action, $args ) {
+		if ( 'hot_tags' === $action ) {
+			return attrium_visual_hot_tags();
+		}
+
+		if ( 'query_plugins' !== $action && 'search' !== $action ) {
+			return $result;
+		}
+
+		if ( 'query_plugins' !== $action && 'search' !== $action ) {
+			return $result;
+		}
+
+		$fixture = static function ( $name, $slug, $version, $author, $rating, $num_ratings, $active_installs, $last_updated, $requires = '6.0', $requires_php = '7.2' ) {
+			return (object) array(
+				'name'              => $name,
+				'slug'              => $slug,
+				'version'           => $version,
+				'author'            => sprintf( '<a href="https://example.com/%1$s">%1$s</a>', $author ),
+				'author_profile'    => 'https://example.com/' . $author,
+				'contributors'      => array( $author => array( 'profile' => 'https://example.com/' . $author, 'avatar' => '', 'display_name' => $author ) ),
+				'requires'          => $requires,
+				'requires_php'      => $requires_php,
+				'tested'            => '6.7',
+				'requires_plugins'  => array(),
+				'rating'            => $rating,
+				'num_ratings'       => $num_ratings,
+				'ratings'           => array( 5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0 ),
+				'active_installs'   => $active_installs,
+				'last_updated'      => $last_updated,
+				'added'             => '2024-01-01',
+				'homepage'          => 'https://example.com/' . $slug,
+				'sections'          => array(
+					'description' => 'Fixture description for ' . $name . '.',
+					'changelog'   => '1.0.0 – Initial release.',
+				),
+				'short_description' => 'Fixture short description for ' . $name . '.',
+				'download_link'     => 'https://example.com/' . $slug . '.zip',
+				'tags'              => array(),
+				'donate_link'       => '',
+				'icons'             => array( 'default' => admin_url( 'images/wordpress-logo.svg' ) ),
+				'banners'           => array(),
+				'banner_2x'         => '',
+			);
+		};
+
+		return (object) array(
+			'info'    => array(
+				'page'    => 1,
+				'pages'   => 1,
+				'results' => 3,
+			),
+			'plugins' => array(
+				$fixture( 'Fixture Card One', 'fixture-card-one', '1.2.3', 'A. Author', 96, 137, 20000, '2026-01-15 8:00am' ),
+				$fixture( 'Fixture Card Two', 'fixture-card-two', '0.9.1', 'B. Author', 0, 0, 0, '2025-11-02 8:00am' ),
+				$fixture( 'Fixture Card Three', 'fixture-card-three', '2.0.0', 'C. Author', 70, 42, 1200, '2025-06-30 8:00am', '99.0', '9.9' ),
+			),
+		);
+	},
+	10,
+	3
+);
+
+/**
+ * Stub the WordPress.org Theme Installation API with three fixed themes.
+ *
+ * Mirrors the plugins_api stub above: theme-install.php renders live wp.org
+ * results ("Featured", search, …) that change on WordPress.org's schedule.
+ * Short-circuiting `themes_api` makes the grid deterministic and offline while
+ * exercising the card states the SCSS touches:
+ *   - fixture-theme-one:   fully populated (rating stars, installs) → the
+ *                         normal card layout,
+ *   - fixture-theme-two:   zero rating / zero installs → no stars,
+ *   - fixture-theme-three: low rating → a single gold star.
+ *
+ * The screenshot points at a local wp-admin asset so the card renders with no
+ * network round-trip and no remote-image drift. Only `query_themes` runs on the
+ * initial server render of theme-install.php
+ * (class-wp-theme-install-list-table.php); `theme_information` is fetched by
+ * the client when the Details overlay opens and is not part of the snapshot.
+ */
+add_filter(
+	'themes_api',
+	static function ( $result, $action, $args ) {
+		if ( 'query_themes' !== $action ) {
+			return $result;
+		}
+
+		$fixture = static function ( $name, $slug, $version, $author, $rating, $num_ratings, $downloaded ) {
+			return (object) array(
+				'name'           => $name,
+				'slug'           => $slug,
+				'version'        => $version,
+				'author'         => array(
+					'display_name' => $author,
+					'profile'      => 'https://example.com/' . $author,
+				),
+				'rating'         => $rating,
+				'num_ratings'    => $num_ratings,
+				'downloaded'     => $downloaded,
+				'last_updated'   => '2026-01-15 8:00am',
+				'requires'       => '6.0',
+				'requires_php'   => '7.2',
+				'homepage'       => 'https://example.com/' . $slug,
+				'preview_url'    => 'https://example.com/' . $slug,
+				'screenshot_url' => admin_url( 'images/wordpress-logo.svg' ),
+				'description'    => 'Fixture description for ' . $name . '.',
+				'download_link'  => 'https://example.com/' . $slug . '.zip',
+			);
+		};
+
+		return (object) array(
+			'info'   => array(
+				'page'    => 1,
+				'pages'   => 1,
+				'results' => 3,
+			),
+			'themes' => array(
+				$fixture( 'Fixture Theme One', 'fixture-theme-one', '1.0.0', 'A. Author', 92, 87, 3000 ),
+				$fixture( 'Fixture Theme Two', 'fixture-theme-two', '0.8.0', 'B. Author', 0, 0, 0 ),
+				$fixture( 'Fixture Theme Three', 'fixture-theme-three', '2.1.0', 'C. Author', 64, 22, 900 ),
+			),
+		);
+	},
+	10,
+	3
+);
+
+/**
+ * Pre-seed the `poptags_` site transient that install_popular_tags() caches.
+ *
+ * Keyed exactly like core (`md5( serialize( $args ) )` with empty args on the
+ * Featured tab) so get_site_transient() short-circuits to the fixed tag set and
+ * never reaches the wp.org network, even if a previous run cached live tags.
+ */
+add_filter(
+	'pre_site_transient_poptags_' . md5( serialize( array() ) ),
+	static function () {
+		return attrium_visual_hot_tags();
 	}
 );
