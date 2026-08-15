@@ -9,7 +9,7 @@
 // ---- Base: shared by every reskinned button, regardless of variant ----
 @mixin btn-base {
   @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-         text-sm font-medium h-9 min-h-9 duration-150 transition-colors;
+         text-sm font-medium h-9 min-h-9 duration-150 transition-colors border-[1px] border-solid;
 
   &:disabled {
     @apply opacity-50 cursor-default pointer-events-none;
@@ -122,7 +122,7 @@
 #font-library-wp-admin-app .components-button.is-primary {
   @include mixins.module('buttons') {
     @include btn-base;
-    @include btn-primary;
+    @include btn-secondary;
   }
 }
 

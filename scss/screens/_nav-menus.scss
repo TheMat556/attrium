@@ -1,18 +1,31 @@
 @use '../mixins';
 @use '../ui';
 
-// Menus screen (nav-menus.php → body.nav-menus-php). The "Edit Menus / Manage
-// Locations" bar is a `.nav-tab-wrapper` of `.nav-tab` links — core renders it
-// as classic bottom-border folder tabs (common.css:2376). Reskin it into the
-// same segmented-control pill group used everywhere else (ui.pill-* — see
-// scss/_ui.scss) so the tab styles match across the admin. Only the resets that
-// undo core's folder chrome (the tab float, the active-tab margin nudge) stay
-// here as call-site extras.
-// Everything is expressed through --attrium-* tokens (redefined under
-// #attrium-host.dark in _tokens.css), so light/dark parity is automatic.
+// Menus screen (nav-menus.php → body.nav-menus-php). Core hardcodes #fff /
+// #f6f7f7 / #c3c4c7 / #dcdcde chrome across the whole screen (common.css,
+// nav-menus.css, edit.css) — bright bands in dark mode that don't match the
+// Attrium surfaces. Everything below re-expresses those surfaces, borders, and
+// radii through --attrium-* tokens (redefined under #attrium-host.dark in
+// _tokens.css), so light/dark parity is automatic with no separate dark block.
+//
+// Gate: every selector in this file targets markup inside nav-menus.php's
+// `.wrap` (nav-menus.php:782-1300), so the screen gate is hoisted to a single
+// `screen-root` wrapper instead of being repeated in each block. The emitted
+// selectors are unchanged (`body.attrium-mod-screens.nav-menus-php .foo`).
+//
+// Specificity: several core rules are id-anchored (e.g.
+// `#menu-settings-column .accordion-container` = 1,1,0). Each override keeps the
+// same id in its selector so the added body classes push it ahead — no
+// !important needed. The two exceptions are marked at their call sites.
 
-.nav-tab-wrapper {
-  @include mixins.screen('nav-menus-php') {
+@include mixins.screen-root('nav-menus-php') {
+  // The "Edit Menus / Manage Locations" bar is a `.nav-tab-wrapper` of
+  // `.nav-tab` links — core renders it as classic bottom-border folder tabs
+  // (common.css:2376). Reskin it into the same segmented-control pill group used
+  // everywhere else (ui.pill-* — see scss/_ui.scss) so the tab styles match
+  // across the admin. Only the resets that undo core's folder chrome (the tab
+  // float, the active-tab margin nudge) stay here as call-site extras.
+  .nav-tab-wrapper {
     @include ui.pill-track;
     @apply mb-4;
 
@@ -32,61 +45,66 @@
       @apply mb-0;
     }
   }
-}
 
-// ---- Menu-editor container surfaces ----
-// Both editor columns — the "Add menu items" accordion (#menu-settings-column)
-// and the "Menu structure" box (#menu-management) — are built from panels core
-// hardcodes with #fff / #c3c4c7 / #dcdcde chrome (common.css:190, 3710; nav-
-// menus.css; edit.css:1311). That reads as bright bands in dark mode and does
-// not match the Attrium surfaces. Everything below re-expresses those surfaces,
-// borders, and radii through --attrium-* tokens (dark parity automatic).
-//
-// Specificity: several core rules are id-anchored (e.g.
-// `#menu-settings-column .accordion-container` = 1,1,0). Each override keeps the
-// same id in its selector so the added body classes push it ahead — no
-// !important needed.
-
-// Outer shells of both columns: token border + radius, drop core's grey border
-// and drop shadow.
-#menu-settings-column .accordion-container,
-#menu-management .menu-edit {
-  @include mixins.screen('nav-menus-php') {
-    @apply rounded-[var(--attrium-radius-md)] overflow-hidden shadow-none
-           border border-[var(--attrium-border)];
-
-    background: var(--attrium-primary-foreground);
+  // ---- Menu-editor container surfaces ----
+  // The editor columns and boxes — the "Add menu items" accordion
+  // (#menu-settings-column), the "Menu structure" box (#menu-management), the
+  // "Create your first menu" bar, and the Menu Settings box — are all panels
+  // core paints #fff with a #c3c4c7 border (common.css:190, 3710; nav-menus.css;
+  // edit.css:1311). They collapse onto the one shared card look.
+  #menu-settings-column .accordion-container,
+  #menu-management .menu-edit,
+  .manage-menus,
+  .menu-settings {
+    @include ui.card-surface;
   }
-}
 
-// The "Create your first menu" bar above the editor (core: #fff, no border).
-.manage-menus {
-  @include mixins.screen('nav-menus-php') {
-    @apply rounded-[var(--attrium-radius-md)]
-           border border-[var(--attrium-border)];
-
-    background: var(--attrium-primary-foreground);
+  // Both columns additionally clip their children to the card radius and drop
+  // core's drop shadow; the two standalone bars above have neither.
+  #menu-settings-column .accordion-container,
+  #menu-management .menu-edit {
+    @apply overflow-hidden shadow-none;
   }
-}
 
-// Accordion sections (Pages / Posts / Custom Links / …).
-.accordion-section {
-  @include mixins.screen('nav-menus-php') {
-    @apply border-b border-[var(--attrium-border)];
+  .menu-settings {
+    h3 {
+      // `m-0` is intentionally absent: core's `.metabox-holder h3` family
+      // (common.css:2424) beats any class-only margin here, so it would be dead
+      // code. Only the sizing/padding land. Dark text is covered by
+      // _base.scss's `#attrium-host.dark h3 { text-white }`, but light mode
+      // needs the token color (core leaves it #3c434a).
+      @apply text-sm font-semibold p-3;
 
-    &:last-child {
-      @apply border-b-0;
+      color: var(--attrium-foreground);
+    }
+
+    .menu-settings-group {
+      margin: 0.75rem;
     }
   }
-}
 
-// Section header row: token side-borders removed, token text, accent hover.
-// Core hardcodes background:#fff and border:#c3c4c7 here — both must be
-// overridden for dark mode parity (the --attrium-* tokens switch under
-// #attrium-host.dark in _tokens.css).
-.accordion-section-title {
-  @include mixins.screen('nav-menus-php') {
-    @apply border-x-0 border-b border-[var(--attrium-border)];
+  // ---- "Add menu items" accordion ----
+  // Sections (Pages / Posts / Custom Links / …). Core paints every section with
+  // a #dcdcde bottom border (common.css:3722); kill that, then re-add the token
+  // divider only under sections followed by a *visible* section. Boxes hidden
+  // via Screen Options stay in the DOM (`hide-if-js`, display:none), so
+  // `:last-child` would match a hidden box and leave a stray border under the
+  // last visible section — keying off visibility instead means the last visible
+  // section never carries a border.
+  .accordion-section {
+    border-bottom: 0;
+
+    &:has(~ .accordion-section:not(.hide-if-js)) {
+      border-bottom: 1px solid var(--attrium-border);
+    }
+  }
+
+  // Section header row: token side-borders removed, token text. The bottom
+  // border belongs ONLY to the open section (see below) — a resting border here
+  // would stack against the section's own divider line (doubling it on collapsed
+  // items and against the card's bottom border on the last item).
+  .accordion-section-title {
+    @apply border-x-0;
 
     background: var(--attrium-primary-foreground);
 
@@ -101,47 +119,74 @@
       background: var(--attrium-accent);
       color: var(--attrium-foreground);
 
-      // The title's border must never change on hover/focus — keep the exact
-      // resting border (left/right none, bottom token) so the accordion family
-      // doesn't gain or shift a border when one title is focused or open.
-      @apply border-x-0 border-b border-[var(--attrium-border)];
+      // No border declaration here on purpose. The separator border belongs to
+      // the *title* (open sections only), and core's title hover/focus rule
+      // (common.css:3795) only changes color/background — so the title's border
+      // is already stable and does not need restating. Re-applying it inside
+      // this block put a 1px bottom border on the TRIGGER instead (core sets
+      // `border: 0` on it), which painted a white line under the hovered row in
+      // dark mode where --attrium-border is oklch(1 0 0 / 10%).
+      @apply border-0;
 
-      // Core draws a 2px blue focus ring on the trigger
-      // (common.css: `box-shadow: 0 0 0 2px #2271b1; outline: 2px solid
-      // transparent`). Drop it per the theme's no-blue focus policy. The
-      // specificity (body + .nav-menus-php + .metabox-holder path) already
+      // The specificity (body + .nav-menus-php + .metabox-holder path) already
       // equals core's, and this stylesheet loads after core.
-      box-shadow: none;
-      outline: none;
+      @include ui.focus-reset;
+    }
+
+    // Core tints the disclosure arrow to near-black on title hover
+    // (common.css:2539 `color: #1d2327`) — invisible against the dark surface.
+    // Hold it on the token foreground, matching the trigger label beside it.
+    &:hover span.dashicons.dashicons-arrow-down,
+    span.dashicons.dashicons-arrow-down {
+      color: var(--attrium-foreground);
+      opacity: 0.7;
     }
   }
-}
 
-// Open accordion section: core swaps the title background from #fff to #f6f7f7.
-// Override with a slightly elevated token surface.
-.accordion-section.open .accordion-section-title {
-  @include mixins.screen('nav-menus-php') {
+  // Open section: core swaps the title background from #fff to #f6f7f7. Override
+  // with a slightly elevated token surface and keep the title→content separator
+  // (core also draws one here, common.css:3798).
+  .accordion-section.open .accordion-section-title {
     background: var(--attrium-secondary);
+    border-bottom: 1px solid var(--attrium-border);
   }
-}
 
-// Expanded section body.
-.accordion-section-content {
-  @include mixins.screen('nav-menus-php') {
+  // Hovering a section highlights its title row (accent fill); the title's
+  // bottom separator (--attrium-border, oklch(1 0 0 / 10%) in dark) then reads
+  // as a white line under the hovered row in dark mode. Drop it only when the
+  // *title row itself* is hovered/focused; hovering the expanded content keeps
+  // the open title's separator (that's what separates title from content).
+  //
+  // The background override is NOT optional: core paints the title row #f6f7f7
+  // on section hover (common.css:3795, specificity 0,4,0), which is a bright
+  // near-white band in dark mode — that's the "white line" under the hovered
+  // row. A body + 3-class rule (0,3,1) loses to it, so the `.control-section`
+  // class is required to reach 0,5,1.
+  .control-section:hover .accordion-section-title {
+    background: var(--attrium-accent);
+  }
+
+  .control-section .accordion-section-title:hover,
+  .control-section .accordion-section-title:focus,
+  .control-section .accordion-section-title:focus-within {
+    background: var(--attrium-accent);
+    border-bottom-color: transparent;
+  }
+
+  // Expanded section body.
+  .accordion-section-content {
     background: var(--attrium-primary-foreground);
   }
-}
 
-// The checklist tab strip (Most Recent / View All / Search) on each "Add menu
-// items" accordion: core renders it as classic folder tabs that connect to the
-// panel below (edit.css: a #fff face with a bottom border that "merges" into the
-// #dcdcde panel). Reskin it into the same segmented pill group as the top-level
-// Edit Menus / Manage Locations bar (`ui.pill-*`, see scss/_ui.scss) so every
-// tab treatment on this screen matches. The active `<li>` is core's `.tabs` (and
-// `.wp-tab-active` for the non-checklist tab-bar variant).
-.add-menu-item-tabs,
-.category-tabs {
-  @include mixins.screen('nav-menus-php') {
+  // The checklist tab strip (Most Recent / View All / Search) on each "Add menu
+  // items" accordion: core renders it as classic folder tabs that connect to the
+  // panel below (edit.css: a #fff face with a bottom border that "merges" into
+  // the #dcdcde panel). Reskin it into the same segmented pill group as the
+  // top-level Edit Menus / Manage Locations bar so every tab treatment on this
+  // screen matches. The active `<li>` is core's `.tabs` (and `.wp-tab-active`
+  // for the non-checklist tab-bar variant).
+  .add-menu-item-tabs,
+  .category-tabs {
     @include ui.pill-track;
     // `w-fit` from the track + max-width here: the strip hugs its content but
     // can never push the accordion wider — labels truncate instead of wrapping
@@ -174,54 +219,42 @@
       color: inherit;
 
       // Core's global `a:focus` (common.css) paints a 2px blue ring on every
-      // admin link, including these tab anchors. Drop it per the no-blue focus
-      // policy; the active segment already marks its tab.
+      // admin link, including these tab anchors. The active segment already
+      // marks its tab.
       &:focus {
-        box-shadow: none;
-        outline: none;
+        @include ui.focus-reset;
       }
     }
-  }
-}
 
-// Core anchors the active tab's text colour under `#post-body` (edit.css:
-// `#post-body ul.add-menu-item-tabs li.tabs a { color: #2c3338 }`), an ID
-// compound no class-only selector can beat — so the foreground on the primary
-// pill needs `!important` (same pattern as the tables/options connectors).
-.add-menu-item-tabs li.tabs a,
-.add-menu-item-tabs li.wp-tab-active a,
-.category-tabs li.tabs a,
-.category-tabs li.wp-tab-active a {
-  @include mixins.screen('nav-menus-php') {
-    color: var(--attrium-primary-foreground) !important;
+    // Core anchors the active tab's text colour under `#post-body` (edit.css:
+    // `#post-body ul.add-menu-item-tabs li.tabs a { color: #2c3338 }`), an ID
+    // compound no class-only selector can beat — so the foreground on the
+    // primary pill needs `!important` (same pattern as the tables/options
+    // connectors).
+    li.tabs a,
+    li.wp-tab-active a {
+      color: var(--attrium-primary-foreground) !important;
+    }
   }
-}
 
-// The scrollable list panel holding the checkboxes.
-.tabs-panel {
-  @include mixins.screen('nav-menus-php') {
+  // The scrollable list panel holding the checkboxes.
+  .tabs-panel {
     @apply rounded-md;
 
     border: 1px solid var(--attrium-border);
     background: var(--attrium-primary-foreground);
-  }
 
-  // The panel carries `tabindex="0"` and core draws a full blue inset ring on
-  // :focus (edit.css: `box-shadow: inset 0 0 0 2px #2271b1; outline: 2px solid
-  // transparent`). Drop it per the theme's no-blue focus policy.
-  &:focus {
-    @include mixins.screen('nav-menus-php') {
-      outline: none;
-      box-shadow: none;
+    // The panel carries `tabindex="0"` and core draws a full blue INSET ring on
+    // :focus (edit.css: `box-shadow: inset 0 0 0 2px #2271b1`).
+    &:focus {
+      @include ui.focus-reset;
     }
   }
-}
 
-// Search tab panel: stack the (screen-reader) label, input, and spinner in a
-// column and let the quick-search input fill the panel width (previously fixed
-// at 190px, nav-menus.css:484).
-.quick-search-wrap {
-  @include mixins.screen('nav-menus-php') {
+  // Search tab panel: stack the (screen-reader) label, input, and spinner in a
+  // column and let the quick-search input fill the panel width (previously fixed
+  // at 190px, nav-menus.css:484).
+  .quick-search-wrap {
     display: flex;
     flex-direction: column;
 
@@ -230,154 +263,104 @@
       width: auto;
     }
   }
-}
 
-// Each "Add menu items" section (Pages / Posts / Categories / …) stacks its
-// tab strip, panel, and the Select All / Add to Menu row with core's ad-hoc
-// margins (.add-menu-item-tabs `margin-top:12px`, .button-controls
-// `margin:10px 0`, and WP's inline folder-tab nudges). Collapse those into one
-// flex column so the rhythm is a single 10px gap between the three blocks.
-.categorydiv,
-.customlinkdiv,
-.posttypediv,
-.taxonomydiv {
-  @include mixins.screen('nav-menus-php') {
+  // Each "Add menu items" section (Pages / Posts / Categories / …) stacks its
+  // tab strip, panel, and the Select All / Add to Menu row with core's ad-hoc
+  // margins (.add-menu-item-tabs `margin-top:12px`, .button-controls
+  // `margin:10px 0`, and WP's inline folder-tab nudges). Collapse those into one
+  // flex column so the rhythm is a single 10px gap between the three blocks.
+  .categorydiv,
+  .customlinkdiv,
+  .posttypediv,
+  .taxonomydiv {
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
 
     // Children that core still spaces with margins — the gap owns the spacing
-    // now, so strip them. `.add-menu-item-tabs`'s bottom margin comes from an
-    // ID-anchored core rule (`#side-sortables .add-menu-item-tabs
-    // { margin-bottom: 3px }`) no class-only selector can beat, so it gets
-    // `!important` (same pattern as the tables/options connectors).
+    // now, so strip them.
     .add-menu-item-tabs,
     .tabs-panel,
     .button-controls {
       margin: 0;
     }
 
+    // `.add-menu-item-tabs`'s bottom margin comes from an ID-anchored core rule
+    // (`#side-sortables .add-menu-item-tabs { margin-bottom: 3px }`) no
+    // class-only selector can beat, so it gets `!important` (same pattern as
+    // the tables/options connectors).
     .add-menu-item-tabs {
       margin-bottom: 0 !important;
     }
   }
-}
 
-// Menu Settings box: border, surface, radius. Core hardcodes #fff / #c3c4c7 here.
-.menu-settings {
-  @include mixins.screen('nav-menus-php') {
-    @apply rounded-[var(--attrium-radius-md)]
-           border border-[var(--attrium-border)];
-
-    background: var(--attrium-primary-foreground);
-
-    h3 {
-      // `m-0` is intentionally absent: core's `.metabox-holder h3` family
-      // (common.css:2424) beats any class-only margin here, so it would be dead
-      // code. Only the sizing/padding land. Dark text is covered by
-      // _base.scss's `#attrium-host.dark h3 { text-white }`, but light mode
-      // needs the token color (core leaves it #3c434a).
-      @apply text-sm font-semibold p-3;
-
-      color: var(--attrium-foreground);
-    }
-
-    .menu-settings-group {
-      margin: 0.75rem;
-    }
-  }
-}
-
-// "Menu structure" box: header/footer bands and the body content area core
-// paints #f6f7f7 / #fff.
-#nav-menu-header {
-  @include mixins.screen('nav-menus-php') {
+  // ---- "Menu structure" box chrome ----
+  // The header and footer bands core paints #f6f7f7. Both also host a
+  // `.major-publishing-actions`, which common.css gives its own border-top —
+  // that would stack a second line against the band's own border, so drop it.
+  #nav-menu-header,
+  #nav-menu-footer {
     background: var(--attrium-secondary);
 
-    // Core sets border-bottom: 1px solid #dcdcde (a shorthand). Override with
-    // an explicit border-bottom shorthand using the theme token.
-    border-bottom: 1px solid var(--attrium-border);
-  }
-
-  // Core common.css gives .major-publishing-actions a border-top too, which
-  // would stack a second line inside the header. Remove it.
-  .major-publishing-actions {
-    @include mixins.screen('nav-menus-php') {
+    .major-publishing-actions {
       border-top: 0;
     }
   }
-}
 
-#nav-menu-footer {
-  @include mixins.screen('nav-menus-php') {
-    background: var(--attrium-secondary);
+  // Core sets these as `1px solid #dcdcde` shorthands — override each with the
+  // same shorthand carrying the theme token.
+  #nav-menu-header {
+    border-bottom: 1px solid var(--attrium-border);
+  }
 
-    // Core sets border-top: 1px solid #dcdcde (a shorthand). Override with
-    // an explicit border-top shorthand using the theme token.
+  #nav-menu-footer {
     border-top: 1px solid var(--attrium-border);
 
     // Core also paints a box-shadow on the sticky footer (nav-menus.css).
     box-shadow: none;
   }
 
-  // Core common.css gives .major-publishing-actions a border-top too, which
-  // would stack a second line on top of the footer's own border-top. Remove it.
-  .major-publishing-actions {
-    @include mixins.screen('nav-menus-php') {
-      border-top: 0;
-    }
-  }
-}
-
-#post-body {
-  @include mixins.screen('nav-menus-php') {
+  // The body content area between them, which core paints #fff.
+  #post-body {
     background: var(--attrium-primary-foreground);
     @apply border-y-0;
   }
-}
 
-// ---- Menu structure rows (items inside #menu-to-edit) ----
-// `.menu-item-handle` sits on core's white-boxed list (common.css:186) →
-// background #f6f7f7, border #dcdcde, dark text in BOTH modes — a bright band
-// in dark mode. Re-express the drag handle and its expanded settings panel with
-// token surfaces/text and a token ring border on hover/focus (suppressing core's
-// blue #2271b1 focus ring on the disclosure, per theme policy).
-.menu-item-bar .menu-item-handle {
-  @include mixins.screen('nav-menus-php') {
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
-    background: var(--attrium-primary-foreground);
+  // ---- Menu structure rows (items inside #menu-to-edit) ----
+  // `.menu-item-handle` sits on core's white-boxed list (common.css:186) →
+  // background #f6f7f7, border #dcdcde, dark text in BOTH modes — a bright band
+  // in dark mode. Re-express the drag handle with the shared card surface and a
+  // token ring border on hover.
+  .menu-item-bar .menu-item-handle {
+    @include ui.card-surface;
+
     color: var(--attrium-foreground);
-  }
 
-  &:hover {
-    @include mixins.screen('nav-menus-php') {
+    &:hover {
       border-color: var(--attrium-ring);
     }
   }
-}
 
-// Item type tag ("Custom Link") and the expand/disclosure button inherit core
-// greys that are near-invisible on the token surface in dark mode.
-.menu-item-handle .item-type,
-.item-edit {
-  @include mixins.screen('nav-menus-php') {
+  // Item type tag ("Custom Link") and the expand/disclosure button inherit core
+  // greys that are near-invisible on the token surface in dark mode.
+  .menu-item-handle .item-type,
+  .item-edit {
     color: var(--attrium-foreground);
     opacity: 0.7;
   }
-}
 
-.item-edit:focus:before {
-  @include mixins.screen('nav-menus-php') {
+  // The disclosure's blue focus ring is drawn on its ::before glyph — swap it
+  // for the token ring rather than removing it, since it is the only focus
+  // affordance on an icon-only control.
+  .item-edit:focus:before {
     box-shadow: 0 0 0 2px var(--attrium-ring);
     outline: none;
   }
-}
 
-// Expanded item form: core frames it with #c3c4c7 side/bottom borders; continue
-// the handle's surface and token border so the row reads as one card.
-.menu-item-settings {
-  @include mixins.screen('nav-menus-php') {
+  // Expanded item form: core frames it with #c3c4c7 side/bottom borders; continue
+  // the handle's surface and token border so the row reads as one card. No
+  // radius or top border — it butts directly against the handle above it.
+  .menu-item-settings {
     border: 1px solid var(--attrium-border);
     border-top: none;
     background: var(--attrium-primary-foreground);
@@ -385,22 +368,18 @@
     // (nav-menus.css:771). Suppress it to match the theme's flat surfaces.
     box-shadow: none;
   }
-}
 
-// Bulk-select toggle ("Bulk select" / "Cancel") that `ownMenus` shows above the
-// structure box: core paints it as a #f6f7f7 pill (a bright band in dark).
-// Promote it to a secondary button so it matches the theme's button language.
-label.bulk-select-button {
-  @include mixins.screen('nav-menus-php') {
+  // Bulk-select toggle ("Bulk select" / "Cancel") that `ownMenus` shows above the
+  // structure box: core paints it as a #f6f7f7 pill (a bright band in dark).
+  // Promote it to a secondary button so it matches the theme's button language.
+  label.bulk-select-button {
     background: var(--attrium-secondary);
     color: var(--attrium-secondary-foreground);
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
-  }
 
-  &:hover,
-  &:focus {
-    @include mixins.screen('nav-menus-php') {
+    &:hover,
+    &:focus {
       border-color: var(--attrium-ring);
     }
   }

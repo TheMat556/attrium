@@ -6,7 +6,7 @@
  *   - src/style.css          (@import '../scss/_tokens.css') → shadow-DOM Vue app
  *
  * It is a plain .css file (not .scss) so the Vite/Tailwind CSS pipeline can
- * @import it directly; dart-sass still resolves `@use 'tokens'` to this file.
+ * @import it directly; dart-sass still resolves @use 'tokens' to this file.
  *
  * Each rule lists the selectors for BOTH contexts. A selector that matches
  * nothing in one context (e.g. :host on a WP page, or #attrium-host inside the
@@ -47,6 +47,36 @@
      Light mode: softened off-white, intentionally darker than the pure-white
      Vue content card and the light sidebar. */
   --attrium-background: oklch(0.965 0 0);
+
+  /* Ignored pages keep their native light content; this stays light even in
+     dark mode so the unstyled WordPress content remains readable behind the
+     dark chrome. */
+  --attrium-ignored-background: oklch(0.985 0 0);
+
+  /* Baseline text color for slotted WordPress content, matching wp-admin. */
+  --attrium-wp-content-foreground: #3c434a;
+
+  /* Elevated/app surfaces (shadow-DOM shadcn theme) */
+  --attrium-surface: oklch(0.985 0 0);
+  --attrium-card: oklch(1 0 0);
+  --attrium-card-foreground: oklch(0.145 0 0);
+  --attrium-popover: oklch(1 0 0);
+  --attrium-popover-foreground: oklch(0.145 0 0);
+  --attrium-muted: oklch(0.97 0 0);
+  --attrium-input: oklch(0.922 0 0);
+  --attrium-destructive: oklch(0.577 0.245 27.325);
+
+  /* Sidebar (shadow-DOM Vue app) */
+  --attrium-sidebar-foreground: oklch(0.4 0 0);
+  --attrium-sidebar-accent: oklch(0.93 0 0);
+  --attrium-sidebar-accent-foreground: var(--attrium-foreground);
+
+  /* Chart / data-viz palette */
+  --attrium-chart-1: oklch(0.646 0.222 41.116);
+  --attrium-chart-2: oklch(0.6 0.118 184.704);
+  --attrium-chart-3: oklch(0.398 0.07 227.392);
+  --attrium-chart-4: oklch(0.828 0.189 84.429);
+  --attrium-chart-5: oklch(0.769 0.188 70.08);
 }
 
 /*
@@ -80,4 +110,29 @@
   --attrium-success: #4ade80;
   --attrium-warning: #fbbf24;
   --attrium-error: #f87171;
+
+  /* Dark elevated/app surfaces */
+  --attrium-surface: oklch(0.205 0 0);
+  --attrium-card: oklch(0.205 0 0);
+  --attrium-card-foreground: oklch(0.985 0 0);
+  --attrium-popover: oklch(0.205 0 0);
+  --attrium-popover-foreground: oklch(0.985 0 0);
+  --attrium-muted: oklch(0.269 0 0);
+  --attrium-input: oklch(1 0 0 / 15%);
+  --attrium-destructive: oklch(0.704 0.191 22.216);
+
+  /* Dark sidebar */
+  --attrium-sidebar-foreground: oklch(0.7 0 0);
+  --attrium-sidebar-accent: oklch(0.269 0 0);
+  --attrium-sidebar-accent-foreground: oklch(0.9 0 0);
+
+  /* Dark chart palette */
+  --attrium-chart-1: oklch(0.87 0 0);
+  --attrium-chart-2: oklch(0.556 0 0);
+  --attrium-chart-3: oklch(0.439 0 0);
+  --attrium-chart-4: oklch(0.371 0 0);
+  --attrium-chart-5: oklch(0.269 0 0);
+
+  /* Intentionally no dark overrides for --attrium-ignored-background or
+     --attrium-wp-content-foreground — ignored WP content stays light. */
 }

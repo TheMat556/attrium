@@ -1,49 +1,81 @@
 @use '../mixins';
-@use '../ui';
 
 // Site Health page (site-health.php → body.site-health-php). Core hardcodes
 // #fff / #f0f0f1 / #dcdcde chrome across the header, accordion, and tabs.
 
-.health-check-header {
-  @include mixins.screen('site-health-php') {
-    // Core paints this #fff with a 1px bottom border (edit.css:759). Drop both
-    // so the card surface shows through. No radius here: the header is
-    // transparent and borderless, so corner rounding is invisible.
-    @apply border-0;
-
-    background: transparent;
-  }
-}
-
-.health-check-title-section h1 {
+// -------------------------------------------------------------------------
+// Common foreground color — grouped in one rule so the mixin still runs in a
+// normal rule context and `&` expands to each selector in the list.
+// -------------------------------------------------------------------------
+.health-check-title-section h1,
+.site-health-progress-wrapper .site-health-progress-label,
+.health-check-accordion-trigger,
+.health-check-accordion-trigger .title,
+.health-check-accordion-panel,
+.health-check-accordion-panel p,
+.health-check-accordion-panel ul li,
+.site-health-issues-wrapper h2,
+.site-health-issues-wrapper h3,
+.site-health-issues-wrapper > p,
+.site-health-view-more .site-health-view-passed,
+.site-status-all-clear .encouragement,
+.site-status-all-clear p,
+.site-status-has-issues h2,
+.site-status-has-issues > p,
+.site-health-issue-count-title,
+.site-health-issue-count-title .issue-count {
   @include mixins.screen('site-health-php') {
     color: var(--attrium-foreground);
   }
 }
 
-.site-health-progress-wrapper {
+// -------------------------------------------------------------------------
+// Header – remove core's white background + bottom border
+// -------------------------------------------------------------------------
+.health-check-header {
   @include mixins.screen('site-health-php') {
-    .site-health-progress-label {
-      color: var(--attrium-foreground);
-    }
+    @apply border-0;
+    background: transparent;
   }
 }
 
+// -------------------------------------------------------------------------
+// Tabs – underline style
+// -------------------------------------------------------------------------
 .health-check-tabs-wrapper {
   @include mixins.screen('site-health-php') {
-    @include ui.pill-track;
-    @apply gap-[3px];
+    display: flex;
+    justify-content: center;
 
     .health-check-tab {
-      @include ui.pill-segment;
+      color: var(--attrium-muted-foreground);
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      margin: 0;
+      padding: 0.5rem 1rem 1rem;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+
+      &:hover,
+      &:focus {
+        color: var(--attrium-foreground);
+      }
 
       &.active {
-        @include ui.pill-segment-active;
+        color: var(--attrium-foreground);
+        border-bottom-color: var(--attrium-primary);
+        box-shadow: none;
+        font-weight: 500;
       }
     }
   }
 }
 
+// -------------------------------------------------------------------------
+// Accordion container
+// -------------------------------------------------------------------------
 .health-check-accordion {
   @include mixins.screen('site-health-php') {
     @apply rounded-[var(--attrium-radius-md)]
@@ -52,6 +84,9 @@
   }
 }
 
+// -------------------------------------------------------------------------
+// Accordion heading / trigger
+// -------------------------------------------------------------------------
 .health-check-accordion-heading {
   @include mixins.screen('site-health-php') {
     @apply border-0;
@@ -61,14 +96,18 @@
              border-0 cursor-pointer transition-colors
              flex items-center gap-3;
       background: var(--attrium-primary-foreground);
-      color: var(--attrium-foreground);
+      // color is handled by the shared foreground group above
 
       &:hover {
         background: var(--attrium-accent);
       }
 
-      .title {
-        color: var(--attrium-foreground);
+      // Conflit with core focus: strip everything
+      &:focus {
+        outline: none;
+        box-shadow: none;
+        border: none;
+        background: var(--attrium-primary-foreground);
       }
 
       .badge {
@@ -110,32 +149,40 @@
         border-width: 0 2px 2px 0;
         width: 0.5rem;
         height: 0.5rem;
-        transform: rotate(45deg);
+        transform: translateY(-0.125rem) rotate(45deg);
         transition: transform 0.15s;
         pointer-events: none;
       }
     }
 
-    .health-check-accordion-trigger[aria-expanded="true"] {
+    .health-check-accordion-trigger[aria-expanded='true'] {
       background: var(--attrium-secondary);
 
       .icon {
-        transform: rotate(-135deg);
+        transform: translateY(-0.125rem) rotate(-135deg);
       }
     }
   }
 }
 
+// -------------------------------------------------------------------------
+// Accordion panel
+// -------------------------------------------------------------------------
 .health-check-accordion-panel {
   @include mixins.screen('site-health-php') {
-    @apply px-4 py-3 text-sm;
+    @apply px-4 text-sm;
     background: var(--attrium-primary-foreground);
-    color: var(--attrium-foreground);
-    border-bottom: 1px solid var(--attrium-border);
+    // color is handled by the shared foreground group above
 
-    p {
-      color: var(--attrium-foreground);
-    }
+    // Collapse animation
+    display: block;
+    overflow: hidden;
+    max-height: 0;
+    padding-block: 0;
+    border-bottom: none;
+    transition:
+      max-height 0.3s ease,
+      padding-block 0.3s ease;
 
     .actions {
       @apply mt-2;
@@ -144,33 +191,42 @@
         color: var(--attrium-primary);
       }
     }
-
-    ul {
-      li {
-        color: var(--attrium-foreground);
-      }
-    }
   }
 }
 
-.site-health-issues-wrapper {
+// Beat core's `[hidden] { display: none }` (edit.css) – same specificity, our
+// sheet loads later. display must stay block so removing `hidden` restarts the
+// max-height transition instead of snapping via display:none.
+.health-check-accordion-panel[hidden] {
   @include mixins.screen('site-health-php') {
-    h2,
-    h3 {
-      color: var(--attrium-foreground);
-    }
+    display: block;
+  }
+}
 
-    > p {
-      color: var(--attrium-foreground);
+// Expanded cap for the max-height transition; must exceed the tallest panel.
+// Restore the vertical padding + separator that were collapsed above. The
+// separator is only drawn between items: panels are siblings of their headings,
+// so a panel with a following heading is not the last one – the card's own
+// border is the final bottom edge.
+.health-check-accordion-panel:not([hidden]) {
+  @include mixins.screen('site-health-php') {
+    max-height: 40rem;
+    padding-block: 0.75rem;
+
+    &:has(~ .health-check-accordion-heading) {
+      border-bottom: 1px solid var(--attrium-border);
     }
   }
 }
 
+// -------------------------------------------------------------------------
+// Issues list / view-more button / status sections
+// -------------------------------------------------------------------------
 .site-health-view-more {
   @include mixins.screen('site-health-php') {
     .site-health-view-passed {
       background: var(--attrium-primary-foreground);
-      color: var(--attrium-foreground);
+      // color is handled by the shared foreground group above
       @apply border border-[var(--attrium-border)]
              rounded-[var(--attrium-radius-md)];
 
@@ -181,35 +237,9 @@
   }
 }
 
-.site-status-all-clear {
-  @include mixins.screen('site-health-php') {
-    .encouragement,
-    p {
-      color: var(--attrium-foreground);
-    }
-  }
-}
-
 .site-status-has-issues {
   @include mixins.screen('site-health-php') {
     margin: 1.5rem;
-
-    h2 {
-      color: var(--attrium-foreground);
-    }
-
-    > p {
-      color: var(--attrium-foreground);
-    }
-  }
-}
-
-.site-health-issue-count-title {
-  @include mixins.screen('site-health-php') {
-    color: var(--attrium-foreground);
-
-    .issue-count {
-      color: var(--attrium-foreground);
-    }
+    // h2 and >p colors are handled by the shared foreground group above
   }
 }

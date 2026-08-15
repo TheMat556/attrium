@@ -19,7 +19,7 @@
 //
 // Specificity: the app declares its variables on
 // `.dba930ea7a9438fd__root.dba930ea7a9438fd__root[data-wpds-theme-provider-id]`
-// = (0,3,0). Our `#font-library-wp-admin-app [data-wpds-theme-provider-id}`
+// = (0,3,0). Our `#font-library-wp-admin-app [data-wpds-theme-provider-id]`
 // = (1,1,0) — the id wins, so the override beats the app's own declarations
 // with no !important. Gated by the broad `screens` module flag so the whole
 // per-screen axis toggles together (ModuleRegistry.php).
@@ -54,18 +54,22 @@
     // Tablist, header, and footer get background + border resets — the wpds
     // app adds borders that don't belong on the transparent canvas.
     .font-library-page__tablist {
-      background: transparent !important;
-      border-bottom: none !important;
+      @include ui.borderless-surface(bottom);
     }
 
     .admin-ui-page__header {
-      background: transparent !important;
-      border-bottom: none !important;
+      @include ui.borderless-surface(bottom);
+    }
+
+    // Match the Attrium shell's page headers: wpds renders the title at 20px
+    // (var(--wpds-font-size-xl)); bump it to the 23px used by the native
+    // views. The id-based compound selector beats the bundle's rule.
+    .admin-ui-page__header-title {
+      font-size: 23px;
     }
 
     .font-library__footer {
-      background: transparent !important;
-      border-top: none !important;
+      @include ui.borderless-surface(top);
     }
 
     // Make the stage scrollable so tall content doesn't overflow the viewport.
@@ -82,21 +86,47 @@
       --wp-components-font-weight-body: 600;
     }
 
+    // wpds paints both selected text and hover with its blue accent; we map
+    // inactive to muted grey, then selected/hover/focus to the theme-aware
+    // foreground (the id-based compound selector out-specifies wpds's
+    // `:hover`/`[data-focus-visible]` rules in the bundled CSS-module classes).
+    // wpds renders the label at font-weight 400 (the selected tab's span gets
+    // an inline 500); normalize all tabs to the medium 500 weight — inherited
+    // by the label span, matching the selected tab's inline style.
     .font-library-page__tablist button[role="tab"] {
-      color: var(--attrium-secondary-foreground);
-      font-weight: 600 !important;
+      color: var(--attrium-muted-foreground);
+      font-size: 14px;
+      font-weight: 500;
 
       &[aria-selected="true"] {
         color: var(--attrium-foreground);
       }
+
+      &:hover,
+      &[data-focus-visible] {
+        color: var(--attrium-foreground);
+      }
     }
 
-    .font-library-page__tablist button[role="tab"] > span {
-      font-weight: 600 !important;
+    // ---- Body text size ----
+    // wpds defaults its Text component to 13px (--wpds-font-size-md); bump the
+    // tab-panel copy (font cards, the empty state, helper text) to the shell's
+    // 14px body size. `.components-navigator-screen` is the stable panel
+    // wrapper; `.components-text` is the stable Text BEM class (the other
+    // classes on the element are per-build Emotion hashes).
+    p,
+    .components-navigator-screen .components-text {
+      font-size: 14px;
     }
 
-    .admin-ui-page__header-title {
-      font-weight: 600 !important;
+    // ---- Active tab underline ----
+    // wpds draws the sliding underline as a `::before` on the aria TabList,
+    // positioned via the `--selected-*` CSS vars it sets at runtime and
+    // painted with the blue theme accent. Recolor it with the theme-aware
+    // primary token (near-black in light, near-white in dark) so the active
+    // tab never reads as blue in either mode.
+    [role="tablist"]::before {
+      border-bottom-color: var(--attrium-primary);
     }
 
     // ---- Upload area button ----
@@ -119,7 +149,7 @@
 
     // ---- Google Fonts connect card ----
     .components-card {
-      background: var(--attrium-primary-foreground);
+      @include ui.card-surface;
 
       .components-card__body,
       .components-card-body {

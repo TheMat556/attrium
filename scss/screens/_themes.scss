@@ -10,6 +10,15 @@
 // --attrium-* tokens (redefined under #attrium-host.dark in _tokens.css), so
 // light/dark parity is automatic with no separate dark-mode block.
 
+// Secondary text (author bylines, version numbers): same foreground token,
+// dimmed by opacity rather than a separate muted color token. Parameterized
+// because different contexts want slightly different dimming (card byline is
+// lighter than the overlay's).
+@mixin muted-text($opacity: 0.6) {
+  color: var(--attrium-foreground);
+  opacity: $opacity;
+}
+
 @mixin theme-cards {
   // ---- Card shell ----
   .theme {
@@ -76,8 +85,7 @@
 
   .theme-author {
     @apply text-xs;
-    color: var(--attrium-foreground);
-    opacity: 0.6;
+    @include muted-text(0.6);
   }
 
   // ---- Action buttons ----
@@ -149,14 +157,12 @@
 
     .theme-version {
       @apply text-sm font-normal ml-2;
-      color: var(--attrium-foreground);
-      opacity: 0.6;
+      @include muted-text(0.6);
     }
 
     .theme-author {
       @apply text-sm;
-      color: var(--attrium-foreground);
-      opacity: 0.7;
+      @include muted-text(0.7);
     }
 
     .theme-description {

@@ -14,19 +14,14 @@
 
 h1, h2, h3 {
   @include mixins.module('screens') {
-    @apply font-semibold
+    @apply font-semibold;
   }
 }
 
 #attrium-host.dark {
-  h1, h2, h3 {
-    @include mixins.module('screens') {
-      @apply text-white;
-    }
-  }
-}
-
-#attrium-host.dark {
+  h1,
+  h2,
+  h3,
   label,
   th[scope="row"] {
     @include mixins.module('screens') {

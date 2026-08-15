@@ -33,28 +33,13 @@
 }
 
 // ---- Upload card (Upload Theme form) ----
-// Core paints `.upload-theme .wp-upload-form` on a hardcoded #f6f7f7 surface
-// with a solid #c3c4c7 border (wp-admin/css/themes.css), which reads as a bright
-// band in dark mode and its grey edge matches nothing else. Give it the same
-// token surface/dashed edge as the plugin installer's upload form
-// (_plugin-install.scss) so both upload cards look and behave identically, and
-// light/dark parity comes from the --attrium-* tokens.
-.wp-upload-form {
-  @include mixins.screen('theme-install-php') {
-    background: var(--attrium-primary-foreground);
-    border: 1px dashed var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
-    padding: 1rem;
-  }
-}
+// Shared verbatim with the plugin installer (see _plugin-install.scss).
+@include ui.upload-card(
+  'theme-install-php',
+  '.wp-upload-form',
+  '.upload-theme .install-help'
+);
 
-// The helper line is hardcoded to #50575e in core; drop it to the muted
-// foreground token so it's legible on the token surface in both modes.
-.upload-theme .install-help {
-  @include mixins.screen('theme-install-php') {
-    color: var(--attrium-muted-foreground);
-  }
-}
 // ---- Feature-filter drawer ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
 @include ui.filter-drawer('theme-install-php');

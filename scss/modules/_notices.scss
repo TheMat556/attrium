@@ -72,3 +72,16 @@
     }
   }
 }
+
+// Core zeroes the horizontal margin of notices below 782px (responsive.css:
+// `.notice, .wrap div.error, .wrap div.updated { margin: 20px 0 10px }`, plus
+// `.wrap { margin-right: 0 }`), so the card presses flush against the right
+// rail on small screens. Restore core's own desktop right margin here.
+@media (max-width: 782px) {
+  .notice:not(.hidden):not(.hide-if-js) {
+    @include mixins.module('notices') {
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+  }
+}

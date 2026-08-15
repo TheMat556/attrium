@@ -1,8 +1,11 @@
 @use '../mixins';
-@use '../ui';
 
 // Privacy settings page (options-privacy.php → body.options-privacy-php).
-// Mirrors the site-health header pattern.
+// Core centers the whole header (text-align: center + a flex title section with
+// justify-content: center + an inline-grid tab bar) and draws the active tab's
+// underline in admin blue (inset box-shadow). Keep the centered layout and
+// reskin the tabs to match the Font Library's underline tabs
+// (see _font-library.scss).
 
 .privacy-settings-header {
   @include mixins.screen('options-privacy-php') {
@@ -16,30 +19,61 @@
 
 .privacy-settings-body {
   @include mixins.screen('options-privacy-php') {
-    margin: 1.5rem;
+    // Core centers the 800px-wide body with `margin: 0 auto`; keep that
+    // horizontal centering (auto) while adding the card's vertical spacing.
+    margin: 1.5rem auto;
   }
 }
 
 // Dark mode is covered by _base.scss's `#attrium-host.dark h1 { text-white }`
 // (an ID wins here), but the h1 still needs the token color in light mode,
-// where core leaves it #3c434a — keep for light parity.
+// where core leaves it #3c434a — keep for light parity. Core already sizes it
+// at 23px; assert it so it matches the shell's page headers everywhere.
 .privacy-settings-title-section h1 {
   @include mixins.screen('options-privacy-php') {
     color: var(--attrium-foreground);
+    font-size: 23px;
   }
 }
 
+// The Font Library-style underline tabs, centered like core's original header:
+// inactive labels are muted grey, the active one is theme-aware with a non-blue
+// bottom underline, and hover/focus lift the label to theme-aware foreground.
+// Replaces core's centered inline-grid and the admin-blue `box-shadow` underline.
 .privacy-settings-tabs-wrapper {
   @include mixins.screen('options-privacy-php') {
-    @include ui.pill-track;
+    display: flex;
+    justify-content: center;
 
     .privacy-settings-tab {
-      @include ui.pill-segment;
-      @apply mx-1;
+      color: var(--attrium-muted-foreground);
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      margin: 0;
+      padding: 0.5rem 1rem 1rem;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+
+      &:hover,
+      &:focus {
+        color: var(--attrium-foreground);
+      }
 
       &.active {
-        @include ui.pill-segment-active;
+        color: var(--attrium-foreground);
+        border-bottom-color: var(--attrium-primary);
+        box-shadow: none;
+        font-weight: 500;
       }
     }
+  }
+}
+
+// Body paragraphs at the shell's 14px size.
+p {
+  @include mixins.screen('options-privacy-php') {
+    font-size: 14px;
   }
 }

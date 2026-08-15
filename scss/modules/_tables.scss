@@ -1,56 +1,48 @@
 @use '../mixins';
 
-@mixin table-reset {
-  box-shadow: none;
-
-  thead,
-  tbody,
-  tfoot,
-  tr,
-  th,
-  td {
-    background: none;
-    box-shadow: none;
-  }
-}
-
-@mixin table-base {
-  @apply w-full;
-
-  border: 1px solid var(--attrium-border);
-  border-radius: var(--attrium-radius-md);
-  overflow: hidden;
-  background: var(--attrium-border);
-}
-
-@mixin thead-base {
-  @apply bg-[var(--attrium-secondary)];
+// Shared cell recipe. The table itself is styled inline in `.widefat` below —
+// only the cell geometry is factored out, because th and td genuinely share it.
+@mixin cell-base {
+  @apply px-4 py-3 border-b border-[var(--attrium-border)];
 }
 
 @mixin th-base {
-  @apply px-4 py-3 text-left text-xs font-semibold
+  @include cell-base;
+  @apply text-left text-xs font-semibold
          uppercase tracking-wider
-         text-[var(--attrium-secondary-foreground)]
-         border-b border-[var(--attrium-border)];
+         text-[var(--attrium-secondary-foreground)];
 }
 
 @mixin td-base {
-  @apply px-4 py-3 align-middle
-         border-b border-[var(--attrium-border)]
-         transition-colors duration-100;
-}
-
-@mixin tbody-row-alt {
-  @apply bg-[var(--attrium-accent)];
+  @include cell-base;
+  @apply align-middle transition-colors duration-100;
 }
 
 .widefat {
   @include mixins.module('tables') {
-    @include table-reset;
-    @include table-base;
+    @apply w-full;
+
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    overflow: hidden;
+    // The table background shows through the 1px gaps between the opaque cells
+    // below, which is what draws the grid lines.
+    background: var(--attrium-border);
+    box-shadow: none;
+
+    // Strip core's own table chrome: per-cell backgrounds, plus the inset
+    // box-shadow it uses as a faux border.
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      background: none;
+      box-shadow: none;
+    }
 
     thead {
-      @include thead-base;
+      @apply bg-[var(--attrium-secondary)];
     }
 
     thead th,
@@ -70,13 +62,7 @@
         background: var(--attrium-accent);
       }
 
-      td {
-        @include td-base;
-
-        color: var(--attrium-foreground);
-        background: var(--attrium-primary-foreground);
-      }
-
+      td,
       th {
         @include td-base;
 
@@ -84,11 +70,12 @@
         background: var(--attrium-primary-foreground);
       }
 
-      tr.alternate {
-        @include tbody-row-alt;
-      }
+      // No zebra striping: cells above are opaque, and the 1px border grid is
+      // what separates rows. (Core's `.alternate` is only emitted into the
+      // find-posts modal anyway — real list tables use `.striped`.)
 
-      tr:last-child td {
+      tr:last-child td,
+      tr:last-child th {
         @apply border-b-0;
       }
     }
@@ -153,31 +140,28 @@
     .sorting-indicators {
       @apply inline-flex flex-col ml-1;
 
-      .sorting-indicator {
-        background: none !important;
-        background-image: none !important;
-      }
-
-      .sorting-indicator::before,
-      .sorting-indicator::after {
+      // Core draws the arrows as dashicons glyphs via `::before` content
+      // (list-tables.css). Drop the glyph and redraw each arrow as a CSS
+      // triangle so it picks up the foreground token in both modes.
+      .sorting-indicator::before {
         content: none !important;
       }
 
-      .sorting-indicator.asc {
-        border-bottom: 4px solid var(--attrium-foreground);
+      .sorting-indicator.asc,
+      .sorting-indicator.desc {
         border-left: 3px solid transparent;
         border-right: 3px solid transparent;
         width: 0;
         height: 0;
+      }
+
+      .sorting-indicator.asc {
+        border-bottom: 4px solid var(--attrium-foreground);
         margin-bottom: 1px;
       }
 
       .sorting-indicator.desc {
         border-top: 4px solid var(--attrium-foreground);
-        border-left: 3px solid transparent;
-        border-right: 3px solid transparent;
-        width: 0;
-        height: 0;
       }
     }
 
@@ -203,13 +187,6 @@
         }
       }
     }
-  }
-}
-
-#attrium-host.dark .widefat thead th,
-#attrium-host.dark .widefat thead td {
-  @include mixins.module('tables') {
-    color: var(--attrium-secondary-foreground);
   }
 }
 
@@ -272,12 +249,10 @@ p.search-box {
     input[type="search"] {
       @apply h-8 text-xs w-32;
     }
-  }
-}
 
-@media (max-width: 1200px) {
-  p.search-box {
-    @include mixins.module('tables') {
+    // Below 1200px the tablenav runs out of room for a floated search box, so
+    // it drops onto its own full-width row above the table.
+    @media (max-width: 1200px) {
       float: none;
       width: 100%;
       margin-bottom: 0.5rem;
@@ -339,4 +314,3 @@ p.search-box {
     border-color: transparent !important;
   }
 }
-

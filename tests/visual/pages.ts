@@ -61,4 +61,10 @@ export const ADMIN_PAGES: AdminPage[] = [
  *   per-build CSS-module hashes. Needs its own spec.
  * - `scss/screens/_options-connectors.scss` (135 lines) — also `module('screens')`
  *   rather than a known core body class, so there is no single URL to add here.
+ * - `scss/modules/_tables.scss` → `.column-primary .toggle-row` (~28 lines,
+ *   including a hand-drawn CSS triangle for the expand caret). Core hides
+ *   `.wp-list-table .toggle-row` outside its own `@media (max-width: 782px)`
+ *   block (list-tables.css), and every project here captures at 1440px, so the
+ *   rules never render under test. Verifying them needs a narrow-viewport spec,
+ *   not another entry in this list.
  */

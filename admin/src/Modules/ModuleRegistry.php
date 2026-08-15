@@ -10,6 +10,11 @@ class ModuleRegistry {
     private array $modules;
 
     public function __construct() {
+        // Excluded URLs never receive the theme: bail before any hook registration.
+        if ( Settings::is_ignored_url() ) {
+            return;
+        }
+
         $defaults = [
             'buttons'      => true,
             'tables'       => true,
@@ -33,12 +38,7 @@ class ModuleRegistry {
         return array_keys(array_filter($this->modules));
     }
 
-
     public function body_classes( string $classes ): string {
-        if ( Settings::is_ignored_url() ) {
-            return $classes;
-        }
-
         foreach ( $this->get_enabled_modules() as $module ) {
             $classes .= " attrium-mod-{$module}";
         }
@@ -47,10 +47,6 @@ class ModuleRegistry {
     }
 
     public function enqueue_styles(): void {
-        if ( Settings::is_ignored_url() ) {
-            return;
-        }
-
         $css_path = ATTRIUM_PATH . 'app/dist/admin-theme.css';
         $css_url  = ATTRIUM_URL . 'app/dist/admin-theme.css';
 

@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../modules/buttons' as buttons;
 
 // Connectors settings page (options-connectors.php): a React app built with
 // @wordpress/components. Its visible class names (`css-6jpe9g`, `css-8t07xj`, …)
@@ -50,6 +51,11 @@
     font-weight: 600;
   }
 
+  // General paragraph copy at the shell's 14px body size.
+  p {
+    font-size: 14px;
+  }
+
   // Connector description (a <span data-wp-component="Text">). Target the span
   // specifically so the h2 above keeps full-strength heading color.
   span[data-wp-component="Text"] {
@@ -61,39 +67,21 @@
   // Activate / Install actions on each row are wp-components secondary buttons;
   // "Install the AI plugin" in the callout is a primary button. Both are scoped
   // to `.connectors-page` so we don't reskin `.components-button` elsewhere in
-  // wp-admin (block editor, etc.), which keep their own design. wp-components
-  // draws the secondary "border" as an inset box-shadow and uses admin-blue
-  // text — reset the shadow and route colors through tokens.
+  // wp-admin (block editor, etc.), which keep their own design. They reuse the
+  // shared buttons module mixins so they get the same shape and hover effect
+  // (transition-colors + the -hover lighten token) as every other Attrium
+  // button; the inset box-shadow wp-components draws as the secondary "border"
+  // is neutralized so the physical token border is the only edge.
   .components-button.is-secondary {
-    background: var(--attrium-secondary);
-    color: var(--attrium-secondary-foreground);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
+    @include buttons.btn-base;
+    @include buttons.btn-secondary;
     box-shadow: none;
-
-    &:hover,
-    &:focus {
-      background: var(--attrium-accent);
-      color: var(--attrium-secondary-foreground);
-      border-color: var(--attrium-border);
-      box-shadow: none;
-    }
   }
 
   .components-button.is-primary {
-    background: var(--attrium-primary);
-    color: var(--attrium-primary-foreground);
-    border: 1px solid transparent;
-    border-radius: var(--attrium-radius-md);
+    @include buttons.btn-base;
+    @include buttons.btn-primary;
     box-shadow: none;
-
-    &:hover,
-    &:focus {
-      background: var(--attrium-primary);
-      color: var(--attrium-primary-foreground);
-      opacity: 0.9;
-      box-shadow: none;
-    }
   }
 }
 
@@ -131,5 +119,13 @@
     background: transparent !important;
     border-bottom: none !important;
     color: var(--attrium-foreground);
+  }
+}
+
+// Match the Attrium shell's page headers: the plugin's stylesheet sizes the
+// title below the shell's 23px; the mount id out-specifies its rule.
+#options-connectors-wp-admin-app .admin-ui-page__header-title {
+  @include mixins.module('screens') {
+    font-size: 23px;
   }
 }
