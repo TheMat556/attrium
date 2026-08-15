@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onClickOutside } from '@vueuse/core'
+import { onClickOutside, useEventListener } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useServerData } from '@/composables/useServerData'
 
@@ -20,11 +20,12 @@ onClickOutside(root, () => {
 	panelOpen.value = false
 })
 
-function onKeydownEsc(e: KeyboardEvent) {
+// Document-level so Escape also works while focus is inside the panel.
+useEventListener('keydown', (e: KeyboardEvent) => {
 	if (e.key === 'Escape') {
 		panelOpen.value = false
 	}
-}
+})
 </script>
 
 <template>
@@ -32,9 +33,6 @@ function onKeydownEsc(e: KeyboardEvent) {
 		ref="root"
 		class="fixed bottom-6 right-6 z-50 group"
 		:class="{ 'is-open': panelOpen }"
-		@keydown="onKeydownEsc"
-		@mouseenter="hoverOpen = true"
-		@mouseleave="hoverOpen = false"
 	>
 		<div
 			class="absolute bottom-12 right-0 mb-2 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-[.is-open]:opacity-100 group-[.is-open]:visible transition-all duration-200 ease-in-out translate-y-1 group-hover:translate-y-0 group-[.is-open]:translate-y-0"
@@ -77,6 +75,8 @@ function onKeydownEsc(e: KeyboardEvent) {
 			aria-label="Page info"
 			:aria-expanded="isOpen"
 			@click="panelOpen = !panelOpen"
+			@mouseenter="hoverOpen = true"
+			@mouseleave="hoverOpen = false"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
