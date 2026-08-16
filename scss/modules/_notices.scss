@@ -1,0 +1,87 @@
+@use '../mixins';
+
+// `:not(.hidden)` so we don't fight WordPress's global `.hidden { display:none }`
+// (wp-admin/css/common.css). Our `@apply flex` forces display:flex at higher
+// specificity and loads later, which would otherwise force empty placeholder
+// notices (e.g. plugins.php's `.notice.hidden`) visible.
+//
+// We also exclude `.hide-if-js`: WordPress uses that marker for elements that
+// should only show when JavaScript is OFF (core sets `.hide-if-js` to
+// `display:none` — and the `.js .wp-core-ui .hide-if-js` rule — once JS runs).
+// The media-library grid uses it for its noscript "requires JavaScript" banner,
+// so our `display:flex` must not re-expose it.
+.notice:not(.hidden):not(.hide-if-js) {
+  @include mixins.module('notices') {
+    @apply relative rounded-lg border border-[var(--attrium-border)]
+           p-4 flex items-start gap-4 pr-8
+           bg-[var(--attrium-primary-foreground)]
+           text-[var(--attrium-foreground)];
+
+    border-left-width: 6px;
+
+    &.notice-info {
+      border-left-color: var(--attrium-info);
+    }
+
+    &.notice-success {
+      border-left-color: var(--attrium-success);
+    }
+
+    &.notice-warning {
+      border-left-color: var(--attrium-warning);
+    }
+
+    &.notice-error {
+      border-left-color: var(--attrium-error);
+    }
+
+    h4,
+    .title {
+      @apply font-semibold mb-1;
+    }
+
+    p {
+      @apply text-sm;
+
+      color: var(--attrium-foreground);
+    }
+
+    .button {
+      @apply shrink-0;
+    }
+
+    .notice-dismiss {
+      @apply absolute top-2 right-2 p-1
+             rounded-md border border-transparent
+             text-[var(--attrium-foreground)] opacity-50
+             transition-opacity duration-100;
+
+      &:hover {
+        @apply opacity-100;
+      }
+
+      // Keep core's dashicons dismiss icon but let it inherit the foreground
+      // color token instead of core's hardcoded #787c82.
+      &::before {
+        color: inherit;
+      }
+    }
+
+    a:not(.button):not(.button-primary) {
+      @apply text-[var(--attrium-primary)];
+    }
+  }
+}
+
+// Core zeroes the horizontal margin of notices below 782px (responsive.css:
+// `.notice, .wrap div.error, .wrap div.updated { margin: 20px 0 10px }`, plus
+// `.wrap { margin-right: 0 }`), so the card presses flush against the right
+// rail on small screens. Restore core's own desktop right margin here.
+@media (max-width: 782px) {
+  .notice:not(.hidden):not(.hide-if-js) {
+    @include mixins.module('notices') {
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+  }
+}

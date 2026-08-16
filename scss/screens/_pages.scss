@@ -1,0 +1,24 @@
+@use '../mixins';
+@use '../ui';
+
+// Pages list (edit.php?post_type=page): hide the top toolbar's pagination and
+// the bottom toolbar's bulk-actions. The top toolbar's filter row is left
+// untouched (`_tables.scss` already owns `.tablenav.top .actions` padding).
+// `.tablenav` only exists on the list table, so these are no-ops on the page
+// editor (which also carries body.post-type-page).
+.tablenav.top .tablenav-pages {
+  @include mixins.screen('post-type-page') {
+    @apply hidden;
+  }
+}
+
+@include ui.hide-bottom-bulk-actions('post-type-page');
+
+// Core gives #post-query-submit `margin: 0 0 0 8px` (forms.css) — empirically
+// the margin-right reset here is still live in the pages flex search box, so
+// keep it (the button would otherwise drift against the search field).
+#post-query-submit {
+  @include mixins.screen('post-type-page') {
+    @apply mr-0;
+  }
+}

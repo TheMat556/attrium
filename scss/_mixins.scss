@@ -1,0 +1,56 @@
+@use 'sass:list';
+
+@mixin module($name) {
+  body.attrium-mod-#{$name} & {
+    @content;
+  }
+}
+
+// Per-screen gate: requires the broad `attrium-mod-screens` flag AND
+// WordPress's own screen body class `<body-class>` (e.g. post-type-page,
+// emitted by core in wp-admin/admin-header.php). Both live on <body>, so they
+// combine into one compound selector. The single `screens` flag toggles the
+// whole per-screen axis (general base + every per-screen file) at once — no
+// rebuild. For the all-screens base rules (no specific screen), use
+// `module('screens')` directly.
+// Variadic: pass more than one body class to apply the same rules to several
+// screens that share markup (e.g. `screen('theme-editor-php', 'plugin-editor-php')`)
+// — each becomes its own compound selector in a comma-joined list, so no rule
+// body has to be duplicated per screen.
+@mixin screen($body-classes...) {
+  #{_screen-selectors($body-classes, ' &')} {
+    @content;
+  }
+}
+
+// Same gate, but emitted as an ANCESTOR block instead of nested under a parent
+// selector — for files where every rule targets one screen. Wrap the whole file
+// in a single `screen-root(...)` and write the rules inside as plain top-level
+// selectors, instead of repeating `screen(...)` in every block. The generated
+// selectors are identical (`body.attrium-mod-screens.<class> .foo`), so
+// specificity and the cascade are unchanged; only the source noise goes away.
+// Use `screen()` for the nested form — including this one under a selector
+// would emit `.foo body.attrium-mod-screens...`, which matches nothing.
+@mixin screen-root($body-classes...) {
+  #{_screen-selectors($body-classes, '')} {
+    @content;
+  }
+}
+
+// Shared selector builder for the two gates above. `$suffix` is appended to
+// each compound class selector (' &' for the nested form, '' for the root
+// form). Private to this module (leading `_`), so it is not reachable as
+// `mixins._screen-selectors` from other files.
+@function _screen-selectors($body-classes, $suffix) {
+  $selectors: ();
+
+  @each $body-class in $body-classes {
+    $selectors: list.append(
+      $selectors,
+      'body.attrium-mod-screens.#{$body-class}#{$suffix}',
+      $separator: comma
+    );
+  }
+
+  @return $selectors;
+}

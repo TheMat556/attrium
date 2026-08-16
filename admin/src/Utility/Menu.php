@@ -33,11 +33,6 @@ class Menu {
                         continue;
                     }
 
-                    // Skip "Attrium" submenu item to avoid recursion
-                    if ( str_contains($sub_item[2], 'attrium') ) {
-                        continue;
-                    }
-
                     $children[] = [
                         'title' => self::clean_title($sub_item[0]),
                         'slug'  => $sub_item[2],

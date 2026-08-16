@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import { type Component, defineAsyncComponent } from 'vue'
 import Dashboard from './Dashboard.vue'
 
 /**
@@ -13,12 +13,14 @@ import Dashboard from './Dashboard.vue'
  * To override a new page: add one entry here and create its view file. App.vue
  * looks the screen up automatically and never needs to change.
  *
- * For heavy views, swap the eager import for a lazy one — `<component :is>`
- * resolves async components natively:
- *   plugins: () => import('./Plugins.vue'),
+ * For heavy views, wrap a lazy import in defineAsyncComponent so Vue resolves
+ * the chunk before rendering (a bare `() => import()` is treated as a
+ * functional component and renders the returned Promise as text):
+ *   plugins: defineAsyncComponent(() => import('./Plugins.vue')),
  */
 export const screenOverrides: Record<string, Component> = {
 	dashboard: Dashboard,
+	toplevel_page_attrium: defineAsyncComponent(() => import('./Appearance.vue')),
 }
 
 /** Resolve the override view for a screen id, or undefined to embed WP. */

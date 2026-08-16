@@ -1,0 +1,16 @@
+@use '../mixins';
+
+// Updates screen (update-core.php): hide the bottom "Update Plugins"/"Update
+// Themes" submit buttons. Each update form renders a redundant second submit
+// after its table (core keeps the primary one in the toolbar at the top of the
+// form); the shell already surfaces the action, so the bottom duplicates just
+// clutter the end of the section. Target each by its stable id and hide the
+// wrapping <p> via :has(), instead of a positional p:nth-child() that breaks if
+// WordPress reorders the form. Both forms are structurally identical, so hide
+// them together.
+.wrap form p:has(#upgrade-plugins-2),
+.wrap form p:has(#upgrade-themes-2) {
+  @include mixins.screen('update-core-php') {
+    @apply hidden;
+  }
+}

@@ -1,0 +1,233 @@
+@use 'mixins';
+
+// --- Private helpers ---------------------------------------------------------
+
+@mixin _on-screen($screens...) {
+  @include mixins.screen($screens...) {
+    @content;
+  }
+}
+
+@mixin _surface(
+  $background,
+  $border: 1px solid var(--attrium-border),
+  $radius: var(--attrium-radius-md)
+) {
+  background: $background;
+  border: $border;
+  border-radius: $radius;
+}
+
+// --- Focus reset ---------------------------------------------------------------
+
+@mixin focus-reset {
+  box-shadow: none;
+  outline: none;
+}
+
+// --- Segmented pill control ----------------------------------------------------
+
+@mixin pill-track {
+  @apply inline-flex w-fit items-center justify-center
+         rounded-lg p-[3px] border-0
+         bg-[var(--attrium-secondary)]
+         text-[var(--attrium-secondary-foreground)];
+}
+
+@mixin pill-segment {
+  @apply inline-flex items-center justify-center
+         rounded-md px-3 py-1.5 text-sm font-medium
+         no-underline transition-all border-0 bg-transparent
+         text-[var(--attrium-muted-foreground)];
+
+  &:hover,
+  &:focus {
+    @apply bg-transparent text-[var(--attrium-foreground)];
+  }
+
+  &:focus {
+    @apply shadow-none outline-none;
+  }
+}
+
+@mixin pill-segment-active {
+  @apply shadow-sm
+         bg-[var(--attrium-primary)]
+         text-[var(--attrium-primary-foreground)];
+}
+
+// --- Form field -----------------------------------------------------------------
+
+@mixin field-outline {
+  @apply rounded-[var(--attrium-radius-md)] text-sm border
+         border-[var(--attrium-border)] bg-transparent
+         text-[var(--attrium-foreground)] h-9
+         transition-colors duration-150
+         focus-visible:outline-none focus-visible:ring-2
+         focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+}
+
+// --- Surfaces -------------------------------------------------------------------
+
+@mixin wp-filter-surface($background: transparent) {
+  @include _surface($background);
+  @apply shadow-none;
+}
+
+@mixin card-surface {
+  @include _surface(var(--attrium-primary-foreground));
+}
+
+// --- Filter toolbar ----------------------------------------------------------------
+
+@mixin filter-toolbar($screens...) {
+  .wp-filter {
+    @include _on-screen($screens...) {
+      @include wp-filter-surface(transparent);
+      color: var(--attrium-foreground);
+    }
+  }
+
+  .filter-links {
+    li > a {
+      @include _on-screen($screens...) {
+        @apply border-b-4 border-transparent font-medium;
+
+        color: var(--attrium-foreground);
+        opacity: 0.65;
+
+        &:hover,
+        &:focus {
+          color: var(--attrium-foreground);
+          opacity: 1;
+        }
+      }
+    }
+
+    .current,
+    .current:hover,
+    .current:focus {
+      @include _on-screen($screens...) {
+        border-bottom-color: var(--attrium-primary);
+        color: var(--attrium-foreground);
+        opacity: 1;
+        @apply shadow-none;
+      }
+    }
+  }
+}
+
+// --- Installer feature-filter drawer -------------------------------------------
+
+@mixin filter-drawer($screens...) {
+  .filter-drawer {
+    @include _on-screen($screens...) {
+      background: transparent;
+      border-top: 1px solid var(--attrium-border);
+
+      .filter-group {
+        @include _surface(var(--attrium-secondary));
+        box-shadow: none;
+
+        legend,
+        label {
+          color: var(--attrium-foreground);
+        }
+      }
+
+      .filter-group-feature input[type='checkbox'],
+      .filter-group-feature input[type='radio'] {
+        position: absolute;
+      }
+
+      .apply-filters.button {
+        background: var(--attrium-primary);
+        color: var(--attrium-primary-foreground);
+        border-color: var(--attrium-border);
+        @apply shadow-none;
+
+        &:hover,
+        &:focus {
+          @apply opacity-90;
+        }
+      }
+
+      .buttons .button span {
+        color: var(--attrium-foreground);
+        opacity: 0.8;
+      }
+
+      .filtered-by .tag {
+        @include _surface(
+          var(--attrium-secondary),
+          1px solid var(--attrium-border),
+          9999px
+        );
+        box-shadow: none;
+        color: var(--attrium-secondary-foreground);
+        font-weight: 600;
+      }
+
+      .button-link.edit-filters {
+        color: var(--attrium-primary);
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+          text-decoration: underline;
+          @apply outline-none shadow-none;
+        }
+      }
+    }
+  }
+}
+
+// --- React shell resets ---------------------------------------------------------
+
+@mixin transparent-react-shell {
+  .boot-layout,
+  .boot-layout__surfaces,
+  .boot-layout__stage,
+  .admin-ui-page {
+    background: transparent !important;
+  }
+}
+
+@mixin borderless-surface($border-side: all) {
+  background: transparent !important;
+
+  @if $border-side == 'all' {
+    border: none !important;
+  } @else {
+    border-#{$border-side}: none !important;
+  }
+}
+
+// --- List-table helpers ----------------------------------------------------------
+
+@mixin hide-bottom-bulk-actions($screens...) {
+  .tablenav.bottom .bulkactions {
+    @include _on-screen($screens...) {
+      @apply hidden;
+    }
+  }
+}
+
+@mixin upload-card($screen, $form-selector, $help-selector) {
+  #{$form-selector} {
+    @include _on-screen($screen) {
+      @include _surface(
+        var(--attrium-primary-foreground),
+        2px dashed var(--attrium-border),
+        var(--attrium-radius-md)
+      );
+      padding: 1rem;
+    }
+  }
+
+  #{$help-selector} {
+    @include _on-screen($screen) {
+      color: var(--attrium-muted-foreground);
+    }
+  }
+}

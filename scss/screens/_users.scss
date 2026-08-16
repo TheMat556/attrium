@@ -1,0 +1,12 @@
+@use '../mixins';
+
+// Users list (users.php → body.users-php): hide the bottom tablenav's action
+// controls — both the bulk-actions block (`.bulkactions`) and the change-role
+// block (a bare `.alignleft.actions`). The equivalent controls at the top of
+// the table remain, so nothing is lost. Same idea as the bottom-toolbar hide
+// in _plugins.scss.
+.tablenav.bottom .alignleft.actions {
+  @include mixins.screen('users-php') {
+    @apply hidden;
+  }
+}

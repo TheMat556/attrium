@@ -1,0 +1,51 @@
+@use '../mixins';
+
+// General base for the per-screen axis: styling shared by EVERY admin screen,
+// independent of post type or hook. Gated by the broad `attrium-mod-screens`
+// flag via module('screens') — no specific WP body class. Per-screen overrides
+// live in their own files (e.g. _pages.scss) and use the screen('<class>')
+// mixin, which also requires this same flag so the whole axis toggles together.
+// Example (uncomment / extend as shared screen rules are added):
+// .tablenav {
+//   @include mixins.module('screens') {
+//     @apply ...;
+//   }
+// }
+
+h1, h2, h3 {
+  @include mixins.module('screens') {
+    @apply font-semibold;
+  }
+}
+
+#attrium-host.dark {
+  h1,
+  h2,
+  h3,
+  label,
+  th[scope="row"] {
+    @include mixins.module('screens') {
+      @apply text-white;
+    }
+  }
+}
+
+p {
+  @include mixins.module('screens') {
+    color: var(--attrium-muted-foreground);
+  }
+}
+
+#screen-meta-links {
+  @include mixins.module('screens') {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  #wpbody {
+    @include mixins.module('screens') {
+      padding-top: 0;
+    }
+  }
+}

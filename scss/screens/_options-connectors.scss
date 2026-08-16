@@ -1,0 +1,131 @@
+@use '../mixins';
+@use '../modules/buttons' as buttons;
+
+// Connectors settings page (options-connectors.php): a React app built with
+// @wordpress/components. Its visible class names (`css-6jpe9g`, `css-8t07xj`, …)
+// are Emotion-generated hashes that change on every build, so we target ONLY
+// stable hooks: the `.connectors-page` container, `.components-item`, the
+// `data-wp-component` attributes, and the `.is-primary` / `.is-secondary`
+// button variants. Emotion selectors are single-class (0,1,0); our compound
+// (body + screens flag + container + component) easily out-specifies them and
+// wp-components' own base rules, so no `!important` is needed.
+//
+// Gate: this is a plugin-provided page whose WP body class isn't one of the
+// known core screen classes, so instead of the usual `screen('<body-class>')`
+// we scope by the unique `.connectors-page` container under the broad
+// `attrium-mod-screens` flag. The container only exists on this page, so the
+// effect is the same while staying robust to whatever body class the plugin
+// emits.
+//
+// All colors flow through the --attrium-* tokens (redefined under
+// #attrium-host.dark in _tokens.css), so light/dark parity is automatic with
+// no separate dark-mode block. Setting the base `color` on the container also
+// fixes icons that paint with `fill="currentColor"` (e.g. the OpenAI logo),
+// which would otherwise be invisible in one mode.
+
+@mixin connectors {
+  color: var(--attrium-foreground);
+
+  // ---- AI-plugin promo callout ----
+  // Core paints this with a light surface; token-ise it so it reads in dark.
+  .ai-plugin-callout {
+    background: var(--attrium-secondary);
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    color: var(--attrium-foreground);
+    overflow: hidden;
+  }
+
+  // ---- Connector rows (each is a wp-components Item) ----
+  .components-item {
+    background: var(--attrium-primary-foreground);
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    color: var(--attrium-foreground);
+  }
+
+  // ---- Text ----
+  // Connector name (rendered as an <h2 data-wp-component="Text">).
+  h2 {
+    color: var(--attrium-foreground);
+    font-weight: 600;
+  }
+
+  // General paragraph copy at the shell's 14px body size.
+  p {
+    font-size: 14px;
+  }
+
+  // Connector description (a <span data-wp-component="Text">). Target the span
+  // specifically so the h2 above keeps full-strength heading color.
+  span[data-wp-component="Text"] {
+    color: var(--attrium-foreground);
+    opacity: 0.6;
+  }
+
+  // ---- Buttons ----
+  // Activate / Install actions on each row are wp-components secondary buttons;
+  // "Install the AI plugin" in the callout is a primary button. Both are scoped
+  // to `.connectors-page` so we don't reskin `.components-button` elsewhere in
+  // wp-admin (block editor, etc.), which keep their own design. They reuse the
+  // shared buttons module mixins so they get the same shape and hover effect
+  // (transition-colors + the -hover lighten token) as every other Attrium
+  // button; the inset box-shadow wp-components draws as the secondary "border"
+  // is neutralized so the physical token border is the only edge.
+  .components-button.is-secondary {
+    @include buttons.btn-base;
+    @include buttons.btn-secondary;
+    box-shadow: none;
+  }
+
+  .components-button.is-primary {
+    @include buttons.btn-base;
+    @include buttons.btn-primary;
+    box-shadow: none;
+  }
+}
+
+.connectors-page {
+  @include mixins.module('screens') {
+    @include connectors;
+  }
+}
+
+// The page background is painted on the outer React shell (`.boot-layout__*`
+// and `.admin-ui-page`), not on `.connectors-page`, so styling only the inner
+// container left a light band behind everything in dark mode. Same React shell
+// as the Font Library (see _font-library.scss): let the Attrium content card
+// show through by forcing the shell containers transparent. The plugin's own
+// stylesheet paints these with a solid light surface at a specificity our
+// compound selector can't beat, so `!important` is required here — exactly as
+// in the font-library reskin. These are stable structural classes (not Emotion
+// hashes), so they are safe to target. Header title/subtitle inherit the token
+// text color from the shell.
+.boot-layout,
+.boot-layout__surfaces,
+.boot-layout__stage,
+.admin-ui-page {
+  @include mixins.module('screens') {
+    background: transparent !important;
+    color: var(--attrium-foreground);
+  }
+}
+
+// The page header (`.admin-ui-page__header`) carries its own solid surface and
+// a bottom border from the plugin's stylesheet — reset both so the title/
+// subtitle sit directly on the transparent shell like the rest of the page.
+.admin-ui-page__header {
+  @include mixins.module('screens') {
+    background: transparent !important;
+    border-bottom: none !important;
+    color: var(--attrium-foreground);
+  }
+}
+
+// Match the Attrium shell's page headers: the plugin's stylesheet sizes the
+// title below the shell's 23px; the mount id out-specifies its rule.
+#options-connectors-wp-admin-app .admin-ui-page__header-title {
+  @include mixins.module('screens') {
+    font-size: 23px;
+  }
+}

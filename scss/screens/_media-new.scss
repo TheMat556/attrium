@@ -1,0 +1,11 @@
+@use '../mixins';
+
+// Upload new media (media-new.php): restyle the drag-and-drop dropzone. Core
+// (wp-admin/css/media.css: `.drag-drop #drag-drop-area`) gives it a 4px dashed
+// #c3c4c7 border; make it a dotted 1px in the Attrium border token, rounded.
+#drag-drop-area {
+  @include mixins.screen('media-new-php') {
+    border: 2px dotted var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+  }
+}

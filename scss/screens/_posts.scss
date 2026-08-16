@@ -1,0 +1,19 @@
+@use '../mixins';
+
+// Posts list (edit.php): hide the bottom bulk-actions and the top pagination
+// when there is only a single page of results. WordPress adds `.one-page` to
+// `.tablenav-pages` when total-pages is 1, so bulk-actions stay visible on
+// multi-page lists where they're needed for cross-page actions.
+.tablenav.bottom:has(.tablenav-pages.one-page) .bulkactions,
+.tablenav.top .tablenav-pages.one-page {
+  @include mixins.screen('post-type-post') {
+    @apply hidden;
+  }
+}
+
+#post-query-submit {
+  @include mixins.screen('post-type-post') {
+    @apply mr-0;
+  }
+}
+

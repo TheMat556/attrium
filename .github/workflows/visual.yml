@@ -1,0 +1,97 @@
+# Attrium visual regression — screenshots each restyled wp-admin screen against
+# a disposable WordPress (via @wordpress/env) and pixel-diffs them against the
+# committed baselines. Screenshots are rendered inside the pinned Playwright
+# Docker image (same as local `bun run test:visual`) so font rendering matches
+# the committed baselines exactly.
+#
+# Blocking: any diff over threshold fails the job. On failure the HTML report
+# and diff PNGs are uploaded as artifacts. When a change is intentional,
+# regenerate baselines with `bun run test:visual:update` and commit them.
+
+name: Visual Regression
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    name: Visual Regression
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Nothing here pushes; don't leave the job token in .git/config where
+          # a build script could reuse it.
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      # The plugin boots from admin/vendor/autoload.php, so it must exist before
+      # wp-env activates the plugin.
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: ./admin
+        run: composer install --no-interaction --no-progress
+
+      # Builds app/dist/admin-theme.css (and the Vue bundle) that the plugin
+      # enqueues; without this the theme CSS is absent and every screen diffs.
+      - name: Build
+        run: bun run build
+
+      # .wp-env.json maps tests/visual/mu-plugins/ into wp-content/mu-plugins,
+      # which freezes WordPress's update transients. Without it the live
+      # "WordPress X.Y.Z is available!" nag renders on every screen and every
+      # baseline breaks whenever WordPress ships a release.
+      # CI runners are ephemeral, so the environment is always pristine.
+      - name: Start WordPress (wp-env)
+        run: bunx wp-env start
+
+      - name: Run visual regression
+        run: bash tests/visual/run-in-docker.sh
+        env:
+          CI: "true"
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload diff images
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Stop WordPress
+        if: ${{ always() }}
+        run: bunx wp-env stop

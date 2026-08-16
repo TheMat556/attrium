@@ -1,0 +1,19 @@
+@use '../mixins';
+
+// Tools page (tools.php → body.tools-php). Core gives the `.card` a background
+// of #fff and a #c3c4c7 border (forms.css:1042), which read as a bright band in
+// dark mode. The `.title` is an `<h2>`, so dark-mode text on it is already
+// handled by _base.scss's `h1,h2,h3 { text-white }` gate — only the surface and
+// the card's paragraphs need token overrides here. The `p` override keeps card
+// copy at full `--attrium-foreground` brightness (the shared _base.scss `p`
+// rule gives all paragraphs `--attrium-muted-foreground`, which would dim it).
+#attrium-host.dark .card {
+  @include mixins.screen('tools-php') {
+    background: var(--attrium-primary-foreground);
+    border-color: var(--attrium-border);
+
+    p {
+      color: var(--attrium-foreground);
+    }
+  }
+}

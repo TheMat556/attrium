@@ -25,6 +25,7 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+/.claude
 *.suo
 *.ntvs*
 *.njsproj
@@ -39,3 +40,12 @@ Thumbs.db
 *.local
 .env
 .env.local
+
+# Visual regression (Playwright). Baselines under
+# tests/visual/**/*-snapshots/ ARE committed; everything else is transient.
+tests/visual/.auth/
+test-results/
+test-results-components/
+playwright-report/
+playwright-report-components/
+playwright/.cache/

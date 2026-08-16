@@ -1,0 +1,316 @@
+@use '../mixins';
+
+// Shared cell recipe. The table itself is styled inline in `.widefat` below —
+// only the cell geometry is factored out, because th and td genuinely share it.
+@mixin cell-base {
+  @apply px-4 py-3 border-b border-[var(--attrium-border)];
+}
+
+@mixin th-base {
+  @include cell-base;
+  @apply text-left text-xs font-semibold
+         uppercase tracking-wider
+         text-[var(--attrium-secondary-foreground)];
+}
+
+@mixin td-base {
+  @include cell-base;
+  @apply align-middle transition-colors duration-100;
+}
+
+.widefat {
+  @include mixins.module('tables') {
+    @apply w-full;
+
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    overflow: hidden;
+    // The table background shows through the 1px gaps between the opaque cells
+    // below, which is what draws the grid lines.
+    background: var(--attrium-border);
+    box-shadow: none;
+
+    // Strip core's own table chrome: per-cell backgrounds, plus the inset
+    // box-shadow it uses as a faux border.
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      background: none;
+      box-shadow: none;
+    }
+
+    thead {
+      @apply bg-[var(--attrium-secondary)];
+    }
+
+    thead th,
+    thead td {
+      @include th-base;
+    }
+
+    tfoot {
+      @apply hidden;
+    }
+
+    tbody {
+      // Row-level hover: the whole row lights up together (the row is the
+      // interactive unit), rather than each cell lighting up independently.
+      tr:hover td,
+      tr:hover th {
+        background: var(--attrium-accent);
+      }
+
+      td,
+      th {
+        @include td-base;
+
+        color: var(--attrium-foreground);
+        background: var(--attrium-primary-foreground);
+      }
+
+      // No zebra striping: cells above are opaque, and the 1px border grid is
+      // what separates rows. (Core's `.alternate` is only emitted into the
+      // find-posts modal anyway — real list tables use `.striped`.)
+
+      tr:last-child td,
+      tr:last-child th {
+        @apply border-b-0;
+      }
+    }
+
+    .check-column {
+      @apply w-10 px-2 text-center;
+    }
+
+    .row-title {
+      @apply font-medium text-[var(--attrium-foreground)];
+
+      &:hover {
+        @apply underline;
+      }
+    }
+
+    .row-actions {
+      @apply mt-1 text-xs;
+
+      color: var(--attrium-foreground);
+      opacity: 0.5;
+
+      a {
+        @apply text-[var(--attrium-foreground)];
+
+        &:hover {
+          @apply underline;
+        }
+      }
+    }
+
+    .column-primary {
+      .toggle-row {
+        @apply absolute right-2 top-1/2 -translate-y-1/2
+               rounded-md border border-[var(--attrium-border)]
+               bg-transparent w-7 h-7
+               transition-colors duration-100 cursor-pointer;
+
+        &:hover {
+          @apply bg-[var(--attrium-accent)];
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 5px solid var(--attrium-foreground);
+        }
+
+        .screen-reader-text {
+          @apply sr-only;
+        }
+      }
+    }
+
+    .sorting-indicators {
+      @apply inline-flex flex-col ml-1;
+
+      // Core draws the arrows as dashicons glyphs via `::before` content
+      // (list-tables.css). Drop the glyph and redraw each arrow as a CSS
+      // triangle so it picks up the foreground token in both modes.
+      .sorting-indicator::before {
+        content: none !important;
+      }
+
+      .sorting-indicator.asc,
+      .sorting-indicator.desc {
+        border-left: 3px solid transparent;
+        border-right: 3px solid transparent;
+        width: 0;
+        height: 0;
+      }
+
+      .sorting-indicator.asc {
+        border-bottom: 4px solid var(--attrium-foreground);
+        margin-bottom: 1px;
+      }
+
+      .sorting-indicator.desc {
+        border-top: 4px solid var(--attrium-foreground);
+      }
+    }
+
+    th.sorted,
+    th.sortable {
+      a {
+        @apply text-[var(--attrium-primary)]
+               flex items-center;
+      }
+    }
+
+    .post-com-count-wrapper {
+      @apply inline-flex items-center gap-1;
+    }
+
+    th.column-comments,
+    td.column-comments {
+      a {
+        @apply flex items-center justify-center;
+
+        .comment-grey-bubble {
+          @apply inline-block w-4 h-4;
+        }
+      }
+    }
+  }
+}
+
+// The plugins list (.widefat.plugins) ships a dedicated core style block
+// (wp-admin/css/list-tables.css) that overrides the generic .widefat rules
+// with higher specificity: `.plugins tr { background:#fff }` repaints the
+// header, and `.plugins .active/.inactive td/th { box-shadow: inset 0 -1px 0 }`
+// draws a second faux bottom-border over our clean border-b. Neutralize those
+// here so the plugins table matches every other table.
+.widefat.plugins {
+  @include mixins.module('tables') {
+    // Row cells: drop core's inset box-shadow "border" and active-row tint;
+    // inherit the same background/border as normal tbody cells.
+    tbody th,
+    tbody td,
+    tr.active th,
+    tr.active td,
+    tr.inactive th,
+    tr.inactive td {
+      @apply shadow-none;
+
+      background-color: var(--attrium-primary-foreground);
+    }
+
+    // Plugins repaint every cell (above) after the shared row-hover rule, so
+    // repeat the row-hover here to keep whole-row highlighting working here.
+    tbody tr:hover th,
+    tbody tr:hover td {
+      background-color: var(--attrium-accent);
+    }
+
+    // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
+    // restore the secondary header fill on the actual header cells.
+    thead th,
+    thead td {
+      background-color: var(--attrium-secondary);
+    }
+
+    // Core hard-codes text to #000 on `.plugins, .plugins th, .plugins td`;
+    // restore the token so dark mode is legible.
+    th,
+    td {
+      color: var(--attrium-foreground);
+    }
+
+    // When a plugin row is followed by an update notification row
+    // (.plugin-update-tr), remove the bottom border from the plugin row's cells
+    // so the two rows blend together without a horizontal divider.
+    tr:has(+ tr.plugin-update-tr) th,
+    tr:has(+ tr.plugin-update-tr) td {
+      @apply border-b-0;
+    }
+  }
+}
+
+p.search-box {
+  @include mixins.module('tables') {
+    margin-top: 0.5rem;
+
+    input[type="search"] {
+      @apply h-8 text-xs w-32;
+    }
+
+    // Below 1200px the tablenav runs out of room for a floated search box, so
+    // it drops onto its own full-width row above the table.
+    @media (max-width: 1200px) {
+      float: none;
+      width: 100%;
+      margin-bottom: 0.5rem;
+      margin-top: 0;
+
+      input[type="search"] {
+        @apply w-auto flex-1;
+      }
+    }
+  }
+}
+
+.tablenav.top {
+  @include mixins.module('tables') {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    height: auto;
+    margin: 0 0 1rem;
+
+    .alignleft {
+      float: none;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      float: none;
+      padding: 0;
+    }
+
+    .tablenav-pages {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-left: auto;
+      float: none;
+    }
+
+    br.clear {
+      display: none;
+    }
+  }
+}
+
+.tablenav.bottom {
+  @include mixins.module('tables') {
+    margin-top: 1rem;
+  }
+}
+
+.tablenav-pages-navspan.button.disabled {
+  @include mixins.module('tables') {
+    opacity: 0.4;
+    cursor: default;
+    border-color: transparent !important;
+  }
+}
