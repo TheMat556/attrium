@@ -17,7 +17,10 @@ class Attrium {
         add_action('admin_enqueue_scripts', [ $this, 'suppress_wp_command_palette' ], 0);
         add_action('admin_enqueue_scripts', [ $this, 'load_styles' ], 1);
         add_action('admin_enqueue_scripts', [ $this, 'load_base_scripts' ], 1);
-        add_action('admin_head', [ $this, 'output_data_attributes' ], 0);
+        // Output on in_admin_header (not admin_head) so menu-header.php has
+        // already resolved $parent_file/$submenu_file (including the
+        // parent_file/submenu_file filters) before we read them below.
+        add_action('in_admin_header', [ $this, 'output_data_attributes' ], 0);
         add_action('in_admin_header', [ $this, 'build_attrium' ], 1);
     }
 
@@ -151,6 +154,28 @@ class Attrium {
         $screen    = function_exists('get_current_screen') ? get_current_screen() : null;
         $screen_id = $screen && isset($screen->id) ? $screen->id : '';
 
+        // The active top-level and submenu item, exactly as WordPress resolves
+        // them in menu-header.php. Page files set these globals (e.g. edit.php
+        // sets "edit.php?post_type=..." for CPT lists), then menu-header.php
+        // applies the parent_file/submenu_file filters — which is why this
+        // method runs on in_admin_header. The sidebar highlights by comparing
+        // its item/child slugs against these values, matching core exactly.
+        $parent_file  = isset($GLOBALS['parent_file']) ? (string) $GLOBALS['parent_file'] : '';
+        $submenu_file = isset($GLOBALS['submenu_file']) ? (string) $GLOBALS['submenu_file'] : '';
+
+        // Plugin pages (admin.php?page=X) never set $submenu_file; core's
+        // menu-header.php falls back to comparing $plugin_page against the
+        // submenu slugs. Mirror that so the plugin page itself highlights.
+        if ( '' === $submenu_file && isset($GLOBALS['plugin_page']) && $GLOBALS['plugin_page'] ) {
+            $submenu_file = (string) $GLOBALS['plugin_page'];
+        }
+
+        // edit-tags.php escapes the query string with &amp; for post_type
+        // taxonomies; the menu slug itself uses a bare &. Normalize so the
+        // exact slug comparison on the client can match.
+        $parent_file  = html_entity_decode($parent_file, ENT_QUOTES);
+        $submenu_file = html_entity_decode($submenu_file, ENT_QUOTES);
+
         $menu_items = Menu::get_items();
 
         $logout_url     = wp_logout_url();
@@ -172,6 +197,8 @@ class Attrium {
             'can-create-pages' => esc_attr($can_create_pages),
             'screen-id'        => esc_attr($screen_id),
             'menu'             => wp_json_encode($menu_items),
+            'parent-file'      => esc_attr($parent_file),
+            'submenu-file'     => esc_attr($submenu_file),
             'plugin-version'   => esc_attr(ATTRIUM_VERSION),
             'plugin-base'      => esc_url(ATTRIUM_URL),
             'is-ignored'       => esc_attr($is_ignored),

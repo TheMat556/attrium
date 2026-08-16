@@ -23,10 +23,12 @@ const navMain = computed(() => {
 		url: item.url,
 		icon: getIcon(item.icon),
 		badge: item.badge,
+		slug: item.slug,
 		children: item.children.map((child) => ({
 			title: child.title,
 			url: child.url,
 			badge: child.badge,
+			slug: child.slug,
 		})),
 	}))
 })
