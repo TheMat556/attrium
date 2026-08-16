@@ -31,6 +31,10 @@ export interface ServerData {
 	menu: MenuItem[]
 	isIgnored: boolean
 	isPluginPage: boolean
+	/** Active top-level menu slug, as resolved by WordPress (see Attrium.php). */
+	parentFile: string
+	/** Active submenu slug, as resolved by WordPress (see Attrium.php). */
+	submenuFile: string
 }
 
 export function useServerData(): ServerData {
@@ -57,6 +61,8 @@ export function useServerData(): ServerData {
 		pluginBase: get('plugin-base'),
 		isIgnored: get('is-ignored') === 'true',
 		isPluginPage: get('is-plugin-page') === 'true',
+		parentFile: get('parent-file'),
+		submenuFile: get('submenu-file'),
 	}
 }
 

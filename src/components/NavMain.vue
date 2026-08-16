@@ -13,10 +13,12 @@ import {
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import { useServerData } from '@/composables/useServerData'
 
 interface NavChild {
 	title: string
 	url: string
+	slug?: string
 	badge?: string
 }
 
@@ -25,6 +27,7 @@ interface NavItem {
 	url: string
 	icon?: Component
 	badge?: string
+	slug?: string
 	children?: NavChild[]
 }
 
@@ -32,13 +35,17 @@ const props = defineProps<{
 	items: NavItem[]
 }>()
 
+const { parentFile, submenuFile } = useServerData()
+
 /**
  * Determine the active parent — the top-level menu item whose URL or child's
  * URL matches the current page. That parent's submenu is always expanded.
  *
- * Compares pathname + `page` query param so irrelevant params (paged, tab,
- * filter, s, hash) don't cause false mismatches — the `page` param is the
- * actual WordPress routing key for submenu/admin-page items.
+ * WordPress resolves the current item itself (menu-header.php) and hands it to
+ * us as `parent-file`/`submenu-file` — those slugs are matched exactly, which
+ * is what keeps e.g. a `edit.php?post_type=...` submenu (Bricks Templates)
+ * from ever matching a plain `edit.php` page (Posts). The URL matching below
+ * is only a fallback for pages WordPress itself cannot place.
  */
 function urlsMatch(a: string, b: string): boolean {
 	const ua = new URL(a, window.location.origin)
@@ -54,6 +61,14 @@ function urlsMatch(a: string, b: string): boolean {
 const currentUrl = computed(() => window.location.href)
 
 const activeParent = computed<string | null>(() => {
+	// Authoritative: WordPress's own parent slug, matched against the menu
+	// item slug emitted by Menu.php (both are the raw $item[2] / $menu_slug).
+	if (parentFile) {
+		const match = props.items.find((item) => item.slug === parentFile)
+		if (match) return match.title
+	}
+
+	// Fallback: match by URL for pages WordPress didn't resolve a parent for.
 	const cur = currentUrl.value
 	for (const item of props.items) {
 		if (!item.children?.length) continue
@@ -65,9 +80,24 @@ const activeParent = computed<string | null>(() => {
 	return null
 })
 
-/** Check if a URL matches the current page (for child active state). */
-function isActiveUrl(url: string): boolean {
-	return urlsMatch(currentUrl.value, url)
+/**
+ * Whether a submenu item is the current page. Prefer WordPress's own
+ * `submenu-file` slug (exact match against the child slug); fall back to URL
+ * matching only when WordPress reported no submenu (top-level pages).
+ */
+function isChildActive(child: NavChild): boolean {
+	if (submenuFile) return child.slug === submenuFile
+	return urlsMatch(currentUrl.value, child.url)
+}
+
+/**
+ * Whether a standalone top-level item (no submenu) is the current page. Matches
+ * WordPress's parent-file/submenu-file slugs only — never falls back to URL
+ * matching, so footer links (which carry no slug) stay unhighlighted.
+ */
+function isItemActive(item: NavItem): boolean {
+	if (!item.slug) return false
+	return item.slug === parentFile || item.slug === submenuFile
 }
 
 /**
@@ -121,7 +151,12 @@ function titleClass(item: NavItem): string {
 							:class="[item.badge ? 'ml-1' : 'ml-auto', { 'rotate-90': isOpen(item.title) }]"
 						/>
 					</SidebarMenuButton>
-					<SidebarMenuButton v-else as-child :tooltip="item.title">
+					<SidebarMenuButton
+						v-else
+						as-child
+						:tooltip="item.title"
+						:is-active="isItemActive(item)"
+					>
 						<a :href="item.url || '#'">
 							<component :is="item.icon" v-if="item.icon" />
 							<span class="ml-3" :class="titleClass(item)">
@@ -147,8 +182,8 @@ function titleClass(item: NavItem): string {
 							>
 								<SidebarMenuSubButton
 									as-child
-									:is-active="isActiveUrl(child.url)"
-									:class="isActiveUrl(child.url) ? 'data-active:bg-transparent! data-active:text-sidebar-accent-foreground!' : ''"
+									:is-active="isChildActive(child)"
+									:class="isChildActive(child) ? 'data-active:bg-transparent! data-active:text-sidebar-accent-foreground!' : ''"
 								>
 									<a :href="child.url || '#'">
 										<span>{{ child.title }}</span>
