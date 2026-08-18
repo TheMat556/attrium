@@ -58,9 +58,9 @@ for (const { theme } of THEMES) {
 				await page.goto(path, { waitUntil: 'networkidle' })
 				await stabilize(page)
 
-				// Grows the viewport and captures #attrium-host, the real
-				// scroll container. `fullPage` is a no-op in this app — see
-				// `snapshotTarget` for why.
+				// Grows the viewport and captures #attrium-host, the shell that
+				// holds the fixed-height app column. `fullPage` is a no-op in
+				// this app — see `snapshotTarget` for why.
 				const target = await snapshotTarget(page)
 
 				await expect(target).toHaveScreenshot(`${name}-${theme}.png`, {

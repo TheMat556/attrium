@@ -16,24 +16,28 @@ const override = getScreenOverride(screenId)
 
 <template>
 	<SidebarProvider
+		class="h-svh overflow-hidden"
 		:style="{
       '--sidebar-width': '16rem',
       '--header-height': '3rem',
     }"
 	>
 		<AppSidebar variant="inset" />
-		<SidebarInset class="ml-0">
+		<SidebarInset class="ml-0 min-h-0">
 			<SiteHeader />
-			<div class="flex flex-1 flex-col rounded-xl shadow-sm md:mx-2 md:mb-2">
+			<div
+				data-attrium-scroll
+				class="bg-background flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl shadow-sm md:mx-2 md:mb-2"
+				:style="
+					isIgnored
+						? { '--background': 'var(--attrium-ignored-background)' }
+						: undefined
+				"
+			>
 				<div
-					class="bg-background flex flex-1 flex-col rounded-xl overflow-hidden"
-					:style="
-						isIgnored
-							? { '--background': 'var(--attrium-ignored-background)' }
-							: undefined
-					"
+					class="flex min-h-full shrink-0 flex-col rounded-xl overflow-hidden"
 				>
-					<div class="@container/main flex flex-1 flex-col gap-2">
+					<div class="@container/main flex flex-col gap-2">
 						<div class="flex flex-col gap-4 md:gap-6">
 							<main>
 								<component :is="override" v-if="override" />

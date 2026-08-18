@@ -21,9 +21,9 @@ export const AUTH_FILE = 'tests/visual/.auth/state.json'
 
 /**
  * The shadow host created by `src/main.ts`. It is `position: fixed; inset: 0`
- * with `overflow-y: auto`, so IT is the scrolling element — not the document.
- * That makes it both the capture target (see `snapshotTarget`) and the element
- * carrying the `dark` class.
+ * with `overflow: hidden` — it does NOT scroll (the content card inside the
+ * Vue app is the scroll container). It is both the capture target (see
+ * `snapshotTarget`) and the element carrying the `dark` class.
  */
 export const HOST = '#attrium-host'
 
@@ -117,20 +117,26 @@ const MAX_CAPTURE_HEIGHT = 8000
  *
  * First, `toHaveScreenshot({ fullPage: true })` does NOT work. `fullPage`
  * extends the capture to the *document* scroll height, but `#attrium-host` is
- * `position: fixed; inset: 0; overflow-y: auto`, so the document never scrolls
- * — `documentElement.scrollHeight` stays exactly the viewport height while the
- * host scrolls internally. Every `fullPage` baseline came out exactly 1440x900.
+ * `position: fixed; inset: 0` with `overflow: hidden` and the app is a
+ * fixed-height column (pinned header + content card). The document never
+ * scrolls — `documentElement.scrollHeight` stays exactly the viewport height
+ * while the content scrolls inside the card. Every `fullPage` baseline came
+ * out exactly 1440x900.
  *
  * Second, simply snapshotting the host is not enough either: an element
  * screenshot captures the element's BOUNDING BOX, and because the host is
  * `position: fixed` its box is always viewport-sized. On themes.php the host
- * measures 1440x900 while its scrollHeight is 2318 — so the capture still
- * clipped ~61% of the page.
+ * measures 1440x900 while its content card is 2318px tall — so the capture
+ * still clipped ~61% of the page.
  *
- * So we grow the viewport to the host's scroll height first, which makes the
- * fixed host expand to its full content height (verified: 1440x2318), then
- * capture it. Returning to a fixed viewport between tests is handled by
- * Playwright's per-test context isolation.
+ * So we grow the viewport to the content card's full height first. Because the
+ * card is `flex-1` inside the fixed-height host, growing the viewport makes
+ * the whole chain expand and the card's scrollable content becomes fully
+ * visible (verified: 1440x2318). `data-attrium-scroll` (set in src/App.vue on
+ * the rounded content card) is the internal scroll container whose
+ * `scrollHeight` is the real content height; the host no longer grows, so it
+ * cannot be used as the sizing signal anymore. Returning to a fixed viewport
+ * between tests is handled by Playwright's per-test context isolation.
  */
 export async function snapshotTarget(page: Page): Promise<Locator> {
 	const host = page.locator(HOST)
@@ -139,23 +145,45 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 		height: 900,
 	}
 
-	// Wait for the host's scrollHeight to exceed the viewport. After the
-	// Attrium shell mounts and #wpcontent is reparented, the embedded
-	// WordPress page may still be laying out (async scripts, lazy images,
-	// reflows from shadow-root style application). If we measure
-	// scrollHeight too early, it equals the viewport height and the
-	// capture is cropped. Poll until it stabilises above the viewport or
-	// we time out (a short timeout is fine — most screens settle in <1s).
+	// Total page height needed to show the whole content without the card
+	// scrolling internally: the card's full content height plus the fixed
+	// chrome above and below it (sidebar-inset top margin + header, bottom
+	// margin). The card box itself never moves (its content scrolls inside),
+	// so getBoundingClientRect offsets relative to the host are stable.
+	const neededHeight = () =>
+		host.evaluate((el) => {
+			const card = el.shadowRoot?.querySelector('[data-attrium-scroll]')
+			if (!card) return 0
+			const hostRect = el.getBoundingClientRect()
+			const cardRect = card.getBoundingClientRect()
+			return (
+				card.scrollHeight +
+				(cardRect.top - hostRect.top) +
+				(hostRect.bottom - cardRect.bottom)
+			)
+		})
+
+	// Wait for the card's content to exceed the viewport. After the Attrium
+	// shell mounts and #wpcontent is reparented, the embedded WordPress page
+	// may still be laying out (async scripts, lazy images, reflows from
+	// shadow-root style application). If we measure too early, the card's
+	// scrollHeight equals its clientHeight (nothing to scroll) and the capture
+	// is cropped. Poll until it stabilises above the viewport or we time out (a
+	// short timeout is fine — most screens settle in <1s).
 	const MAX_WAIT_MS = 5000
 	const POLL_MS = 100
-	let scrollHeight = await host.evaluate((el) => el.scrollHeight)
-	for (let waited = 0; waited < MAX_WAIT_MS && scrollHeight <= vpHeight; waited += POLL_MS) {
+	let needed = await neededHeight()
+	for (
+		let waited = 0;
+		waited < MAX_WAIT_MS && needed <= vpHeight;
+		waited += POLL_MS
+	) {
 		await page.waitForTimeout(POLL_MS)
-		scrollHeight = await host.evaluate((el) => el.scrollHeight)
+		needed = await neededHeight()
 	}
-	if (scrollHeight <= vpHeight) {
+	if (needed <= vpHeight) {
 		console.warn(
-			`[visual] scrollHeight (${scrollHeight}px) did not exceed viewport ` +
+			`[visual] content height (${needed}px) did not exceed viewport ` +
 				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
 				`This usually means the page did not fully layout before snapshotting.`,
 		)
@@ -167,7 +195,6 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 	// assumed from the first reading. Loop until it stops growing (or we hit
 	// the cap); a handful of iterations is plenty, the bound is just a
 	// guard against a page that grows on every reflow forever.
-	let needed = scrollHeight
 	let height = Math.min(needed, MAX_CAPTURE_HEIGHT)
 
 	for (let i = 0; i < 5; i++) {
@@ -178,7 +205,7 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 			await document.fonts.ready
 		})
 
-		const remeasured = await host.evaluate((el) => el.scrollHeight)
+		const remeasured = await neededHeight()
 		if (remeasured <= height) break
 
 		needed = remeasured

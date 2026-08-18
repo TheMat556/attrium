@@ -46,7 +46,7 @@ const initials = computed(() => {
 				<DropdownMenuTrigger as-child>
 					<SidebarMenuButton
 						size="lg"
-						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:h-12!"
 					>
 						<Avatar class="h-8 w-8 rounded-lg grayscale">
 							<AvatarFallback class="rounded-lg">{{ initials }}</AvatarFallback>

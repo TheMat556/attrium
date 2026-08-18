@@ -11,6 +11,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarSeparator,
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 import { getIcon } from '@/lib/iconMap'
@@ -71,6 +72,9 @@ const footerItems = computed(() => [
 			<div class="group-data-[collapsible=icon]:-mx-2">
 				<NavMain :items="footerItems" />
 			</div>
+			<SidebarSeparator
+				class="group-data-[collapsible=icon]:mx-auto! group-data-[collapsible=icon]:w-8!"
+			/>
 			<NavUser />
 		</SidebarFooter>
 	</Sidebar>
