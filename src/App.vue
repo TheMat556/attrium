@@ -16,7 +16,7 @@ const override = getScreenOverride(screenId)
 
 <template>
 	<SidebarProvider
-		class="h-full overflow-hidden"
+		class="h-svh overflow-hidden"
 		:style="{
       '--sidebar-width': '16rem',
       '--header-height': '3rem',
