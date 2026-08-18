@@ -33,12 +33,15 @@ from SCSS/theme edits.
 ### Two things that look wrong but are load-bearing
 
 **Captures target `#attrium-host`, not the page.** `fullPage: true` does nothing
-in this app: the host is `position: fixed; inset: 0; overflow-y: auto`, so the
-*document* never scrolls and every `fullPage` shot came out exactly 1440×900.
-Snapshotting the host alone isn't enough either — an element screenshot uses the
-bounding box, which for a fixed element is always viewport-sized. So
-`snapshotTarget()` grows the viewport to the host's `scrollHeight` first, then
-captures it. Baselines are consequently different heights (themes.php is 2318px).
+in this app: the host is `position: fixed; inset: 0; overflow: hidden` and the app
+is a fixed-height column, so the *document* never scrolls and every `fullPage`
+shot came out exactly 1440×900. Snapshotting the host alone isn't enough either —
+an element screenshot uses the bounding box, which for a fixed element is always
+viewport-sized. So `snapshotTarget()` grows the viewport to the content card's
+full height first (`[data-attrium-scroll]` in App.vue is the internal scroll
+container whose `scrollHeight`, plus the fixed chrome, is the sizing signal),
+then captures the host. Baselines are consequently different heights (themes.php
+is 2318px).
 
 **`threshold` must stay small.** It's a per-pixel *color* budget, not an
 antialiasing knob. At Playwright's default `0.2`, a deliberate regression shifting

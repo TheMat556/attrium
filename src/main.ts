@@ -11,12 +11,17 @@ import styles from './style.css?inline'
 // The host element covers the viewport and holds the shadow root (Vue app)
 // plus the slotted WordPress content. It is NOT click-through — the content
 // lives inside it now, projected via a <slot> element.
+//
+// The host itself does NOT scroll: the app is a fixed-height column (sidebar +
+// pinned header + content), and the content scrolls inside the rounded card
+// (see src/App.vue). This keeps the header and the card's rounded corners in
+// place while the page content scrolls beneath the header.
 const host = document.createElement('div')
 host.id = 'attrium-host'
 host.style.position = 'fixed'
 host.style.inset = '0'
 host.style.zIndex = '50'
-host.style.overflowY = 'auto'
+host.style.overflow = 'hidden'
 document.body.prepend(host)
 
 applyThemeToHost()
