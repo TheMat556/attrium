@@ -13,7 +13,6 @@
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     margin-top: 1rem;
-    color: var(--attrium-foreground);
   }
 }
 
@@ -23,67 +22,53 @@
   }
 }
 
+// Core already sets both wraps' padding (8px 20px 12px, zeroed for the help
+// layout), so only the dark-mode-safe text color needs re-declaring here.
 #screen-options-wrap,
 #contextual-help-wrap {
-  @include mixins.module('screen-meta') {
-    padding: 8px 20px 12px;
-    color: var(--attrium-foreground);
-  }
-}
-
-// Core restyles #contextual-help-wrap into the three-column help layout and
-// zeroes its padding, so re-declare it after the shared rule above.
-#contextual-help-wrap {
-  @include mixins.module('screen-meta') {
-    padding: 0;
-  }
-}
-
-#screen-options-wrap legend {
   @include mixins.module('screen-meta') {
     color: var(--attrium-foreground);
   }
 }
 
 // Help layout — three-column split inside #contextual-help-columns: the tabs
-// rail gets a muted gray background stretched to the panel's full height, the
-// content column keeps the panel surface, and 1px left/right borders separate
-// the columns. Core floats the three columns; convert the container to flex so
-// the gray rail fills the height and the borders run edge-to-edge.
+// on the left, content in the middle, sidebar on the right — all on the panel
+// surface, with 1px left/right borders separating the columns. Core floats the
+// three columns; convert the container to flex so the borders run edge-to-edge
+// and each column fills the height.
 #contextual-help-columns {
   @include mixins.module('screen-meta') {
     display: flex;
-    align-items: stretch;
   }
 }
 
-// Help tabs — the muted track is now the whole first column: a gray rail of
-// trigger links, with the active tab as a raised pill. Colors mirror the
-// subsubsub pill control (scss/modules/_tabs.scss): secondary track, primary
-// active segment. Core paints a blue --wp-admin-theme-color bar + blue wash;
-// swap both for tokens.
+// Help tabs — a vertical list of trigger links, with the active tab as a
+// raised pill. Colors mirror the subsubsub pill control (scss/modules/_tabs.scss):
+// primary active segment, muted inactive links. No track background: a
+// --attrium-secondary rail matches --attrium-border almost exactly in light
+// mode, which would hide the separator between the tabs and the content — the
+// tabs sit on the panel surface and the 1px column borders do the separation.
+// Core paints a blue --wp-admin-theme-color bar + blue wash; swap both for
+// tokens.
 .contextual-help-tabs {
   @include mixins.module('screen-meta') {
-    float: none;
     flex: 0 0 150px;
-    background: var(--attrium-secondary);
-    border-radius: var(--attrium-radius-md) 0 0 var(--attrium-radius-md);
     padding: 4px;
 
     ul {
-      @apply m-0 flex list-none flex-col gap-1 p-0;
+      @apply m-0 flex flex-col gap-1;
     }
 
     li {
-      @apply m-0 border-0 p-0;
+      @apply m-0 border-0;
       background: none;
       box-shadow: none;
     }
 
     li > a {
-      @apply flex items-center justify-start whitespace-nowrap border-0
+      @apply flex items-center whitespace-nowrap border-0
              rounded-[calc(var(--attrium-radius-md)-2px)] px-3 py-1.5
-             text-sm font-medium no-underline transition-colors duration-150
+             text-sm font-medium transition-colors duration-150
              text-[var(--attrium-muted-foreground)];
 
       &:hover,
@@ -109,14 +94,14 @@
   }
 }
 
-// Help content column — the panel surface, separated from the rails by 1px
-// left/right borders. (Ordered after the tabs rail in flex layout.)
+// Help content column — separated from the rails by 1px left/right borders.
+// (Ordered after the tabs rail in flex layout; background is inherited from
+// the panel surface, so none is declared here.)
 .contextual-help-tabs-wrap {
   @include mixins.module('screen-meta') {
     order: 2;
     flex: 1;
     min-width: 0;
-    background: var(--attrium-surface);
     border-left: 1px solid var(--attrium-border);
     border-right: 1px solid var(--attrium-border);
   }
@@ -124,8 +109,6 @@
 
 .help-tab-content {
   @include mixins.module('screen-meta') {
-    color: var(--attrium-foreground);
-
     a {
       color: var(--attrium-primary);
       text-decoration: none;
@@ -143,7 +126,6 @@
   @include mixins.module('screen-meta') {
     order: 3;
     flex: 0 0 150px;
-    float: none;
     color: var(--attrium-muted-foreground);
 
     a {

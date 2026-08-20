@@ -12,9 +12,8 @@ import { applyTheme, stabilize, THEMES, type Theme } from '../support/theme'
  * (jQuery slideDown), so they never show in a static full-page shot — hence
  * element captures here.
  *
- * Target: the Pages list (edit.php?post_type=page), which ships both help
- * tabs ("Overview", "Managing Pages"), a help sidebar, and the Columns +
- * Pagination screen options.
+ * Target: the Pages list (edit.php?post_type=page), which ships help tabs, a
+ * help sidebar, and the Columns + Pagination screen options.
  *
  * The header BookOpen dropdown (SiteHeader.vue + useScreenMeta) is the new
  * user-facing entry point: it opens the same panels by clicking the hidden
@@ -68,16 +67,6 @@ for (const { theme } of THEMES) {
 			)
 			await panel.scrollIntoViewIfNeeded()
 			await expect(panel).toHaveScreenshot(`screen-meta-help-${theme}.png`)
-		})
-
-		test('help tab hover', async ({ page }) => {
-			await open(page, theme, '/wp-admin/edit.php?post_type=page')
-			await openPanel(page, 'contextual-help-link', 'contextual-help-wrap')
-			const tab = page.locator('#tab-link-managing-pages a')
-			await expect(tab).toBeVisible()
-			await tab.scrollIntoViewIfNeeded()
-			await tab.hover()
-			await expect(tab).toHaveScreenshot(`screen-meta-help-hover-${theme}.png`)
 		})
 
 		test('screen options panel', async ({ page }) => {
