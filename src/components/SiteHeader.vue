@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import {
+	BookOpen,
+	CircleHelp,
 	ExternalLink,
 	File,
 	FileText,
 	Moon,
 	Plus,
 	Search,
+	SlidersHorizontal,
 	Sun,
 } from '@lucide/vue'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
@@ -19,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { useScreenMeta } from '@/composables/useScreenMeta'
 import { useServerData } from '@/composables/useServerData'
 import { isDark, toggle } from '@/composables/useTheme'
 import { handleToolbarClick, useToolbar } from '@/composables/useToolbar'
@@ -29,6 +33,8 @@ import ToolbarSubmenu from './ToolbarSubmenu.vue'
 const { canCreatePosts, canCreatePages } = useServerData()
 const { newPost, newPage, viewSite } = useWpActions()
 const { items: toolbarItems } = useToolbar()
+const { canShowOptions, canShowHelp, openScreenOptions, openHelp } =
+	useScreenMeta()
 
 const canCreateAny = canCreatePosts || canCreatePages
 
@@ -120,6 +126,35 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 				>
 					<Search />
 				</Button>
+				<DropdownMenu v-if="canShowOptions || canShowHelp">
+					<DropdownMenuTrigger as-child>
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							aria-label="Screen options and help"
+						>
+							<BookOpen />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" :side-offset="4" class="min-w-44">
+						<DropdownMenuItem
+							v-if="canShowOptions"
+							class="whitespace-nowrap"
+							@click="openScreenOptions"
+						>
+							<SlidersHorizontal />
+							Screen Options
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							v-if="canShowHelp"
+							class="whitespace-nowrap"
+							@click="openHelp"
+						>
+							<CircleHelp />
+							Help
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 				<Button
 					variant="ghost"
 					size="icon-sm"

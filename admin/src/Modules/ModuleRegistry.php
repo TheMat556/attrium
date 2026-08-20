@@ -23,6 +23,7 @@ class ModuleRegistry {
             'checkbox'     => true,
             'notices'      => true,
             'notification' => true,
+            'screen-meta'  => true,
             'postbox'      => false,
             'menu'         => false,
             'screens'      => true,

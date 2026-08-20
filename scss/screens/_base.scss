@@ -36,11 +36,9 @@ p {
   }
 }
 
-#screen-meta-links {
-  @include mixins.module('screens') {
-    display: none;
-  }
-}
+// Screen Options + Help panel (`#screen-meta`, incl. `#screen-meta-links`
+// hiding) lives in scss/modules/_screen-meta.scss under its own 'screen-meta'
+// module gate — not here, this file is the broad per-screen base only.
 
 @media screen and (max-width: 600px) {
   #wpbody {
