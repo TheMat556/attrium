@@ -12,6 +12,7 @@ import {
 	SidebarMenuSub,
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
+	useSidebar,
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 
@@ -36,6 +37,7 @@ const props = defineProps<{
 }>()
 
 const { parentFile, submenuFile } = useServerData()
+const { state, setOpen } = useSidebar()
 
 /**
  * Determine the active parent — the top-level menu item whose URL or child's
@@ -105,10 +107,21 @@ function isItemActive(item: NavItem): boolean {
  * - Clicking a non-active item opens it and closes any other manual open.
  * - Clicking it again closes it.
  * - Clicking the active parent does nothing (it's always open).
+ *
+ * In the collapsed (icon) sidebar the submenu is hidden by CSS
+ * (`group-data-[collapsible=icon]:hidden`), so clicking an item with children
+ * first expands the sidebar, then opens that item's submenu.
  */
 const manualOpen = ref<string | null>(null)
 
 function toggle(title: string) {
+	if (state.value === 'collapsed') {
+		setOpen(true)
+		// The active parent's submenu is always open, so it needs no manual
+		// expansion — just widening the sidebar reveals it.
+		if (title !== activeParent.value) manualOpen.value = title
+		return
+	}
 	if (title === activeParent.value) return
 	manualOpen.value = manualOpen.value === title ? null : title
 }
