@@ -15,6 +15,16 @@
   transition: max-height 0.35s ease-out, opacity 0.25s ease-out;
 }
 
+/* A closed submenu must occupy zero vertical space. The SidebarMenuSub list
+   carries py-0.5 padding of its own, and while display:none is applied in the
+   collapsed (icon) sidebar, the expanded sidebar keeps it display:flex inside
+   the 0fr grid row — so the padding would leak as a 4px gap and shift every
+   item below the submenu. Drop the vertical padding while closed; the open
+   state restores it. Unlayered so it beats the Tailwind utility. */
+.submenu-wrapper:not(.submenu-open) > :first-child {
+  padding-block: 0;
+}
+
 .submenu-wrapper.submenu-open {
   max-height: 2000px; /* Fallback for older browsers */
   opacity: 1;
