@@ -11,7 +11,6 @@
   @include mixins.module('screen-meta') {
     background: var(--attrium-surface);
     border: 1px solid var(--attrium-border);
-    border-top: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     margin-top: 1rem;
     color: var(--attrium-foreground);
@@ -32,8 +31,8 @@
   }
 }
 
-// Core overrides #screen-options-wrap padding to 0 here (it restyles the panel
-// into the three-column help layout), so re-declare it after the shared rule.
+// Core restyles #contextual-help-wrap into the three-column help layout and
+// zeroes its padding, so re-declare it after the shared rule above.
 #contextual-help-wrap {
   @include mixins.module('screen-meta') {
     padding: 0;
