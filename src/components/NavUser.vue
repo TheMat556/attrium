@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { LogOut, MoreVertical, UserRoundPen } from '@lucide/vue'
 import { computed } from 'vue'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useServerData } from '@/composables/useServerData'
 
-const { userName, userEmail, adminUrl, logoutUrl } = useServerData()
+const { userName, userEmail, avatarUrl, adminUrl, logoutUrl } = useServerData()
 const { isMobile } = useSidebar()
 
 function editProfile() {
@@ -49,6 +49,12 @@ const initials = computed(() => {
 						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:h-12!"
 					>
 						<Avatar class="h-8 w-8 rounded-lg grayscale">
+							<AvatarImage
+								v-if="avatarUrl"
+								:src="avatarUrl"
+								alt=""
+								class="rounded-lg"
+							/>
 							<AvatarFallback class="rounded-lg">{{ initials }}</AvatarFallback>
 						</Avatar>
 						<div class="grid flex-1 text-left text-sm leading-tight">
@@ -69,6 +75,12 @@ const initials = computed(() => {
 					<DropdownMenuLabel class="p-0 font-normal">
 						<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 							<Avatar class="h-8 w-8 rounded-lg">
+								<AvatarImage
+									v-if="avatarUrl"
+									:src="avatarUrl"
+									alt=""
+									class="rounded-lg"
+								/>
 								<AvatarFallback class="rounded-lg">
 									{{ initials }}
 								</AvatarFallback>

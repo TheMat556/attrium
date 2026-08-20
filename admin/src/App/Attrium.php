@@ -140,6 +140,8 @@ class Attrium {
         $user_name    = $current_user->display_name;
         $user_mail    = $current_user->user_email;
         $can_manage   = current_user_can('manage_options') ? 'true' : 'false';
+        $user_avatar = get_avatar_url( $current_user->ID, [ 'size' => 96 ] );
+
 
         // Per-type create capabilities so the header "+" menu only offers what
         // the current user may actually create. edit_posts/edit_pages are the
@@ -192,6 +194,7 @@ class Attrium {
             'site-url'         => esc_url($site_url),
             'user-name'        => esc_attr($user_name),
             'user-email'       => esc_attr($user_mail),
+            'avatar-url'       => $user_avatar,
             'can-manage'       => esc_attr($can_manage),
             'can-create-posts' => esc_attr($can_create_posts),
             'can-create-pages' => esc_attr($can_create_pages),
