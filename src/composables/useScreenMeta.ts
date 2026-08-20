@@ -26,7 +26,14 @@ import { nextTick, onMounted, ref } from 'vue'
  * Both panels are only present when the page is actually embedded in the shell
  * — on natively overridden screens #wpcontent is never moved into the host, so
  * the containment check below hides the whole feature automatically.
+ *
+ * Detection is a one-shot on mount, which is correct because navigation is a
+ * full page reload (window.location, see useWpActions.ts) — not an SPA router —
+ * so this composable remounts alongside the header on every screen and always
+ * evaluates against the freshly loaded DOM.
  */
+const MAX_REPARENT_POLL_FRAMES = 10
+
 export function useScreenMeta() {
 	const canShowOptions = ref(false)
 	const canShowHelp = ref(false)
@@ -52,9 +59,21 @@ export function useScreenMeta() {
 	// main.ts), poll a few animation frames instead of silently showing nothing.
 	async function waitForReparent(host: HTMLElement): Promise<void> {
 		await nextTick()
+
+		// main.ts keys "is this screen overridden?" off the wp-content slot's
+		// presence in the shadow root (see src/App.vue + src/main.ts). When the
+		// slot is absent, #wpcontent is never moved into the host, so resolve
+		// immediately instead of burning the whole poll budget on a reparent
+		// that is never going to happen.
+		if (!host.shadowRoot?.querySelector('slot[name="wp-content"]')) return
+
 		const wpcontent = document.getElementById('wpcontent')
 		if (!wpcontent || host.contains(wpcontent)) return
-		for (let i = 0; i < 10 && !host.contains(wpcontent); i++) {
+		for (
+			let i = 0;
+			i < MAX_REPARENT_POLL_FRAMES && !host.contains(wpcontent);
+			i++
+		) {
 			await new Promise((resolve) => requestAnimationFrame(resolve))
 		}
 	}
