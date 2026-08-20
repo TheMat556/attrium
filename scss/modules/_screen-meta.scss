@@ -56,6 +56,8 @@
     flex: 0 0 150px;
     background: var(--attrium-muted);
     padding: 4px;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
 
     ul {
       @apply m-0 flex flex-col gap-1;
