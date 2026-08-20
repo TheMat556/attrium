@@ -44,15 +44,17 @@
 
 // Help tabs — a vertical list of trigger links, with the active tab as a
 // raised pill. Colors mirror the subsubsub pill control (scss/modules/_tabs.scss):
-// primary active segment, muted inactive links. No track background: a
-// --attrium-secondary rail matches --attrium-border almost exactly in light
-// mode, which would hide the separator between the tabs and the content — the
-// tabs sit on the panel surface and the 1px column borders do the separation.
-// Core paints a blue --wp-admin-theme-color bar + blue wash; swap both for
-// tokens.
+// primary active segment, muted inactive links. The track uses --attrium-muted
+// rather than --attrium-secondary: secondary (oklch 0.925) matches
+// --attrium-border (oklch 0.922) almost exactly in light mode, which would
+// hide the 1px separator between the tabs and the content. Muted sits between
+// the border and the panel surface, so the column borders stay visible on both
+// sides while the rail still reads as a distinct track. Core paints a blue
+// --wp-admin-theme-color bar + blue wash; swap both for tokens.
 .contextual-help-tabs {
   @include mixins.module('screen-meta') {
     flex: 0 0 150px;
+    background: var(--attrium-muted);
     padding: 4px;
 
     ul {
