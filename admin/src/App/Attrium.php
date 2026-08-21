@@ -140,18 +140,8 @@ class Attrium {
         $user_name    = $current_user->display_name;
         $user_mail    = $current_user->user_email;
         $can_manage   = current_user_can('manage_options') ? 'true' : 'false';
+        $user_avatar = get_avatar_url( $current_user->ID, [ 'size' => 96 ] );
 
-        // The user's WordPress avatar exactly as wp-admin renders it. We use
-        // get_avatar() (and extract its src) rather than get_avatar_url()
-        // because get_avatar_url() bypasses 'get_avatar' filters that themes
-        // and plugins use to swap in custom uploaded avatars. 96px keeps it
-        // sharp at 2x on the sidebar slot.
-        $user_avatar = '';
-        if ( preg_match( '/src=["\']([^"\']+)["\']/', (string) get_avatar( $current_user->ID, 96 ), $matches ) ) {
-            // get_avatar() escapes & as &#038;; decode so the raw pass below
-            // (see logout-url/avatar-url note) encodes exactly once.
-            $user_avatar = html_entity_decode( $matches[1], ENT_QUOTES );
-        }
 
         // Per-type create capabilities so the header "+" menu only offers what
         // the current user may actually create. edit_posts/edit_pages are the
@@ -190,22 +180,17 @@ class Attrium {
 
         $menu_items = Menu::get_items();
 
-        $logout_url     = html_entity_decode( wp_logout_url(), ENT_QUOTES );
+        $logout_url     = wp_logout_url();
         $is_ignored     = Settings::is_ignored_url() ? 'true' : 'false';
         $is_plugin_page = self::is_plugin_screen($screen) ? 'true' : 'false';
 
-        // logout-url and avatar-url contain query strings with &, so they must NOT
-        // go through esc_url here: wp_print_script_tag runs esc_attr on every
-        // attribute itself, and esc_url's &#038; would be double-encoded into
-        // a literal '&#038;' in the DOM attribute that the browser treats as a
-        // fragment start, truncating the query string.
         $scripts_tag = [
             'id'               => 'attrium-data',
             'type'             => 'module',
             'rest-base'        => esc_url($rest_base),
             'rest-nonce'       => esc_attr($rest_nonce),
             'admin-url'        => esc_url($admin_url),
-            'logout-url'       => $logout_url,
+            'logout-url'       => esc_url($logout_url),
             'site-url'         => esc_url($site_url),
             'user-name'        => esc_attr($user_name),
             'user-email'       => esc_attr($user_mail),
