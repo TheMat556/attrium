@@ -22,6 +22,7 @@ export interface ServerData {
 	siteUrl: string
 	userName: string
 	userEmail: string
+	avatarUrl: string
 	canManage: boolean
 	canCreatePosts: boolean
 	canCreatePages: boolean
@@ -52,6 +53,7 @@ export function useServerData(): ServerData {
 		siteUrl: get('site-url'),
 		userName: get('user-name'),
 		userEmail: get('user-email'),
+		avatarUrl: get('avatar-url'),
 		canManage: get('can-manage') === 'true',
 		canCreatePosts: get('can-create-posts') === 'true',
 		canCreatePages: get('can-create-pages') === 'true',

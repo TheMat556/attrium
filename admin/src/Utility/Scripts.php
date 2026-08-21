@@ -12,6 +12,7 @@ class Scripts {
             return null;
         }
 
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local file read; wp_remote_get() is for remote URLs.
         $content = file_get_contents($manifest_path);
         if ( $content === false ) {
             return null;
