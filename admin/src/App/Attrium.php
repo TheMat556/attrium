@@ -10,6 +10,7 @@ defined('ABSPATH') || exit();
 
 class Attrium {
     public function __construct() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only toggle (attrium=off), no state change.
         if ( isset($_GET['attrium']) && 'off' === sanitize_key( wp_unslash( $_GET['attrium'] ) ) ) {
             return;
         }
@@ -140,8 +141,7 @@ class Attrium {
         $user_name    = $current_user->display_name;
         $user_mail    = $current_user->user_email;
         $can_manage   = current_user_can('manage_options') ? 'true' : 'false';
-        $user_avatar = get_avatar_url( $current_user->ID, [ 'size' => 96 ] );
-
+        $user_avatar  = get_avatar_url( $current_user->ID, [ 'size' => 96 ] );
 
         // Per-type create capabilities so the header "+" menu only offers what
         // the current user may actually create. edit_posts/edit_pages are the
