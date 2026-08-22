@@ -152,9 +152,15 @@
         }
       }
 
-      .buttons .button span {
-        color: var(--attrium-foreground);
-        opacity: 0.8;
+      // The selected-filter count badge lives inside the primary Apply Filters
+      // button (theme.js writes tags.length into `.apply-filters span`), so it
+      // must use the button's own foreground token — `--attrium-foreground`
+      // is dark-on-dark in light mode / light-on-light in dark mode and reads
+      // as invisible on the primary fill. `--attrium-primary-foreground` is
+      // themed to contrast with `--attrium-primary` in both modes.
+      .apply-filters.button span {
+        color: var(--attrium-primary-foreground);
+        opacity: 0.85;
       }
 
       .filtered-by .tag {

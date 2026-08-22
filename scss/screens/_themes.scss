@@ -21,6 +21,15 @@
 
 @mixin theme-cards {
   // ---- Card shell ----
+  // The "Add Theme" tile (`.theme.add-new-theme`) is a shortcut to
+  // theme-install.php, which Attrium already surfaces in the sidebar. It reads
+  // as an empty broken tile next to the real themes, so hide it entirely
+  // (`display: none` pulls it out of the cards grid, letting the grid reflow).
+  .theme.add-new-theme,
+  .add-new-theme {
+    display: none;
+  }
+
   .theme {
     @apply rounded-[var(--attrium-radius-md)] overflow-hidden
            border border-[var(--attrium-border)] shadow-none
@@ -45,16 +54,27 @@
   }
 
   // ---- Screenshot ----
+  // The card footer's `.theme-id-container` already draws its own border-top,
+  // so a bottom border on the screenshot is a redundant double line. Drop it —
+  // the screenshot blends into the footer with just the footer's top edge.
+  // `border-0` is load-bearing beyond the cards: core gives the OVERLAY's
+  // `.install-theme-info .theme-screenshot` a 1px #c3c4c7 border, and the
+  // overlay is appended inside `.wrap`, so this rule (with only a
+  // `border-color` recolor in _theme-install.scss) is what keeps that
+  // screenshot borderless.
   .theme-screenshot {
-    @apply border-b border-[var(--attrium-border)];
+    @apply border-0;
     background: var(--attrium-secondary);
   }
 
   // ---- "Details & Preview" hover overlay ----
   .more-details {
     @apply rounded-[var(--attrium-radius-md)] text-sm font-medium;
+    // Core paints a text-shadow on this button; kill it so the label stays
+    // crisp on the primary fill.
     background: var(--attrium-primary);
     color: var(--attrium-primary-foreground);
+    text-shadow: none;
   }
 
   // ---- Footer (name + author + actions) ----
@@ -127,10 +147,17 @@
   // Core pins the in-card notice to the top of the screenshot with
   // `position: absolute` (themes.css:48). The notices module reskins it with
   // `@apply relative` at higher specificity, which knocks it out of place.
-  // Restore absolute positioning for notices inside a `.theme` card.
+  // Restore absolute positioning for notices inside a `.theme` card, with a
+  // small 0.5rem inset so the notice doesn't sit flush against the card edges,
+  // and compact padding so the one-line "Installed" pill stays short in height
+  // (the notices module's p-4 makes it tall and bulky over the screenshot).
   .theme .notice,
   .theme .notice.is-dismissible {
-    @apply absolute inset-x-0 top-0 m-0;
+    @apply absolute inset-x-0 top-0 m-2 px-3 py-1.5;
+
+    p {
+      @apply m-0;
+    }
   }
 
   // ---- Details / Preview overlay (`.theme-overlay`) ----
