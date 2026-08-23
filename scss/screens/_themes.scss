@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../icons';
 
 // Theme cards (`.theme`) render on both the installed-themes screen
 // (themes.php → body.themes-php) and the theme installer
@@ -251,12 +252,6 @@
         content: '';
         position: absolute;
         inset: 0;
-        background-color: currentColor;
-        // Explicit size, not `contain`: the `::after` fills the 2rem button,
-        // so `contain` would scale the icon up to fill it too.
-        mask-position: center;
-        mask-size: 1rem;
-        mask-repeat: no-repeat;
       }
     }
 
@@ -266,18 +261,23 @@
       margin: 0 0.5rem 0 auto;
     }
 
-    // Icon glyphs — inline SVG data URIs in the same format as the
-    // collapse-sidebar arrow: `;utf8`, viewBox only, stroke='black'.
+    // Icon glyphs — Lucide shapes painted via the shared mask helper
+    // (scss/_icons.scss). Each call re-asserts `mask-size: 1rem` after the
+    // helper (which defaults to `contain`): the `::after` fills the 2rem
+    // button, so `contain` would scale the icon up to fill it too.
     .theme-header .close::after {
-      mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M18%206%206%2018'/%3E%3Cpath%20d='m6%206%2012%2012'/%3E%3C/svg%3E");
+      @include icons.mask('x');
+      mask-size: 1rem;
     }
 
     .theme-header .left::after {
-      mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
+      @include icons.mask('chevron-left');
+      mask-size: 1rem;
     }
 
     .theme-header .right::after {
-      mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m9%2018%206-6-6-6'/%3E%3C/svg%3E");
+      @include icons.mask('chevron-right');
+      mask-size: 1rem;
     }
 
     // "Active Theme" badge — core paints it #2c3338-on-white, a dark pill
