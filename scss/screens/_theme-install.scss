@@ -1,5 +1,6 @@
 @use '../mixins';
 @use '../ui';
+@use '../icons';
 
 // Theme installer (theme-install.php → body.theme-install-php): reskin the
 // `.wp-filter` toolbar (the Popular/Latest tabs, theme count, Feature Filter
@@ -108,16 +109,11 @@
       display: flex;
       align-items: center;
       gap: 0.125rem;
+      margin-left: 0.5rem;
       background: var(--attrium-primary-foreground);
 
       // Close / previous / next nav buttons. Core floats these left at full
-      // 45px height; reset that so they sit flush in the flex header. Icons
-      // are Lucide shapes painted with a CSS mask: the SVG data-URI defines the
-      // shape (fill black = fully opaque alpha) and `background-color:
-      // currentColor` tints it with the button's color, so the icon is
-      // theme-aware in both modes — an SVG `background-image` cannot use
-      // `currentColor` (backgrounds don't inherit into the SVG document, so it
-      // resolves to black).
+      // 45px height; reset that so they sit flush in the flex header.
       .close-full-overlay,
       .previous-theme,
       .next-theme {
@@ -129,17 +125,11 @@
         // shrink core's 45px-wide boxes: the buttons are icon-only now, so the
         // dead space read as a large gap between the icons.
         width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
         border: 0;
         background: var(--attrium-primary-foreground);
         color: var(--attrium-foreground);
-
-        // Icon glyph.
-        &::before {
-          height: 16px;
-          background-color: currentColor;
-          mask-position: center;
-          mask-size: contain;
-        }
 
         &:hover,
         &:focus {
@@ -148,18 +138,19 @@
         }
       }
 
-      // Lucide: close (X). Stroke-based paths are fine as a mask — the mask
-      // uses the SVG's alpha, so a black stroke yields a crisp outline.
-      .close-full-overlay::before {
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+      // Icon glyphs — Lucide shapes painted via the shared mask helper
+      // (scss/_icons.scss), which explains the currentColor/mask technique and
+      // why it is theme-aware in both modes.
+      .theme-install-overlay.close-full-overlay::before {
+        @include icons.mask('x');
       }
 
-      .previous-theme::before {
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E");
+      .theme-install-overlay.previous-theme::before {
+        @include icons.mask('chevron-left');
       }
 
-      .next-theme::before {
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+      .theme-install-overlay.next-theme::before {
+        @include icons.mask('chevron-right');
       }
 
       // The action button (Install / Activate) — reset core's float, push it to
@@ -227,6 +218,7 @@
       .collapse-sidebar {
         position: static;
         gap: 0.25rem;
+        margin: 0.5rem;
         padding: 0;
         color: var(--attrium-muted-foreground);
 
@@ -238,28 +230,35 @@
 
       // Core gives the arrow span a 20px circle (border-radius: 50% + hidden
       // overflow) and paints a #f0f0f1 dashicons glyph on its `:before`. The
-      // Lucide chevron is painted DIRECTLY on the span via mask — not on the
-      // `:before` — and the span's mask clips every pseudo-element it paints,
-      // so core's glyph stays invisible without an explicit `display:none` on
-      // it. The mask inherits the button's `color` (background-image data-URIs
-      // cannot resolve currentColor — backgrounds don't inherit into the SVG
-      // document, so it would render black).
-      .collapse-sidebar-arrow {
+      // Lucide chevron is painted on an ::after overlay (same pattern as the
+      // checkbox checkmark in modules/_checkbox.scss): core's `:before` glyph
+      // is explicitly hidden, and the helper's `background` shorthand strips
+      // the HiDPI arrow sprite core paints on the span itself.
+      button.collapse-sidebar > span.collapse-sidebar-arrow {
+        position: relative;
         width: 16px;
+        height: 16px;
         margin: 0;
         border-radius: 0;
+        // Strip core's HiDPI arrows sprite (themes.css paints
+        // `background-image: url(arrows-2x.png)` on this span at 120dpi).
+        background: none;
         overflow: visible;
-        // Shorthand, not `background-color`: newer WordPress core paints an
-        // arrow sprite as a background-image directly on this span on HiDPI
-        // displays (themes.css `@media (min-resolution: 120dpi)
-        // .collapse-sidebar-arrow { background-image: url(arrows-2x.png) }`).
-        // The mask clips EVERYTHING the element paints, so leaving that image
-        // in place renders core's arrow intersecting the Lucide chevron. The
-        // shorthand resets background-image/position/size along with the color.
-        background: currentColor;
-        mask-position: center;
-        mask-size: contain;
-        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E");
+
+        &::before {
+          display: none;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-color: currentColor;
+          mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
+          mask-size: contain;
+          mask-position: center;
+          mask-repeat: no-repeat;
+        }
       }
     }
   }

@@ -1,0 +1,80 @@
+// Lucide icons as CSS masks — the shared replacement for core's dashicon font
+// glyphs. The technique: an inline SVG data-URI defines the shape (black
+// stroke = fully opaque alpha), and `background: currentColor` tints it with
+// the element's color, so one rule serves light and dark mode. An SVG
+// `background-image` cannot do this (backgrounds don't inherit into the SVG
+// document, so currentColor resolves to black) — the mask is what makes the
+// glyph theme-aware.
+//
+// Usage — paint ONLY; keep box sizing (width/height/margin) at the call site,
+// because each host element gets its dimensions from core's own layout:
+//
+//   .close-button::before {
+//     height: 16px;
+//     @include icons.mask('x');
+//   }
+//
+// The mixin deliberately paints with the `background` SHORTHAND, not
+// `background-color`: newer WordPress core paints sprite images (e.g.
+// themes.css `@media (min-resolution: 120dpi) .collapse-sidebar-arrow
+// { background-image: url(arrows-2x.png) }`) directly on elements we mask.
+// The shorthand resets background-image/position/size along with the color,
+// and a mask clips everything an element paints, so core's sprite stays
+// invisible without an explicit display:none on it.
+
+@use 'sass:map';
+
+// ---- Icon map ---------------------------------------------------------------
+// Inner markup of each Lucide 24×24 icon, pre-encoded for embedding in a data
+// URI (`<` → %3C, `>` → %3E, space → %20; single quotes are left literal).
+// Every space must be %20: a literal space in the data URI makes the mask
+// image fail to decode in some Chromium versions and the icon vanishes.
+// Stroke geometry matches lucide's defaults: stroke='black' stroke-width='2'
+// round caps/joins.
+$icons: (
+  'x': "%3Cpath%20d='M18%206%206%2018'/%3E%3Cpath%20d='m6%206%2012%2012'/%3E",
+  'chevron-left': "%3Cpath%20d='m15%2018-6-6%206-6'/%3E",
+  'chevron-right': "%3Cpath%20d='m9%2018%206-6-6-6'/%3E",
+);
+
+// Wrap an icon's path markup in the Lucide document shell and return it as a
+// usable url() value.
+//
+// URI format matters — this exact shape (the one modules/_checkbox.scss uses)
+// is verified to render as a Chromium mask:
+//   - `;utf8` param after the mime type
+//   - viewBox attribute ONLY (no width/height)
+//   - stroke='%23000' (encoded hex, not the keyword 'black')
+//   - every space encoded as %20
+// Deviating from it (e.g. data:image/svg+xml, + width/height + stroke='black')
+// makes the mask silently fail and hides the element entirely.
+@function _url($name) {
+  $body: map.get($icons, $name);
+
+  @if $body == null {
+    @error "icons: unknown icon '#{$name}'. Known: #{map.keys($icons)}";
+  }
+
+  @return url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'#{$body}%3C/svg%3E");
+}
+
+// Paint a named icon on the current element or pseudo-element. Sizing is the
+// caller's job — pass nothing here and set width/height alongside the call.
+//
+// NOTE: unprefixed mask-* ONLY. The -webkit-mask-* longhands are NOT aliases
+// of the unprefixed ones in current Chromium — when both are declared the
+// glyph silently fails to paint. Every consumer must stick to the unprefixed
+// properties (same lesson as the checkmark in modules/_checkbox.scss).
+@mixin mask($name) {
+  background: currentColor;
+
+  // The `background` SHORTHAND (not `background-color`) is deliberate: newer
+  // WordPress core paints sprite images (e.g. themes.css HiDPI
+  // `.collapse-sidebar-arrow { background-image: url(arrows-2x.png) }`)
+  // directly on elements we mask. The shorthand resets
+  // background-image/position/size along with the color.
+  mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-image: _url($name);
+}
