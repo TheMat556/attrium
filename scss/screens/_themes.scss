@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../icons';
 
 // Theme cards (`.theme`) render on both the installed-themes screen
 // (themes.php → body.themes-php) and the theme installer
@@ -21,6 +22,15 @@
 
 @mixin theme-cards {
   // ---- Card shell ----
+  // The "Add Theme" tile (`.theme.add-new-theme`) is a shortcut to
+  // theme-install.php, which Attrium already surfaces in the sidebar. It reads
+  // as an empty broken tile next to the real themes, so hide it entirely
+  // (`display: none` pulls it out of the cards grid, letting the grid reflow).
+  .theme.add-new-theme,
+  .add-new-theme {
+    display: none;
+  }
+
   .theme {
     @apply rounded-[var(--attrium-radius-md)] overflow-hidden
            border border-[var(--attrium-border)] shadow-none
@@ -45,16 +55,27 @@
   }
 
   // ---- Screenshot ----
+  // The card footer's `.theme-id-container` already draws its own border-top,
+  // so a bottom border on the screenshot is a redundant double line. Drop it —
+  // the screenshot blends into the footer with just the footer's top edge.
+  // `border-0` is load-bearing beyond the cards: core gives the OVERLAY's
+  // `.install-theme-info .theme-screenshot` a 1px #c3c4c7 border, and the
+  // overlay is appended inside `.wrap`, so this rule (with only a
+  // `border-color` recolor in _theme-install.scss) is what keeps that
+  // screenshot borderless.
   .theme-screenshot {
-    @apply border-b border-[var(--attrium-border)];
+    @apply border-0;
     background: var(--attrium-secondary);
   }
 
   // ---- "Details & Preview" hover overlay ----
   .more-details {
     @apply rounded-[var(--attrium-radius-md)] text-sm font-medium;
+    // Core paints a text-shadow on this button; kill it so the label stays
+    // crisp on the primary fill.
     background: var(--attrium-primary);
     color: var(--attrium-primary-foreground);
+    text-shadow: none;
   }
 
   // ---- Footer (name + author + actions) ----
@@ -127,10 +148,17 @@
   // Core pins the in-card notice to the top of the screenshot with
   // `position: absolute` (themes.css:48). The notices module reskins it with
   // `@apply relative` at higher specificity, which knocks it out of place.
-  // Restore absolute positioning for notices inside a `.theme` card.
+  // Restore absolute positioning for notices inside a `.theme` card, with a
+  // small 0.5rem inset so the notice doesn't sit flush against the card edges,
+  // and compact padding so the one-line "Installed" pill stays short in height
+  // (the notices module's p-4 makes it tall and bulky over the screenshot).
   .theme .notice,
   .theme .notice.is-dismissible {
-    @apply absolute inset-x-0 top-0 m-0;
+    @apply absolute inset-x-0 top-0 m-2 px-3 py-1.5;
+
+    p {
+      @apply m-0;
+    }
   }
 
   // ---- Details / Preview overlay (`.theme-overlay`) ----
@@ -139,6 +167,19 @@
   // `.theme-about .theme-info h2.theme-name` — outside the `.theme` card, so it
   // needs its own rules. Core hardcodes a white backdrop and #fff panel here.
   .theme-overlay {
+    // Core pins the backdrop as an absolute scrim over the `.wrap` area only
+    // (rgba(240,240,241,.9) — a white band in dark mode), so it never reaches
+    // the Attrium sidebar/header. The overlay lives inside the content card,
+    // but nothing up the tree creates a containing block (no transform/filter/
+    // contain), so `position: fixed; inset: 0` escapes to the viewport — which
+    // is exactly `#attrium-host`'s box — and the backdrop dims the whole shell.
+    // A dark scrim reads correctly in both modes.
+    .theme-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
     .theme-wrap {
       @apply rounded-[var(--attrium-radius-md)] overflow-hidden
              border border-[var(--attrium-border)];
@@ -150,18 +191,123 @@
       background: var(--attrium-primary-foreground);
     }
 
-    .theme-name {
-      @apply text-lg font-semibold;
+    // The header is core's 48px absolute strip at the top of the modal
+    // (themes.css `.theme-overlay .theme-header`). Turn it into a flex row so
+    // the nav buttons sit as compact icon buttons, and drop the strip's
+    // bottom border — core paints it #dcdcde, a bright line in dark mode.
+    .theme-header {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      padding-left: 0.5rem;
+      border-bottom: 0;
+    }
+
+    // Close / previous / next nav buttons. Core styles them as floated
+    // 48-54px boxes separated by 1px divider borders with a #dcdcde hover
+    // fill (themes.css). Reset to compact rounded icon buttons, transparent
+    // so they blend into the strip until hovered.
+    .theme-header .left,
+    .theme-header .right,
+    .theme-header .close {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border: 0;
+      border-radius: 0.5rem;
+      background: transparent;
+      color: var(--attrium-foreground);
+
+      &:hover,
+      &:focus {
+        background: var(--attrium-secondary);
+        color: var(--attrium-foreground);
+      }
+
+      // Disabled prev/next (first/last theme) — core dims them grey; keep the
+      // muted treatment and stop the hover fill from painting on them.
+      // Placed after the hover rule so it wins at equal specificity.
+      &.disabled,
+      &.disabled:hover,
+      &.disabled:focus {
+        background: transparent;
+        color: var(--attrium-muted-foreground);
+        cursor: default;
+      }
+
+      // Core paints its dashicons glyph on the `:before` (content + font).
+      // Hide it outright and paint the Lucide icon on an `::after` overlay
+      // instead — the same pattern as the installer's collapse-sidebar arrow
+      // and the checkbox checkmark. That is the combination that actually
+      // renders; painting the mask on the glyph-bearing `:before` did not
+      // (and core's hardcoded `:before` colors fought the token color).
+      &::before {
+        display: none;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
+    }
+
+    // Push the close button to the right edge (core floats it right) with a
+    // little breathing room, mirroring the installer overlay's header.
+    .theme-header .close {
+      margin: 0 0.5rem 0 auto;
+    }
+
+    // Icon glyphs — Lucide shapes painted via the shared mask helper
+    // (scss/_icons.scss). Each call re-asserts `mask-size: 1rem` after the
+    // helper (which defaults to `contain`): the `::after` fills the 2rem
+    // button, so `contain` would scale the icon up to fill it too.
+    .theme-header .close::after {
+      @include icons.mask('x');
+      mask-size: 1rem;
+    }
+
+    .theme-header .left::after {
+      @include icons.mask('chevron-left');
+      mask-size: 1rem;
+    }
+
+    .theme-header .right::after {
+      @include icons.mask('chevron-right');
+      mask-size: 1rem;
+    }
+
+    // "Active Theme" badge — core paints it #2c3338-on-white, a dark pill
+    // that vanishes on the dark-mode surface. Tokenize it as a subtle
+    // secondary pill; core's negative bottom margin tucks the name up under
+    // it, keep that so the badge keeps hugging the heading.
+    .current-label {
+      @apply inline-block rounded-full text-xs font-medium;
+      background: var(--attrium-secondary);
+      color: var(--attrium-secondary-foreground);
+      padding: 2px 8px;
+      margin: 0 0 -10px;
+    }
+
+    // `m-0` zeroes core's `margin: 10px 0 0` (themes.css) so the heading
+    // sits tight against the badge above it instead of pushing the name down.
+    h2.theme-name {
+      @apply text-lg font-semibold m-0 p-0 pt-4;
       color: var(--attrium-foreground);
     }
 
+    // `m-0` kills core's `margin-left: 10px` (themes.css) so the version sits
+    // flush against the theme name instead of floating after a gap.
     .theme-version {
       @apply text-sm font-normal ml-2;
       @include muted-text(0.6);
     }
 
     .theme-author {
-      @apply text-sm;
+      @apply text-sm mt-0;
       @include muted-text(0.7);
     }
 
@@ -169,8 +315,47 @@
       color: var(--attrium-foreground);
     }
 
+    // Theme tags row — core draws a thick 3px #f0f0f1 top border and #646970
+    // text. Thin the border to 1px and tokenize both so it reads in dark
+    // mode; the "Tags:" label keeps its font-weight but drops core's hardcoded
+    // #3c434a (which would be dark-on-dark on the dark surface).
+    .theme-tags {
+      @apply text-sm;
+      border-top: 1px solid var(--attrium-border);
+      @include muted-text(0.6);
+
+      span {
+        color: var(--attrium-foreground);
+        font-weight: 600;
+      }
+    }
+
+    // "This is a child theme of …" callout — core hardcodes a #fff surface
+    // with a #72aee6 left border, a bright band in dark mode. Reskin it as an
+    // info notice (same token treatment as modules/_notices.scss) so it reads
+    // in both modes.
+    .parent-theme {
+      @apply rounded-[var(--attrium-radius-md)] border border-[var(--attrium-border)]
+             p-4 text-sm;
+      border-left-width: 6px;
+      border-left-color: var(--attrium-info);
+      background: var(--attrium-primary-foreground);
+      color: var(--attrium-foreground);
+    }
+
     .theme-screenshots {
-      background: var(--attrium-secondary);
+      // No fill — the screenshots column is the image surface itself; a
+      // background would paint a band behind the screenshot frame (same
+      // reasoning as the installer overlay's `.theme-screenshot` override in
+      // _theme-install.scss).
+      background: transparent;
+
+      // Round the screenshot frame — `.screenshot` is the box that draws the
+      // border/shadow around the image, and core already clips it with
+      // `overflow: hidden`, so the image corners follow the radius.
+      .screenshot {
+        @apply overflow-hidden rounded-[var(--attrium-radius-md)];
+      }
     }
   }
 }

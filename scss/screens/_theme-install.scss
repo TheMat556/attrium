@@ -1,5 +1,6 @@
 @use '../mixins';
 @use '../ui';
+@use '../icons';
 
 // Theme installer (theme-install.php → body.theme-install-php): reskin the
 // `.wp-filter` toolbar (the Popular/Latest tabs, theme count, Feature Filter
@@ -11,6 +12,49 @@
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
 @include ui.filter-toolbar('theme-install-php');
+
+// ---- Toolbar layout: flexbox ----
+// Core only gives the plugin-install and upload `.wp-filter` a flex layout;
+// the theme installer keeps `display:inline-block` with floats, which is why
+// core offsets the Feature Filter button with a 10px top margin (common.css
+// `.wp-filter .button.drawer-toggle`) and the search box carries its own
+// 11px vertical margin — both leave the controls misaligned. Make the
+// theme-install toolbar a flex row like its sibling installers so the toggle
+// and search center vertically; `margin-left: auto` on the search form keeps
+// it pinned to the right edge, preserving the current horizontal grouping.
+.wp-filter {
+  @include mixins.screen('theme-install-php') {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.5rem;
+
+    .button.drawer-toggle {
+      margin: 0;
+    }
+
+    .search-form {
+      margin-left: auto;
+    }
+
+    // Zero both the tables module's `margin-top` and core's `margin: 11px 0`
+    // so the search input sits dead-center in the toolbar row.
+    .search-form p.search-box {
+      margin: 0;
+    }
+
+    // The feature-filter drawer is a child of `.wp-filter`, so making the
+    // toolbar a flex row turns it into a flex item that shrinks to content
+    // width and sits inline. Force it onto its own full-width row below the
+    // toolbar controls (flex-basis: 100% wraps it; order keeps it last), and
+    // reset core's negative margins (common.css `.filter-drawer` uses
+    // `margin: 0 -10px 0 -20px`) so it doesn't overflow the container.
+    .filter-drawer {
+      flex-basis: 100%;
+      margin: 0;
+    }
+  }
+}
 
 // ---- Theme count badge ----
 .filter-count .count {
@@ -43,3 +87,179 @@
 // ---- Feature-filter drawer ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
 @include ui.filter-drawer('theme-install-php');
+
+// ---- Theme Details full-screen overlay (`.wp-full-overlay`) ----
+// The installer's Details/Preview view is a full-screen overlay
+// (theme-install.php → `.theme-install-overlay.wp-full-overlay`), distinct from
+// the older `.theme-overlay` modal styled in _themes.scss. Core hardcodes a
+// #1d2327 backdrop, #f0f0f1 sidebar, and #fff content panel — all of which
+// read as bright/dark bands. Tokenize the whole surface so light/dark parity
+// is automatic. The overlay is theme-install-specific (themes.php uses the
+// `.theme-overlay` modal), hence the `theme-install-php` gate.
+.wp-full-overlay {
+  @include mixins.screen('theme-install-php') {
+    background: var(--attrium-background);
+
+    .wp-full-overlay-sidebar {
+      background: var(--attrium-primary-foreground);
+      border-right: 1px solid var(--attrium-border);
+    }
+
+    .wp-full-overlay-header {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      margin-left: 0.5rem;
+      background: var(--attrium-primary-foreground);
+
+      // Close / previous / next nav buttons. Core floats these left at full
+      // 45px height; reset that so they sit flush in the flex header.
+      .close-full-overlay,
+      .previous-theme,
+      .next-theme {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        // Drop core's 1px divider between the nav buttons (themes.css
+        // `.theme-install-overlay .close-full-overlay … border-right`) and
+        // shrink core's 45px-wide boxes: the buttons are icon-only now, so the
+        // dead space read as a large gap between the icons.
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        border: 0;
+        background: var(--attrium-primary-foreground);
+        color: var(--attrium-foreground);
+
+        &:hover,
+        &:focus {
+          background: var(--attrium-secondary);
+          color: var(--attrium-foreground);
+        }
+      }
+
+      // Icon glyphs — Lucide shapes painted via the shared mask helper
+      // (scss/_icons.scss), which explains the currentColor/mask technique and
+      // why it is theme-aware in both modes.
+      .theme-install-overlay.close-full-overlay::before {
+        @include icons.mask('x');
+      }
+
+      .theme-install-overlay.previous-theme::before {
+        @include icons.mask('chevron-left');
+      }
+
+      .theme-install-overlay.next-theme::before {
+        @include icons.mask('chevron-right');
+      }
+
+      // The action button (Install / Activate) — reset core's float, push it to
+      // the right edge of the header with a little breathing room from it.
+      .button {
+        margin: 0 0.5rem 0 auto;
+      }
+    }
+
+    .wp-full-overlay-sidebar-content {
+      background: var(--attrium-primary-foreground);
+      border-top: 1px solid var(--attrium-border);
+    }
+
+    // Preview pane behind the live iframe.
+    .wp-full-overlay-main {
+      background-color: var(--attrium-secondary);
+    }
+
+    .install-theme-info {
+      .theme-name {
+        @apply p-0;
+      }
+
+      .theme-by {
+        color: var(--attrium-muted-foreground);
+      }
+
+      // The overlay's screenshot is a distinct element from the card's
+      // `.theme` screenshot (styled in _themes.scss). Core's 1px #c3c4c7
+      // border is already killed by the shared theme-cards `.theme-screenshot
+      // { border-0 }` rule, and no radius is needed: the preview image is
+      // letterboxed, so the corners are the sidebar surface either way. Only
+      // the background needs overriding here — see below.
+      .theme-screenshot {
+        // Override the theme-cards mixin in _themes.scss which sets
+        // `background: var(--attrium-secondary)` and also applies on
+        // theme-install-php — the overlay screenshot is the image surface, a
+        // fill paints an unwanted band behind it.
+        background: transparent;
+      }
+    }
+
+    .theme-details {
+      .theme-version {
+        color: var(--attrium-foreground);
+      }
+
+      .theme-description {
+        color: var(--attrium-muted-foreground);
+      }
+
+      .num-ratings,
+      .no-rating {
+        color: var(--attrium-muted-foreground);
+      }
+    }
+
+    .wp-full-overlay-footer {
+      display: flex;
+      align-items: center;
+      background: var(--attrium-primary-foreground);
+      border-top: 1px solid var(--attrium-border);
+
+      .collapse-sidebar {
+        position: static;
+        gap: 0.25rem;
+        margin: 0.5rem;
+        padding: 0;
+        color: var(--attrium-muted-foreground);
+
+        &:hover,
+        &:focus {
+          color: var(--attrium-foreground);
+        }
+      }
+
+      // Core gives the arrow span a 20px circle (border-radius: 50% + hidden
+      // overflow) and paints a #f0f0f1 dashicons glyph on its `:before`. The
+      // Lucide chevron is painted on an ::after overlay (same pattern as the
+      // checkbox checkmark in modules/_checkbox.scss): core's `:before` glyph
+      // is explicitly hidden, and the helper's `background` shorthand strips
+      // the HiDPI arrow sprite core paints on the span itself.
+      button.collapse-sidebar > span.collapse-sidebar-arrow {
+        position: relative;
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        border-radius: 0;
+        // Strip core's HiDPI arrows sprite (themes.css paints
+        // `background-image: url(arrows-2x.png)` on this span at 120dpi).
+        background: none;
+        overflow: visible;
+
+        &::before {
+          display: none;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-color: currentColor;
+          mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
+          mask-size: contain;
+          mask-position: center;
+          mask-repeat: no-repeat;
+        }
+      }
+    }
+  }
+}
