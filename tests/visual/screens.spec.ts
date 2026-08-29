@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { ADMIN_PAGES } from './pages'
-import { applyTheme, snapshotTarget, stabilize, THEMES } from './support/theme'
+import {
+	applyTheme,
+	freezeAnimations,
+	snapshotTarget,
+	stabilize,
+	THEMES,
+} from './support/theme'
 
 /**
  * Full-screen visual regression across the restyled wp-admin screens.
@@ -55,7 +61,34 @@ for (const { theme } of THEMES) {
 
 		for (const { name, path } of ADMIN_PAGES) {
 			test(`screen: ${name}`, async ({ page }) => {
-				await page.goto(path, { waitUntil: 'networkidle' })
+				// The block Widgets editor keeps background requests open, so it
+				// never reaches networkidle. Its UI is ready once the initial
+				// document has loaded and its title is present.
+				await page.goto(path, {
+					waitUntil: name === 'widgets' ? 'domcontentloaded' : 'networkidle',
+				})
+
+				// widgets.php is the block Widgets editor. WordPress treats it as
+				// a block-editor screen, so Attrium intentionally leaves it alone
+				// and the shared shell assertion cannot apply. Capture the native
+				// editor surface after dismissing its first-run guide.
+				if (name === 'widgets') {
+					await expect(page.locator('.edit-widgets-header__title')).toHaveText(
+						'Widgets',
+					)
+					const guide = page.getByRole('dialog', {
+						name: 'Welcome to block Widgets',
+					})
+					if (await guide.isVisible().catch(() => false)) {
+						await guide.getByRole('button', { name: 'Close' }).click()
+					}
+					await freezeAnimations(page)
+					await expect(page.locator('body')).toHaveScreenshot(
+						`${name}-${theme}.png`,
+					)
+					return
+				}
+
 				await stabilize(page)
 
 				// Grows the viewport and captures #attrium-host, the shell that

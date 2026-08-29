@@ -1,5 +1,6 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
+@use '../ui/patterns';
 @use '../icons';
 
 // Theme installer (theme-install.php → body.theme-install-php): reskin the
@@ -11,7 +12,12 @@
 
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.filter-toolbar('theme-install-php');
+// screen-root (not screen): the ui mixins emit top-level blocks, and a
+// top-level `&` from screen() would compile to a `:scope` that matches
+// nothing.
+@include mixins.screen-root('theme-install-php') {
+  @include patterns.filter-toolbar;
+}
 
 // ---- Toolbar layout: flexbox ----
 // Core only gives the plugin-install and upload `.wp-filter` a flex layout;
@@ -70,7 +76,7 @@
   input[type="search"],
   .wp-filter-search {
     @include mixins.screen('theme-install-php') {
-      @include ui.field-outline;
+      @include primitives.field-outline;
       @apply px-3;
     }
   }
@@ -78,15 +84,15 @@
 
 // ---- Upload card (Upload Theme form) ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.upload-card(
-  'theme-install-php',
-  '.wp-upload-form',
-  '.upload-theme .install-help'
-);
+@include mixins.screen-root('theme-install-php') {
+  @include patterns.upload-card('.wp-upload-form', '.upload-theme .install-help');
+}
 
 // ---- Feature-filter drawer ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.filter-drawer('theme-install-php');
+@include mixins.screen-root('theme-install-php') {
+  @include patterns.filter-drawer;
+}
 
 // ---- Theme Details full-screen overlay (`.wp-full-overlay`) ----
 // The installer's Details/Preview view is a full-screen overlay
@@ -114,28 +120,15 @@
 
       // Close / previous / next nav buttons. Core floats these left at full
       // 45px height; reset that so they sit flush in the flex header.
+      // icon-button also drops core's 1px divider between the nav buttons
+      // (themes.css `.theme-install-overlay .close-full-overlay …
+      // border-right`) and shrinks core's 45px-wide boxes: the buttons are
+      // icon-only now, so the dead space read as a large gap between the
+      // icons.
       .close-full-overlay,
       .previous-theme,
       .next-theme {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        // Drop core's 1px divider between the nav buttons (themes.css
-        // `.theme-install-overlay .close-full-overlay … border-right`) and
-        // shrink core's 45px-wide boxes: the buttons are icon-only now, so the
-        // dead space read as a large gap between the icons.
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.5rem;
-        border: 0;
-        background: var(--attrium-primary-foreground);
-        color: var(--attrium-foreground);
-
-        &:hover,
-        &:focus {
-          background: var(--attrium-secondary);
-          color: var(--attrium-foreground);
-        }
+        @include primitives.icon-button;
       }
 
       // Icon glyphs — Lucide shapes painted via the shared mask helper
@@ -253,11 +246,7 @@
           content: '';
           position: absolute;
           inset: 0;
-          background-color: currentColor;
-          mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
-          mask-size: contain;
-          mask-position: center;
-          mask-repeat: no-repeat;
+          @include icons.mask('chevron-left');
         }
       }
     }

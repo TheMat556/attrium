@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Site Health page (site-health.php → body.site-health-php). Core hardcodes
 // #fff / #f0f0f1 / #dcdcde chrome across the header, accordion, and tabs.
@@ -40,36 +41,11 @@
 }
 
 // -------------------------------------------------------------------------
-// Tabs – underline style
+// Tabs – underline style (shared with _privacy.scss via primitives.underline-tabs)
 // -------------------------------------------------------------------------
 .health-check-tabs-wrapper {
   @include mixins.screen('site-health-php') {
-    display: flex;
-    justify-content: center;
-
-    .health-check-tab {
-      color: var(--attrium-muted-foreground);
-      font-size: 14px;
-      font-weight: 500;
-      border-bottom: 2px solid transparent;
-      margin: 0;
-      padding: 0.5rem 1rem 1rem;
-      transition:
-        color 0.15s ease,
-        border-color 0.15s ease;
-
-      &:hover,
-      &:focus {
-        color: var(--attrium-foreground);
-      }
-
-      &.active {
-        color: var(--attrium-foreground);
-        border-bottom-color: var(--attrium-primary);
-        box-shadow: none;
-        font-weight: 500;
-      }
-    }
+    @include primitives.underline-tabs('health-check-tab');
   }
 }
 

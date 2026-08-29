@@ -1,0 +1,33 @@
+// Screens topic — the per-screen reskins (scss/screens/*), all gated by the
+// single `attrium-mod-screens` body class (see _mixins.scss's screen()/screen-root()).
+// @use order is load order — keep it in the same sequence as the modules +
+// screens order of the former single-file build so the cascade is unchanged.
+// The Customizer reskin is consolidated into four files aligned with core's CSS
+// structure: _customize-shell.scss (overlay chrome + sidebar + footer),
+// _customize-controls.scss (accordion + controls + editor), _customize-themes.scss,
+// and _customize-menus.scss — adding a new screen means adding its @use here.
+@use '../screens/base';
+@use '../screens/customize-shell';
+@use '../screens/customize-controls';
+@use '../screens/customize-themes';
+@use '../screens/customize-menus';
+@use '../screens/pages';
+@use '../screens/posts';
+@use '../screens/update-core';
+@use '../screens/upload';
+@use '../screens/media-new';
+@use '../screens/plugins';
+@use '../screens/plugin-install';
+@use '../screens/users';
+@use '../screens/import';
+@use '../screens/options-connectors';
+@use '../screens/themes';
+@use '../screens/theme-install';
+@use '../screens/font-library';
+@use '../screens/theme-editor';
+@use '../screens/nav-menus';
+@use '../screens/profile';
+@use '../screens/tools';
+@use '../screens/site-health';
+@use '../screens/privacy';
+@reference "tailwindcss";

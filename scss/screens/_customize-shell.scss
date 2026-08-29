@@ -1,0 +1,449 @@
+@use '../icons';
+@use '../mixins';
+@use '../ui/primitives';
+
+// Customizer shell — overlay chrome, sidebar, info header, section headers,
+// back buttons, footer/device switcher, notifications.
+//
+// Consolidates what core's themes.css and the sidebar chrome styles target:
+//   - .wp-full-overlay* (overlay, preview, sidebar, footer)
+//   - #customize-header-actions (actions bar)
+//   - #customize-info / .customize-info (info header)
+//   - .customize-pane-child / .accordion-section (accordion chrome)
+//   - Body-class workarounds (outer-section-open, in-sub-panel)
+//
+// The Customizer has no #attrium-host: theme-awareness comes from
+// ModuleRegistry's head script toggling html.attrium-dark on <html> from the
+// same attrium-theme localStorage key the shell uses. Every --attrium-* token
+// below resolves dark automatically via html.attrium-dark in _tokens.scss.
+//
+// Per-panel reskins (controls, themes, menus) sit in their own files.
+// Form controls + publish settings live in _customize-controls.scss.
+// The themes panel lives in _customize-themes.scss, the Menus panel in
+// _customize-menus.scss.
+@include mixins.screen-root('wp-customizer') {
+
+
+  // ---- Sidebar panel ----
+  .wp-full-overlay-sidebar {
+    background: var(--attrium-primary-foreground);
+    border-right: 1px solid var(--attrium-border);
+  }
+
+  // The sidebar scroll area: transparent in core; give it the panel surface
+  // and drop core's inline `top` offset so it sits directly under the
+  // header/notifications rail.
+  .wp-full-overlay-sidebar-content {
+    background: var(--attrium-primary-foreground);
+    top: unset !important;
+    bottom: unset !important;
+  }
+
+  // ---- Header actions (save button bar) ----
+  .wp-full-overlay-sidebar .wp-full-overlay-header,
+  #customize-header-actions {
+    background: var(--attrium-primary-foreground);
+    border-bottom: 0;
+  }
+
+  // Core uses floats; flex the row so close (1), spinner (2), toggle (3),
+  // save (4) are ordered by `order`.
+  #customize-header-actions {
+    display: flex;
+    align-items: center;
+    padding-left: 0.5rem;
+    position: relative;
+
+    > * {
+      position: relative;
+    }
+
+    #customize-save-button-wrapper {
+      margin-top: 0;
+      margin-left: unset;
+      order: 4;
+    }
+
+    .spinner {
+      order: 2;
+      margin-left: auto;
+    }
+
+    .customize-controls-preview-toggle {
+      order: 3;
+    }
+
+    .customize-controls-close {
+      order: 1;
+    }
+  }
+
+  #customize-save-button-wrapper .save {
+    border-radius: var(--attrium-radius-md);
+
+    &.has-next-sibling {
+      border-radius: var(--attrium-radius-md) 0 0 var(--attrium-radius-md);
+    }
+  }
+
+  #publish-settings {
+    border-radius: 0 var(--attrium-radius-md) var(--attrium-radius-md) 0;
+
+    &::before {
+      @include icons.mask-inline('settings', 18px);
+    }
+  }
+
+  #customize-save-button-wrapper .save:focus,
+  #publish-settings:focus {
+    box-shadow: none;
+  }
+
+  // Close (X) button — 45px bar, token face, Lucide x on `::after`.
+  .customize-controls-close {
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0;
+    box-sizing: border-box;
+    border-radius: var(--attrium-radius-md);
+    background: var(--attrium-primary-foreground);
+    border-top-color: var(--attrium-primary-foreground);
+    border-right: 0;
+    border-bottom: 0;
+    color: var(--attrium-foreground);
+
+    &:hover,
+    &:focus {
+      background: var(--attrium-secondary);
+      border-top-color: var(--attrium-secondary);
+      color: var(--attrium-foreground);
+      box-shadow: none;
+    }
+
+    &::before {
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      transform: translate(-50%, -50%);
+      @include icons.mask('x');
+    }
+  }
+
+  // "Customize / Preview" toggle (mobile only, ≤640px). Rounded buttons
+  // with Lucide mask icons.
+  .customize-controls-preview-toggle {
+    left: unset;
+    border: unset;
+    padding: unset;
+    margin-right: 0.5rem;
+    background: var(--attrium-primary-foreground);
+    color: var(--attrium-foreground);
+
+    .controls,
+    .preview {
+      padding: 0 10px;
+      border-radius: var(--attrium-radius-md);
+
+      &:hover {
+        background: var(--attrium-secondary);
+      }
+    }
+
+    &:focus {
+      box-shadow: none;
+      outline: none;
+
+      .controls,
+      .preview {
+        background: var(--attrium-secondary);
+      }
+    }
+
+    .controls::before,
+    .preview::before {
+      margin-right: 6px;
+      position: relative;
+      top: 0;
+    }
+
+    .controls::before {
+      @include icons.mask-inline('settings', 16px);
+    }
+
+    .preview::before {
+      @include icons.mask-inline('external-link', 16px);
+    }
+  }
+
+  // ---- "You are customizing …" info header ----
+  #customize-controls .customize-info {
+    border-bottom: 0;
+
+    .accordion-section-title {
+      background: var(--attrium-primary-foreground);
+      border-bottom: 0;
+      color: var(--attrium-foreground);
+
+      .preview-notice,
+      .preview-notice .panel-title {
+        color: var(--attrium-foreground);
+      }
+    }
+
+    .panel-title {
+      @apply font-semibold;
+    }
+
+    .customize-help-toggle {
+      &::before {
+        display: none;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 5px;
+        left: 6px;
+        width: 20px;
+        height: 20px;
+        @include icons.mask('circle-help');
+      }
+    }
+
+    .customize-panel-description,
+    .customize-section-description {
+      background: var(--attrium-primary-foreground);
+    }
+  }
+
+  #customize-controls .no-widget-areas-rendered-notice {
+    background: var(--attrium-primary-foreground);
+    border-top: 0 !important;
+    color: var(--attrium-muted-foreground);
+  }
+
+  // ---- Inner section headers (section-meta + back button) ----
+  .customize-section-title {
+    background: var(--attrium-primary-foreground);
+  }
+
+  .customize-section-description-container.section-meta {
+    border-bottom: 0;
+  }
+
+  #customize-controls .customize-pane-child .customize-section-title h3,
+  #customize-controls .customize-pane-child h3.customize-section-title,
+  #customize-outer-theme-controls .customize-pane-child .customize-section-title h3,
+  #customize-outer-theme-controls .customize-pane-child h3.customize-section-title {
+    color: var(--attrium-foreground);
+  }
+
+  .customize-panel-back,
+  .customize-section-back {
+    border-left-color: var(--attrium-primary-foreground);
+    @include primitives.accent-hover;
+  }
+
+  .customize-panel-back,
+  .customize-section-back,
+  .customize-panel-back:hover,
+  .customize-panel-back:focus,
+  .customize-section-back:hover,
+  .customize-section-back:focus {
+    border-right: 0 !important;
+  }
+
+  // Back-button glyph — Lucide chevron-left on `::after`.
+  .customize-section-title > .customize-section-back,
+  .panel-meta > .customize-panel-back {
+    position: relative;
+
+    &::before {
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 25px;
+      left: 9px;
+      width: 20px;
+      height: 20px;
+      @include icons.mask('chevron-left');
+    }
+  }
+
+  // Panel header (panel-meta — e.g. "Menus" / "Widgets" panel titles).
+  .panel-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    > .customize-panel-back {
+      flex: 0 0 auto;
+    }
+
+    .accordion-section-title {
+      flex: 1 1;
+    }
+  }
+
+  // ---- Open section/panel sub-panes ----
+  // Drop core's absolute positioning; with the sidebar in flow, panes sit
+  // under the info header. Hide the parent list + info header the instant
+  // any pane is open (the overlay's section-open class clears too fast).
+  #customize-theme-controls .customize-pane-child {
+    position: relative;
+  }
+
+  #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
+    .customize-pane-parent,
+  #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
+    #customize-info {
+    display: none !important;
+  }
+
+  #customize-theme-controls .customize-pane-child:not(.open):not(.current-panel) {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  #customize-theme-controls .customize-pane-child.accordion-section-content {
+    padding: 1rem;
+  }
+
+  #customize-sidebar-outer-content {
+    background: var(--attrium-primary-foreground);
+    border-right: 1px solid var(--attrium-border);
+    border-left: 1px solid var(--attrium-border);
+  }
+
+  // ---- Footer (collapse button + device switcher) ----
+  .wp-full-overlay-footer {
+    background: var(--attrium-primary-foreground);
+    border-top: 1px solid var(--attrium-border);
+  }
+
+  .wp-full-overlay-footer .devices {
+    background: var(--attrium-primary-foreground);
+    box-shadow: -20px 0 10px -5px var(--attrium-primary-foreground);
+
+    button:hover,
+    button:focus {
+      background: var(--attrium-accent);
+    }
+
+    button.active {
+      border-bottom-color: var(--attrium-primary);
+
+      &:before {
+        color: var(--attrium-primary);
+      }
+    }
+
+    button:hover:before,
+    button:focus:before {
+      color: var(--attrium-primary);
+    }
+
+    button:focus,
+    button.active:hover {
+      border-bottom-color: var(--attrium-primary);
+    }
+
+    // Lucide masks for device switcher buttons.
+    button.preview-desktop::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      @include icons.mask('monitor', 18px);
+    }
+
+    button.preview-tablet::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      @include icons.mask('tablet', 18px);
+    }
+
+    button.preview-mobile::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      @include icons.mask('smartphone', 18px);
+    }
+  }
+
+  .wp-full-overlay .collapse-sidebar-arrow {
+    &::before {
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 16px;
+      height: 16px;
+      @include icons.mask('chevron-left');
+    }
+  }
+
+  .wp-full-overlay.collapsed .collapse-sidebar-arrow::after,
+  .rtl .wp-full-overlay .collapse-sidebar-arrow::after {
+    transform: rotate(180.001deg);
+  }
+
+  .rtl .wp-full-overlay.collapsed .collapse-sidebar-arrow::after {
+    transform: none;
+  }
+
+  .wp-full-overlay .collapse-sidebar:hover .collapse-sidebar-arrow,
+  .wp-full-overlay .collapse-sidebar:focus .collapse-sidebar-arrow {
+    box-shadow: 0 0 0 2px var(--attrium-ring);
+    outline: none;
+  }
+
+  // ---- Customizer notifications ----
+  #customize-controls #customize-notifications-area {
+    position: relative;
+    top: auto;
+    border-bottom: 0;
+  }
+
+  #customize-controls #customize-notifications-area .notice {
+    margin: 0.5rem;
+  }
+}
+
+// ---- Body-class workarounds (OUTSIDE screen-root) ----
+// These must NOT live inside the screen-root gate: `body.outer-section-open`
+// inside it would emit `body.attrium-mod-screens.wp-customizer
+// body.outer-section-open …`, which matches nothing. Written as a single body
+// compound, it out-specifies core's (1,2,0).
+
+// Core repaints the sidebar scroll area #f0f0f1 while an outer section is open.
+body.attrium-mod-screens.wp-customizer.outer-section-open
+  #customize-controls
+  .wp-full-overlay-sidebar-content {
+  background: var(--attrium-primary-foreground);
+}
+
+// Core reserves 62px on the header's left when a sub-panel is open.
+body.attrium-mod-screens.wp-customizer.in-sub-panel
+  .wp-full-overlay-sidebar
+  .wp-full-overlay-header {
+  padding-left: 1rem;
+}

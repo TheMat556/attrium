@@ -1,5 +1,6 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
+@use '../ui/patterns';
 
 // Pages list (edit.php?post_type=page): hide the top toolbar's pagination and
 // the bottom toolbar's bulk-actions. The top toolbar's filter row is left
@@ -12,7 +13,9 @@
   }
 }
 
-@include ui.hide-bottom-bulk-actions('post-type-page');
+@include mixins.screen-root('post-type-page') {
+  @include patterns.hide-bottom-bulk-actions;
+}
 
 // Core gives #post-query-submit `margin: 0 0 0 8px` (forms.css) — empirically
 // the margin-right reset here is still live in the pages flex search box, so

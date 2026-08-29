@@ -1,5 +1,6 @@
 @use '../mixins';
 @use '../modules/buttons' as buttons;
+@use '../ui/primitives';
 
 // Connectors settings page (options-connectors.php): a React app built with
 // @wordpress/components. Its visible class names (`css-6jpe9g`, `css-8t07xj`, …)
@@ -18,7 +19,7 @@
 // emits.
 //
 // All colors flow through the --attrium-* tokens (redefined under
-// #attrium-host.dark in _tokens.css), so light/dark parity is automatic with
+// #attrium-host.dark in _tokens.scss), so light/dark parity is automatic with
 // no separate dark-mode block. Setting the base `color` on the container also
 // fixes icons that paint with `fill="currentColor"` (e.g. the OpenAI logo),
 // which would otherwise be invisible in one mode.
@@ -29,18 +30,14 @@
   // ---- AI-plugin promo callout ----
   // Core paints this with a light surface; token-ise it so it reads in dark.
   .ai-plugin-callout {
-    background: var(--attrium-secondary);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
+    @include primitives.secondary-surface;
     color: var(--attrium-foreground);
     overflow: hidden;
   }
 
   // ---- Connector rows (each is a wp-components Item) ----
   .components-item {
-    background: var(--attrium-primary-foreground);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
+    @include primitives.card-surface;
     color: var(--attrium-foreground);
   }
 
@@ -59,8 +56,7 @@
   // Connector description (a <span data-wp-component="Text">). Target the span
   // specifically so the h2 above keeps full-strength heading color.
   span[data-wp-component="Text"] {
-    color: var(--attrium-foreground);
-    opacity: 0.6;
+    @include primitives.muted-text(0.6);
   }
 
   // ---- Buttons ----

@@ -1,0 +1,139 @@
+@use 'primitives';
+
+// Composite UI recipes — emit their own top-level blocks. Include these at
+// TOP LEVEL under screen-root(...), never screen(...), whose trailing `&`
+// compiles to a `:scope` that matches nothing when the include has no
+// enclosing rule (the same trap screen-root's doc comment warns about).
+//
+// The two-tier convention (see _primitives.scss for the other tier):
+//   - primitives.* — element recipes: include inside a gated rule.
+//   - patterns.*   — composite recipes: include at top level under screen-root.
+
+// --- Filter toolbar ------------------------------------------------------------
+
+@mixin filter-toolbar {
+  .wp-filter {
+    @include primitives.wp-filter-surface(transparent);
+    color: var(--attrium-foreground);
+  }
+
+  .filter-links {
+    li > a {
+      @apply border-b-4 border-transparent font-medium;
+
+      color: var(--attrium-foreground);
+      opacity: 0.65;
+
+      &:hover,
+      &:focus {
+        color: var(--attrium-foreground);
+        opacity: 1;
+      }
+    }
+
+    .current,
+    .current:hover,
+    .current:focus {
+      border-bottom-color: var(--attrium-primary);
+      color: var(--attrium-foreground);
+      opacity: 1;
+      @apply shadow-none;
+    }
+  }
+}
+
+// --- Installer feature-filter drawer -------------------------------------------
+
+@mixin filter-drawer {
+  .filter-drawer {
+    background: transparent;
+    border-top: 1px solid var(--attrium-border);
+
+    .filter-group {
+      @include primitives.surface(var(--attrium-secondary));
+      box-shadow: none;
+
+      legend,
+      label {
+        color: var(--attrium-foreground);
+      }
+    }
+
+    .filter-group-feature input[type='checkbox'],
+    .filter-group-feature input[type='radio'] {
+      position: absolute;
+    }
+
+    .apply-filters.button {
+      background: var(--attrium-primary);
+      color: var(--attrium-primary-foreground);
+      border-color: var(--attrium-border);
+      @apply shadow-none;
+
+      &:hover,
+      &:focus {
+        @apply opacity-90;
+      }
+    }
+
+    // The selected-filter count badge lives inside the primary Apply Filters
+    // button (theme.js writes tags.length into `.apply-filters span`), so it
+    // must use the button's own foreground token — `--attrium-foreground`
+    // is dark-on-dark in light mode / light-on-light in dark mode and reads
+    // as invisible on the primary fill. `--attrium-primary-foreground` is
+    // themed to contrast with `--attrium-primary` in both modes.
+    .apply-filters.button span {
+      color: var(--attrium-primary-foreground);
+      opacity: 0.85;
+    }
+
+    .filtered-by .tag {
+      @include primitives.surface(
+        var(--attrium-secondary),
+        1px solid var(--attrium-border),
+        9999px
+      );
+      box-shadow: none;
+      color: var(--attrium-secondary-foreground);
+      font-weight: 600;
+    }
+
+    .button-link.edit-filters {
+      @include primitives.link-primary;
+    }
+  }
+}
+
+// --- React shell resets ---------------------------------------------------------
+
+@mixin transparent-react-shell {
+  .boot-layout,
+  .boot-layout__surfaces,
+  .boot-layout__stage,
+  .admin-ui-page {
+    background: transparent !important;
+  }
+}
+
+// --- List-table helpers ----------------------------------------------------------
+
+@mixin hide-bottom-bulk-actions {
+  .tablenav.bottom .bulkactions {
+    @apply hidden;
+  }
+}
+
+@mixin upload-card($form-selector, $help-selector) {
+  #{$form-selector} {
+    @include primitives.surface(
+      var(--attrium-primary-foreground),
+      2px dashed var(--attrium-border),
+      var(--attrium-radius-md)
+    );
+    padding: 1rem;
+  }
+
+  #{$help-selector} {
+    color: var(--attrium-muted-foreground);
+  }
+}

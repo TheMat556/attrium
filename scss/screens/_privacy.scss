@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Privacy settings page (options-privacy.php → body.options-privacy-php).
 // Core centers the whole header (text-align: center + a flex title section with
@@ -40,34 +41,10 @@
 // inactive labels are muted grey, the active one is theme-aware with a non-blue
 // bottom underline, and hover/focus lift the label to theme-aware foreground.
 // Replaces core's centered inline-grid and the admin-blue `box-shadow` underline.
+// Shared with _site-health.scss via primitives.underline-tabs.
 .privacy-settings-tabs-wrapper {
   @include mixins.screen('options-privacy-php') {
-    display: flex;
-    justify-content: center;
-
-    .privacy-settings-tab {
-      color: var(--attrium-muted-foreground);
-      font-size: 14px;
-      font-weight: 500;
-      border-bottom: 2px solid transparent;
-      margin: 0;
-      padding: 0.5rem 1rem 1rem;
-      transition:
-        color 0.15s ease,
-        border-color 0.15s ease;
-
-      &:hover,
-      &:focus {
-        color: var(--attrium-foreground);
-      }
-
-      &.active {
-        color: var(--attrium-foreground);
-        border-bottom-color: var(--attrium-primary);
-        box-shadow: none;
-        font-weight: 500;
-      }
-    }
+    @include primitives.underline-tabs('privacy-settings-tab');
   }
 }
 

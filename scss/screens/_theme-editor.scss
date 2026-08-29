@@ -1,9 +1,12 @@
+@use '../mixins';
+
 // Theme + Plugin file editors: theme-editor.php (body.theme-editor-php) and
 // plugin-editor.php (body.plugin-editor-php). Both share identical markup, so
-// all reskin rules are scoped to the shared body classes in one selector.
+// all reskin rules are scoped to the shared body classes via one screen-root
+// gate. (The screen()/screen-root() mixins add the `attrium-mod-screens`
+// flag, so the module toggle disables this reskin like every other screen's.)
 
-body.theme-editor-php,
-body.plugin-editor-php {
+@include mixins.screen-root('theme-editor-php', 'plugin-editor-php') {
   // ---- File tree: token-driven, light/dark parity automatic ----
   // The tree sidebar (#templateside) is core-painted `#f6f7f7` with `#dcdcde`
   // borders, `#c3c4c7` connector lines, and `#043959` focus text

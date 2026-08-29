@@ -92,6 +92,23 @@ export async function stabilize(page: Page): Promise<void> {
 		await document.fonts.ready
 	})
 
+	await freezeAnimations(page)
+}
+
+/**
+ * Hard ceiling on the grown viewport. Chromium refuses absurd window sizes and
+ * a runaway page shouldn't produce a 20k-pixel baseline.
+ */
+const MAX_CAPTURE_HEIGHT = 8000
+
+/**
+ * Neutralize animations/transitions/carets before a snapshot.
+ *
+ * `stabilize()` and the Customizer spec both need the same freeze; the Customizer
+ * has no shadow root, so a single document-level style tag reaches everything
+ * (the shell's shadow root is covered by Playwright's `animations: 'disabled'`).
+ */
+export async function freezeAnimations(page: Page): Promise<void> {
 	await page.addStyleTag({
 		content: `*, *::before, *::after {
 			animation-duration: 0s !important;
@@ -105,10 +122,74 @@ export async function stabilize(page: Page): Promise<void> {
 }
 
 /**
- * Hard ceiling on the grown viewport. Chromium refuses absurd window sizes and
- * a runaway page shouldn't produce a 20k-pixel baseline.
+ * Grow the viewport until the given measure() reports the full content height.
+ *
+ * Shared by `snapshotTarget` (the Vue shell's content card) and the Customizer
+ * spec (the sidebar scroll area): both apps are fixed/absolute (the document
+ * never scrolls), so content must be revealed by growing the viewport. Growing
+ * reflows the page, which can push the measured height up again, so the height
+ * is re-measured after each resize until it stops growing (or hits the cap).
+ *
+ * `label` is used in the warnings so a cropped capture names the surface.
  */
-const MAX_CAPTURE_HEIGHT = 8000
+export async function growViewportToFit(
+	page: Page,
+	measure: () => Promise<number>,
+	label: string,
+): Promise<void> {
+	const { width, height: vpHeight } = page.viewportSize() ?? {
+		width: 1440,
+		height: 900,
+	}
+
+	// Wait for the content to exceed the viewport. After the surface lays out,
+	// async scripts / lazy images / reflows may still be settling; measuring too
+	// early means `scrollHeight === clientHeight` and the capture is cropped.
+	const MAX_WAIT_MS = 5000
+	const POLL_MS = 100
+	let needed = await measure()
+	for (
+		let waited = 0;
+		waited < MAX_WAIT_MS && needed <= vpHeight;
+		waited += POLL_MS
+	) {
+		await page.waitForTimeout(POLL_MS)
+		needed = await measure()
+	}
+	if (needed <= vpHeight) {
+		console.warn(
+			`[visual] ${label} content height (${needed}px) did not exceed viewport ` +
+				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
+				`This usually means the page did not fully layout before snapshotting.`,
+		)
+	}
+
+	// Grow the viewport and re-measure after each resize until it stops growing
+	// (or we hit the cap); the bound guards a page that grows on every reflow.
+	let height = Math.round(Math.min(needed, MAX_CAPTURE_HEIGHT))
+
+	for (let i = 0; i < 5; i++) {
+		if (height <= (page.viewportSize()?.height ?? 0)) break
+
+		await page.setViewportSize({ width, height })
+		await page.evaluate(async () => {
+			await document.fonts.ready
+		})
+
+		const remeasured = await measure()
+		if (remeasured <= height) break
+
+		needed = remeasured
+		height = Math.round(Math.min(remeasured, MAX_CAPTURE_HEIGHT))
+	}
+
+	if (needed > MAX_CAPTURE_HEIGHT) {
+		console.warn(
+			`[visual] ${label} content is ${needed}px tall; capture capped at ` +
+				`${MAX_CAPTURE_HEIGHT}px, so the remainder is NOT covered.`,
+		)
+	}
+}
 
 /**
  * Grow the viewport to fit the whole screen, and return the element to capture.
@@ -140,17 +221,13 @@ const MAX_CAPTURE_HEIGHT = 8000
  */
 export async function snapshotTarget(page: Page): Promise<Locator> {
 	const host = page.locator(HOST)
-	const { width, height: vpHeight } = page.viewportSize() ?? {
-		width: 1440,
-		height: 900,
-	}
 
 	// Total page height needed to show the whole content without the card
 	// scrolling internally: the card's full content height plus the fixed
 	// chrome above and below it (sidebar-inset top margin + header, bottom
 	// margin). The card box itself never moves (its content scrolls inside),
 	// so getBoundingClientRect offsets relative to the host are stable.
-	const neededHeight = () =>
+	const measure = () =>
 		host.evaluate((el) => {
 			const card = el.shadowRoot?.querySelector('[data-attrium-scroll]')
 			if (!card) return 0
@@ -163,61 +240,7 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 			)
 		})
 
-	// Wait for the card's content to exceed the viewport. After the Attrium
-	// shell mounts and #wpcontent is reparented, the embedded WordPress page
-	// may still be laying out (async scripts, lazy images, reflows from
-	// shadow-root style application). If we measure too early, the card's
-	// scrollHeight equals its clientHeight (nothing to scroll) and the capture
-	// is cropped. Poll until it stabilises above the viewport or we time out (a
-	// short timeout is fine — most screens settle in <1s).
-	const MAX_WAIT_MS = 5000
-	const POLL_MS = 100
-	let needed = await neededHeight()
-	for (
-		let waited = 0;
-		waited < MAX_WAIT_MS && needed <= vpHeight;
-		waited += POLL_MS
-	) {
-		await page.waitForTimeout(POLL_MS)
-		needed = await neededHeight()
-	}
-	if (needed <= vpHeight) {
-		console.warn(
-			`[visual] content height (${needed}px) did not exceed viewport ` +
-				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
-				`This usually means the page did not fully layout before snapshotting.`,
-		)
-	}
-
-	// Growing the viewport reflows the embedded WP page (media grids,
-	// responsive tables), which can reveal more content and push scrollHeight
-	// up again — so the height must be RE-MEASURED after each resize, not
-	// assumed from the first reading. Loop until it stops growing (or we hit
-	// the cap); a handful of iterations is plenty, the bound is just a
-	// guard against a page that grows on every reflow forever.
-	let height = Math.min(needed, MAX_CAPTURE_HEIGHT)
-
-	for (let i = 0; i < 5; i++) {
-		if (height <= (page.viewportSize()?.height ?? 0)) break
-
-		await page.setViewportSize({ width, height })
-		await page.evaluate(async () => {
-			await document.fonts.ready
-		})
-
-		const remeasured = await neededHeight()
-		if (remeasured <= height) break
-
-		needed = remeasured
-		height = Math.min(remeasured, MAX_CAPTURE_HEIGHT)
-	}
-
-	if (needed > MAX_CAPTURE_HEIGHT) {
-		console.warn(
-			`[visual] screen content is ${needed}px tall; capture capped at ` +
-				`${MAX_CAPTURE_HEIGHT}px, so the remainder is NOT covered.`,
-		)
-	}
+	await growViewportToFit(page, measure, 'screen')
 
 	return host
 }

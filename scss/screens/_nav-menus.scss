@@ -1,12 +1,12 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
 
 // Menus screen (nav-menus.php → body.nav-menus-php). Core hardcodes #fff /
 // #f6f7f7 / #c3c4c7 / #dcdcde chrome across the whole screen (common.css,
 // nav-menus.css, edit.css) — bright bands in dark mode that don't match the
 // Attrium surfaces. Everything below re-expresses those surfaces, borders, and
 // radii through --attrium-* tokens (redefined under #attrium-host.dark in
-// _tokens.css), so light/dark parity is automatic with no separate dark block.
+// _tokens.scss), so light/dark parity is automatic with no separate dark block.
 //
 // Gate: every selector in this file targets markup inside nav-menus.php's
 // `.wrap` (nav-menus.php:782-1300), so the screen gate is hoisted to a single
@@ -22,17 +22,17 @@
   // The "Edit Menus / Manage Locations" bar is a `.nav-tab-wrapper` of
   // `.nav-tab` links — core renders it as classic bottom-border folder tabs
   // (common.css:2376). Reskin it into the same segmented-control pill group used
-  // everywhere else (ui.pill-* — see scss/_ui.scss) so the tab styles match
+  // everywhere else (primitives.pill-* — see scss/ui/_primitives.scss) so the tab styles match
   // across the admin. Only the resets that undo core's folder chrome (the tab
   // float, the active-tab margin nudge) stay here as call-site extras.
   .nav-tab-wrapper {
-    @include ui.pill-track;
+    @include primitives.pill-track;
     @apply mb-4;
 
     .nav-tab {
       // Core floats the tabs and gives them margins — strip both so each sits
       // in the pill track as a flat segment.
-      @include ui.pill-segment;
+      @include primitives.pill-segment;
       @apply float-none m-0;
     }
 
@@ -41,7 +41,7 @@
     .nav-tab-active,
     .nav-tab-active:hover,
     .nav-tab-active:focus {
-      @include ui.pill-segment-active;
+      @include primitives.pill-segment-active;
       @apply mb-0;
     }
   }
@@ -56,7 +56,7 @@
   #menu-management .menu-edit,
   .manage-menus,
   .menu-settings {
-    @include ui.card-surface;
+    @include primitives.card-surface;
   }
 
   // Both columns additionally clip their children to the card radius and drop
@@ -130,7 +130,7 @@
 
       // The specificity (body + .nav-menus-php + .metabox-holder path) already
       // equals core's, and this stylesheet loads after core.
-      @include ui.focus-reset;
+      @include primitives.focus-reset;
     }
 
     // Core tints the disclosure arrow to near-black on title hover
@@ -187,7 +187,7 @@
   // for the non-checklist tab-bar variant).
   .add-menu-item-tabs,
   .category-tabs {
-    @include ui.pill-track;
+    @include primitives.pill-track;
     // `w-fit` from the track + max-width here: the strip hugs its content but
     // can never push the accordion wider — labels truncate instead of wrapping
     // or overflowing. (`list-none` is needed because core's accordion reset
@@ -195,7 +195,7 @@
     @apply list-none max-w-full overflow-hidden;
 
     li {
-      @include ui.pill-segment;
+      @include primitives.pill-segment;
       // `pill-segment` already zeroes the border, so only the extras it does
       // not own survive here. `m-0` is needed: the admin's base `li` rule
       // (`dd, li`) adds a 6px bottom margin, and `min-w-0`/overflow let the
@@ -207,7 +207,7 @@
     // `border-bottom-color: #fff`) so the pill reads as a standalone segment.
     li.tabs,
     li.wp-tab-active {
-      @include ui.pill-segment-active;
+      @include primitives.pill-segment-active;
     }
 
     a {
@@ -222,7 +222,7 @@
       // admin link, including these tab anchors. The active segment already
       // marks its tab.
       &:focus {
-        @include ui.focus-reset;
+        @include primitives.focus-reset;
       }
     }
 
@@ -247,7 +247,7 @@
     // The panel carries `tabindex="0"` and core draws a full blue INSET ring on
     // :focus (edit.css: `box-shadow: inset 0 0 0 2px #2271b1`).
     &:focus {
-      @include ui.focus-reset;
+      @include primitives.focus-reset;
     }
   }
 
@@ -332,7 +332,7 @@
   // in dark mode. Re-express the drag handle with the shared card surface and a
   // token ring border on hover.
   .menu-item-bar .menu-item-handle {
-    @include ui.card-surface;
+    @include primitives.card-surface;
 
     color: var(--attrium-foreground);
 
@@ -373,10 +373,8 @@
   // structure box: core paints it as a #f6f7f7 pill (a bright band in dark).
   // Promote it to a secondary button so it matches the theme's button language.
   label.bulk-select-button {
-    background: var(--attrium-secondary);
+    @include primitives.secondary-surface;
     color: var(--attrium-secondary-foreground);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
 
     &:hover,
     &:focus {

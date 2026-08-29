@@ -9,7 +9,7 @@ from SCSS/theme edits.
 ```text
 @wordpress/env  →  bun run build  →  Playwright (Docker image)  →  diff vs baseline
  disposable WP     builds theme CSS    renders + compares            fail on diff
- on :8888          (admin-theme.css)   in a fixed container
+ on :8888          (admin-theme-*.css) in a fixed container
 ```
 
 - **`.wp-env.json`** — spins up WordPress 6.7 + MySQL in Docker with this plugin

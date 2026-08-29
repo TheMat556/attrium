@@ -1,24 +1,23 @@
 @use '../mixins';
 @use '../icons';
+@use '../ui/primitives';
 
 // Theme cards (`.theme`) render on both the installed-themes screen
 // (themes.php → body.themes-php) and the theme installer
-// (theme-install.php → body.theme-install-php). The markup is shared, so the
+// (theme-install-php → body.theme-install-php). The markup is shared, so the
 // same reskin is applied under both screen gates via the theme-cards mixin.
+
+// Apply overflow: hidden to body for themes pages
+body.themes-php,
+body.theme-install-php {
+  overflow: hidden !important;
+}
+
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
 // borders, and a white `.theme-id-container` footer — all of which read as
 // bright bands in dark mode. Everything below is expressed through the
-// --attrium-* tokens (redefined under #attrium-host.dark in _tokens.css), so
+// --attrium-* tokens (redefined under #attrium-host.dark in _tokens.scss), so
 // light/dark parity is automatic with no separate dark-mode block.
-
-// Secondary text (author bylines, version numbers): same foreground token,
-// dimmed by opacity rather than a separate muted color token. Parameterized
-// because different contexts want slightly different dimming (card byline is
-// lighter than the overlay's).
-@mixin muted-text($opacity: 0.6) {
-  color: var(--attrium-foreground);
-  opacity: $opacity;
-}
 
 @mixin theme-cards {
   // ---- Card shell ----
@@ -71,6 +70,7 @@
   // ---- "Details & Preview" hover overlay ----
   .more-details {
     @apply rounded-[var(--attrium-radius-md)] text-sm font-medium;
+
     // Core paints a text-shadow on this button; kill it so the label stays
     // crisp on the primary fill.
     background: var(--attrium-primary);
@@ -106,7 +106,7 @@
 
   .theme-author {
     @apply text-xs;
-    @include muted-text(0.6);
+    @include primitives.muted-text(0.6);
   }
 
   // ---- Action buttons ----
@@ -130,6 +130,7 @@
   .theme-browser .theme .theme-actions .button.activate {
     background: var(--attrium-secondary);
     color: var(--attrium-secondary-foreground);
+
     @apply border border-transparent;
 
     // Core draws the apparent "border" on hover/focus as a box-shadow ring
@@ -140,6 +141,7 @@
     &:focus {
       background: var(--attrium-accent);
       color: var(--attrium-secondary-foreground);
+
       @apply border-transparent shadow-none opacity-100;
     }
   }
@@ -177,7 +179,7 @@
     .theme-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgb(0 0 0 / 60%);
     }
 
     .theme-wrap {
@@ -211,21 +213,8 @@
     .theme-header .right,
     .theme-header .close {
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      border: 0;
-      border-radius: 0.5rem;
-      background: transparent;
-      color: var(--attrium-foreground);
 
-      &:hover,
-      &:focus {
-        background: var(--attrium-secondary);
-        color: var(--attrium-foreground);
-      }
+      @include primitives.icon-button(transparent);
 
       // Disabled prev/next (first/last theme) — core dims them grey; keep the
       // muted treatment and stop the hover fill from painting on them.
@@ -262,22 +251,19 @@
     }
 
     // Icon glyphs — Lucide shapes painted via the shared mask helper
-    // (scss/_icons.scss). Each call re-asserts `mask-size: 1rem` after the
-    // helper (which defaults to `contain`): the `::after` fills the 2rem
-    // button, so `contain` would scale the icon up to fill it too.
+    // (scss/_icons.scss). Each call passes the 1rem size: the `::after` fills
+    // the 2rem button, so `contain` (the helper's default) would scale the
+    // icon up to fill it too.
     .theme-header .close::after {
-      @include icons.mask('x');
-      mask-size: 1rem;
+      @include icons.mask('x', 1rem);
     }
 
     .theme-header .left::after {
-      @include icons.mask('chevron-left');
-      mask-size: 1rem;
+      @include icons.mask('chevron-left', 1rem);
     }
 
     .theme-header .right::after {
-      @include icons.mask('chevron-right');
-      mask-size: 1rem;
+      @include icons.mask('chevron-right', 1rem);
     }
 
     // "Active Theme" badge — core paints it #2c3338-on-white, a dark pill
@@ -303,12 +289,12 @@
     // flush against the theme name instead of floating after a gap.
     .theme-version {
       @apply text-sm font-normal ml-2;
-      @include muted-text(0.6);
+      @include primitives.muted-text(0.6);
     }
 
     .theme-author {
       @apply text-sm mt-0;
-      @include muted-text(0.7);
+      @include primitives.muted-text(0.7);
     }
 
     .theme-description {
@@ -322,7 +308,8 @@
     .theme-tags {
       @apply text-sm;
       border-top: 1px solid var(--attrium-border);
-      @include muted-text(0.6);
+
+      @include primitives.muted-text(0.6);
 
       span {
         color: var(--attrium-foreground);

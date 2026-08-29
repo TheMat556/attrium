@@ -47,19 +47,36 @@ class ModuleRegistry {
         return $classes;
     }
 
+    /**
+     * Enqueue the theme CSS as per-topic chunks.
+     *
+     * scripts/build-css.mjs compiles each scss/entries/*.scss topic into its
+     * own minified app/dist/admin-theme-{topic}.css file. The base chunk
+     * carries the --attrium-* tokens every other chunk references; then one
+     * chunk per enabled module (buttons, tables, … plus screens), so the
+     * attrium_enabled_modules filter actually drops CSS payload — disabled
+     * modules aren't loaded at all. Missing chunks (build not run / module
+     * without styles) are skipped individually.
+     */
     public function enqueue_styles(): void {
-        $css_path = ATTRIUM_PATH . 'app/dist/admin-theme.css';
-        $css_url  = ATTRIUM_URL . 'app/dist/admin-theme.css';
+        $css_dir = ATTRIUM_PATH . 'app/dist';
+        $css_url = ATTRIUM_URL . 'app/dist';
 
-        if ( ! file_exists($css_path) ) {
-            return;
+        $chunks = array_merge([ 'base' ], $this->get_enabled_modules());
+
+        foreach ( $chunks as $chunk ) {
+            $file = "admin-theme-{$chunk}.css";
+
+            if ( ! file_exists($css_dir . '/' . $file) ) {
+                continue;
+            }
+
+            wp_enqueue_style(
+                "attrium-admin-theme-{$chunk}",
+                $css_url . '/' . $file,
+                [ 'common', 'wp-admin' ],
+                (string) filemtime($css_dir . '/' . $file)
+            );
         }
-
-        wp_enqueue_style(
-            'attrium-admin-theme',
-            $css_url,
-            [ 'common', 'wp-admin' ],
-            (string) filemtime($css_path)
-        );
     }
 }

@@ -4,7 +4,7 @@
 // mixins + a size modifier, then a one-line map from native WP button classes
 // to a variant. Bodies use Tailwind `@apply` (expanded by the Tailwind CLI
 // stage of build:css) reading the --attrium-* design tokens, so light/dark is
-// handled entirely by the token overrides in _tokens.css.
+// handled entirely by the token overrides in _tokens.scss.
 
 // ---- Base: shared by every reskinned button, regardless of variant ----
 @mixin btn-base {

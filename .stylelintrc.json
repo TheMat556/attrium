@@ -1,0 +1,14 @@
+{
+  "extends": "stylelint-config-standard-scss",
+  "rules": {
+    "scss/operator-no-newline-after": null,
+    "declaration-empty-line-before": null,
+    "no-empty-source": null,
+    "scss/at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": ["reference"]
+      }
+    ]
+  }
+}

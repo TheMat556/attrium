@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Screen Options + contextual Help panel (`#screen-meta`) — a shared WP UI
 // component rendered inside #wpbody-content (light-DOM slotted content), where
@@ -114,14 +115,7 @@
 .help-tab-content {
   @include mixins.module('screen-meta') {
     a {
-      color: var(--attrium-primary);
-      text-decoration: none;
-
-      &:hover,
-      &:focus {
-        text-decoration: underline;
-        @apply outline-none shadow-none;
-      }
+      @include primitives.link-primary;
     }
   }
 }
@@ -133,14 +127,7 @@
     color: var(--attrium-muted-foreground);
 
     a {
-      color: var(--attrium-primary);
-      text-decoration: none;
-
-      &:hover,
-      &:focus {
-        text-decoration: underline;
-        @apply outline-none shadow-none;
-      }
+      @include primitives.link-primary;
     }
   }
 }

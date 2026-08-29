@@ -1,9 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-vue/tailwind.css";
+
 /* Shared Attrium palette — single source of truth, also @use'd by the SCSS
-   admin theme (scss/admin-theme.scss). See scss/_tokens.css. */
-@import "../scss/_tokens.css";
+   admin theme (scss/entries/base.scss) and injected into this shadow root by
+   main.ts (Vite compiles scss/_tokens.scss via ?inline). See
+   scss/_tokens.scss. */
 
 /*
  * Submenu slide-down animation using CSS grid `grid-template-rows`.

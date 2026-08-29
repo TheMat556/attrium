@@ -8,6 +8,11 @@
  *
  * To cover another gated screen, add one entry here — no other file changes.
  * (See `scss/_mixins.scss` `screen()` for the full gated list.)
+ *
+ * The Customizer (customize.php) is NOT listed here on purpose: it is an
+ * overlay screen with no Attrium shell (see Attrium::is_overlay_screen()), so
+ * the shared stabilize()/snapshotTarget() helpers cannot run on it. It has its
+ * own capture path in customize.spec.ts.
  */
 export interface AdminPage {
 	/** Snapshot file stem; must be filesystem-safe and stable. */
@@ -33,6 +38,7 @@ export const ADMIN_PAGES: AdminPage[] = [
 	// so it is deterministic here even though the host dev tree is not.
 	{ name: 'theme-editor', path: '/wp-admin/theme-editor.php' },
 	{ name: 'nav-menus', path: '/wp-admin/nav-menus.php' },
+	{ name: 'widgets', path: '/wp-admin/widgets.php' },
 	{ name: 'tools', path: '/wp-admin/tools.php' },
 	{ name: 'privacy', path: '/wp-admin/options-privacy.php' },
 	// `_profile.scss` gates on `profile-php` and `user-edit-php`. user-edit is

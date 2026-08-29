@@ -1,5 +1,5 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
 
 // Media library (upload.php, grid mode): reskin the JS-rendered media toolbar
 // (.media-toolbar, built by wp-includes/js/media-views.js). It lives in the
@@ -24,7 +24,7 @@
 
   &.wp-filter {
     @include mixins.screen('upload-php') {
-      @include ui.wp-filter-surface(transparent);
+      @include primitives.wp-filter-surface(transparent);
     }
   }
 }
@@ -38,14 +38,14 @@
 .wp-filter .filter-items select,
 .wp-filter .search-form .search {
   @include mixins.screen('upload-php') {
-    @include ui.field-outline;
+    @include primitives.field-outline;
   }
 }
 
 // List-view filter bar (.wp-filter without .media-toolbar).
 .wp-filter {
   @include mixins.screen('upload-php') {
-    @include ui.wp-filter-surface(var(--attrium-background));
+    @include primitives.wp-filter-surface(var(--attrium-background));
   }
 }
 

@@ -1,0 +1,7 @@
+// Base topic — the --attrium-* design tokens.
+//
+// The ONLY entry that emits CSS from _tokens.scss: `:root`/`:host` carry the
+// light palette and `#attrium-host.dark` / `:host(.dark)` / `html.attrium-dark`
+// the dark palette. Every other chunk references these vars at runtime, so
+// this chunk must load first (see ModuleRegistry::enqueue_styles()).
+@use '../tokens';

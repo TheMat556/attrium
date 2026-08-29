@@ -4,6 +4,7 @@
 import './fonts.css'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
+//import tokens from '../scss/_tokens.scss?inline'
 import App from './App.vue'
 import { applyThemeToHost } from './composables/useTheme'
 import styles from './style.css?inline'
@@ -27,6 +28,14 @@ document.body.prepend(host)
 applyThemeToHost()
 
 const shadow = host.attachShadow({ mode: 'open' })
+
+// Design tokens first (compiled from scss/_tokens.scss by Vite), then the
+// Tailwind/scoped stylesheet. Both are raw sheets in the shadow root — the
+// tokens only set variables on :host / :host(.dark), so the separate sheet
+// does not change the cascade.
+//const tokensSheet = document.createElement('style')
+//tokensSheet.textContent = tokens
+//shadow.appendChild(tokensSheet)
 
 const sheet = document.createElement('style')
 sheet.textContent = styles
