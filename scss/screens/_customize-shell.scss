@@ -4,30 +4,76 @@
 
 // Customizer shell — overlay chrome, sidebar, info header, section headers,
 // back buttons, footer/device switcher, notifications.
-//
+
 // Consolidates what core's themes.css and the sidebar chrome styles target:
 //   - .wp-full-overlay* (overlay, preview, sidebar, footer)
 //   - #customize-header-actions (actions bar)
 //   - #customize-info / .customize-info (info header)
 //   - .customize-pane-child / .accordion-section (accordion chrome)
 //   - Body-class workarounds (outer-section-open, in-sub-panel)
-//
+
 // The Customizer has no #attrium-host: theme-awareness comes from
 // ModuleRegistry's head script toggling html.attrium-dark on <html> from the
 // same attrium-theme localStorage key the shell uses. Every --attrium-* token
 // below resolves dark automatically via html.attrium-dark in _tokens.scss.
-//
-// Per-panel reskins (controls, themes, menus) sit in their own files.
-// Form controls + publish settings live in _customize-controls.scss.
-// The themes panel lives in _customize-themes.scss, the Menus panel in
-// _customize-menus.scss.
+
+// Per-panel reskins (controls, menus) sit in their own files.
+// Form controls + publish settings live in _customize-controls.scss, the Menus
+// panel in _customize-menus.scss. (The former _customize-themes.scss was
+// removed — every declaration survived the customize visual suite.)
 @include mixins.screen-root('wp-customizer') {
+  // ---- Theme font ----
+  // The Customizer has no #attrium-host and never loads the Vue shell that
+  // owns --font-sans, so core's stack (Segoe/Roboto/…) otherwise runs the whole
+  // pane — device-switcher labels, accordion text, everything. Adopt the theme
+  // font here. The matching @font-face is injected inline by PHP
+  // (CustomizerSupport), since the Inter woff2 assets are Vite-built and their
+  // hashed URLs only resolve on the server. Apply on the .wp-full-overlay root
+  // (a descendant of the gated body) so it inherits into the controls pane,
+  // footer and device-switcher buttons alike.
+  .wp-full-overlay {
+    font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
 
 
   // ---- Sidebar panel ----
   .wp-full-overlay-sidebar {
     background: var(--attrium-primary-foreground);
     border-right: 1px solid var(--attrium-border);
+  }
+
+  // #widgets-right is the Widget Customizer's compat wrapper around the whole
+  // sidebar content (core injects the element itself, see the markup comment).
+  // Core leaves it static and lets the absolutely-positioned
+  // .wp-full-overlay-sidebar-content scroll, but themes/plugins override the
+  // sidebar sizing and the pane ends up clipped. Pin the wrapper to fill the
+  // sidebar and scroll as one surface so the pane always scrolls.
+  #widgets-right {
+    position: relative;
+    height: 100%;
+    overflow: auto;
+
+    // Theme-aware scrollbar — same pill-thumb treatment as the shell's content
+    // card (src/style.css [data-attrium-scroll]). Firefox reads the two
+    // longhands; Webkit the pseudo-element rules below.
+    scrollbar-width: thin;
+    scrollbar-color: oklch(70% 0 0deg) transparent;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background: oklch(70% 0 0deg);
+      background-clip: padding-box;
+    }
   }
 
   // The sidebar scroll area: transparent in core; give it the panel surface
@@ -107,7 +153,7 @@
     box-sizing: border-box;
     border-radius: var(--attrium-radius-md);
     background: var(--attrium-primary-foreground);
-    border-top-color: var(--attrium-primary-foreground);
+    border-top-width: 0;
     border-right: 0;
     border-bottom: 0;
     color: var(--attrium-foreground);
@@ -115,7 +161,6 @@
     &:hover,
     &:focus {
       background: var(--attrium-secondary);
-      border-top-color: var(--attrium-secondary);
       color: var(--attrium-foreground);
       box-shadow: none;
     }
@@ -132,6 +177,7 @@
       width: 16px;
       height: 16px;
       transform: translate(-50%, -50%);
+
       @include icons.mask('x');
     }
   }
@@ -202,6 +248,11 @@
     }
 
     .customize-help-toggle {
+      // Theme-aware resting color (matches the screen-options gear), so the
+      // icon no longer falls back to core's hardcoded #50575e — which reads
+      // dark/bluish in dark mode and mismatches the gear's token color.
+      color: var(--attrium-muted-foreground);
+
       &::before {
         display: none;
       }
@@ -213,7 +264,17 @@
         left: 6px;
         width: 20px;
         height: 20px;
+
         @include icons.mask('circle-help');
+      }
+
+      // The mask paints in currentColor, so core's hardcoded blue hover
+      // (#0073aa) colors the icon on hover. Override with the theme primary
+      // like the device-switcher icon hovers elsewhere in this reskin.
+      &:hover,
+      &:focus,
+      &:focus-visible {
+        color: var(--attrium-primary);
       }
     }
 
@@ -245,19 +306,150 @@
     color: var(--attrium-foreground);
   }
 
+  // ---- Themes panel: source section titles ("Installed themes" / "WordPress.org") ----
+  // Core paints these as blue links (`rgb(56,88,233)` text) on #fff/#f6f7f7 with a
+  // dashicons radio indicator. Restyle as Accordion-style cards — token surface,
+  // neutral text, accent hover, selected = elevated secondary + a Lucide check.
+  // The spacing/radius live on the section `li`, not the button: core draws a
+  // 1px #dcdcde border-top on the li, and a full-width button with a margin
+  // overflows the sidebar edge (right margin invisible, corners square).
+  .control-panel-themes .theme-section {
+    border-top: 0 !important;
+    border-radius: var(--attrium-radius-md);
+    margin: 0 8px 4px;
+  }
+
+  .control-panel-themes .customize-themes-section-title {
+    width: 100%;
+    background: var(--attrium-primary-foreground);
+    color: var(--attrium-foreground);
+    box-shadow: none;
+    border-top: none;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: var(--attrium-radius-md);
+    padding: 10px 15px;
+    font-weight: 600;
+
+    &:hover,
+    &:focus {
+      background: var(--attrium-accent);
+      color: var(--attrium-foreground);
+    }
+
+    &.selected {
+      background: var(--attrium-secondary);
+      color: var(--attrium-foreground);
+    }
+  }
+
+  // Tokenise the radio indicator: hollow circle when unselected, filled circle
+  // + Lucide check when selected (replaces core's dashicons-\f147 + #c3c4c7
+  // ring). Both states keep core's 18px ring geometry (top 9 / right 15).
+  .customize-themes-section-title:not(.selected)::after {
+    border-color: var(--attrium-border);
+    background: var(--attrium-primary-foreground);
+  }
+
+  // Selected: filled circle on the `::before` (token fill, same box as the
+  // unselected ring), check painted as a mask on the `::after`. The mask can't
+  // ride the circle's own pseudo — a mask on the same box would clip the fill.
+  // Natural paint order (positioned ::after above ::before) keeps the check on
+  // top without z-index.
+  .control-panel-themes .theme-section .customize-themes-section-title.selected::before {
+    content: '';
+    position: absolute;
+    top: 9px;
+    right: 15px;
+    width: 18px;
+    height: 18px;
+    border-radius: 100%;
+    background: var(--attrium-primary);
+  }
+
+  .control-panel-themes .theme-section .customize-themes-section-title.selected::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    right: 15px;
+    width: 18px;
+    height: 18px;
+    color: var(--attrium-primary-foreground);
+
+    @include icons.mask('check', 14px);
+  }
+
+  // "Go to theme sources" (themes-filter-bar) shares core's
+  // `.customize-section-back` class, but it is a labeled primary action, not a
+  // back-arrow box — core forces a 48px-wide float box on it and this reskin
+  // paints a secondary face. Exclude it from the back-button rules and let the
+  // shared buttons module's `.button-primary` styling win.
   .customize-panel-back,
-  .customize-section-back {
+  .customize-section-back:not(.customize-themes-mobile-back) {
     border-left-color: var(--attrium-primary-foreground);
+
+    // Resting face: core paints these nearly transparent so they blend into the
+    // section header; give them a visible token fill so the back button reads
+    // as a button in both modes (core's face is a hardcoded grey that themes
+    // like Bricks can neutralise into "no background at all").
+    background: var(--attrium-secondary);
+    color: var(--attrium-foreground);
+
     @include primitives.accent-hover;
   }
 
   .customize-panel-back,
-  .customize-section-back,
+  .customize-section-back:not(.customize-themes-mobile-back),
   .customize-panel-back:hover,
   .customize-panel-back:focus,
-  .customize-section-back:hover,
-  .customize-section-back:focus {
+  .customize-section-back:not(.customize-themes-mobile-back):hover,
+  .customize-section-back:not(.customize-themes-mobile-back):focus {
     border-right: 0 !important;
+  }
+
+  // The mobile back button is a labeled primary action in the themes filter
+  // bar: undo core's back-arrow box geometry (48×71px, float) so the buttons
+  // module's `.button-primary` sizing/shape applies, keep its label on one
+  // line, and rebalance the padding (tighter left, wider right — the chevron
+  // reads better against the left edge) per the authored inline styles.
+  .control-panel-themes .themes-filter-bar .customize-themes-mobile-back {
+    width: auto;
+    float: none;
+    white-space: nowrap;
+    gap: 1rem;
+    padding-right: 0.75rem;
+    padding-left: 0.25rem;
+  }
+
+  // Themes filter bar: spread the back button / search / count across the
+  // pane (the search field alone doesn't fill the row), and drop the
+  // standalone "Search themes" labels — the input placeholder carries the
+  // affordance and the label only adds row noise.
+  .control-panel-themes .themes-filter-bar {
+    justify-content: space-between;
+
+    // Core paints the bar a fixed #f0f0f1 in both modes — a bright strip in
+    // dark mode and a face that swallows the search field's outline. Give it
+    // the panel surface so the field below reads as a recessed control.
+    background: var(--attrium-primary-foreground);
+    padding-top: 4px;
+  }
+
+  .control-panel-themes .themes-filter-container > label {
+    display: none;
+  }
+
+  // The themes search field: core draws no face of its own and the generic
+  // forms outline is transparent, so on the gray bar the 1px border was
+  // invisible. Fill the field with the surface token, re-assert the border +
+  // radius, and pin the theme font (placeholder inherits it).
+  .control-panel-themes .themes-filter-bar .wp-filter-search {
+    background: var(--attrium-background);
+    border: 1px solid var(--attrium-border);
+    border-radius: var(--attrium-radius-md);
+    font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
+      sans-serif;
+    padding-left: 2rem;
   }
 
   // Back-button glyph — Lucide chevron-left on `::after`.
@@ -276,6 +468,7 @@
       left: 9px;
       width: 20px;
       height: 20px;
+
       @include icons.mask('chevron-left');
     }
   }
@@ -309,7 +502,7 @@
     display: none !important;
   }
 
-  #customize-theme-controls .customize-pane-child:not(.open):not(.current-panel) {
+  #customize-theme-controls .customize-pane-child:not(.open, .current-panel) {
     position: absolute !important;
     top: 0;
     left: 0;
@@ -336,6 +529,23 @@
     background: var(--attrium-primary-foreground);
     box-shadow: -20px 0 10px -5px var(--attrium-primary-foreground);
 
+    // Pin the theme font on the device row (labels AND buttons) and the theme
+    // color on the labels. The .devices__preview-label spans are newer core
+    // admin markup (WP ≥ 6.8) that WP 6.7's fixture doesn't render, so no
+    // capture covers them — but core paints them with a hardcoded dark color
+    // that reads black in dark mode. !important (scoped as narrowly as
+    // possible) guarantees the win over core/the theme's selector. Color is
+    // label-only so the button masks' currentColor (active/hover primary) is
+    // untouched.
+    button,
+    .devices__preview-label {
+      font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+    }
+
+    .devices__preview-label {
+      color: var(--attrium-muted-foreground) !important;
+    }
+
     button:hover,
     button:focus {
       background: var(--attrium-accent);
@@ -344,13 +554,13 @@
     button.active {
       border-bottom-color: var(--attrium-primary);
 
-      &:before {
+      &::before {
         color: var(--attrium-primary);
       }
     }
 
-    button:hover:before,
-    button:focus:before {
+    button:hover::before,
+    button:focus::before {
       color: var(--attrium-primary);
     }
 
@@ -365,6 +575,7 @@
       display: inline-block;
       width: 18px;
       height: 18px;
+
       @include icons.mask('monitor', 18px);
     }
 
@@ -373,6 +584,7 @@
       display: inline-block;
       width: 18px;
       height: 18px;
+
       @include icons.mask('tablet', 18px);
     }
 
@@ -381,11 +593,18 @@
       display: inline-block;
       width: 18px;
       height: 18px;
+
       @include icons.mask('smartphone', 18px);
     }
   }
 
   .wp-full-overlay .collapse-sidebar-arrow {
+    // Anchor the absolute ::after to THIS span, not the nearest positioned
+    // ancestor (the position:fixed .collapse-sidebar button). Without this the
+    // inset:0 + margin:auto mask centers in the whole button and the chevron
+    // lands mid-label instead of where the core arrow glyph sat.
+    position: relative;
+
     &::before {
       display: none;
     }
@@ -397,6 +616,7 @@
       margin: auto;
       width: 16px;
       height: 16px;
+
       @include icons.mask('chevron-left');
     }
   }
@@ -446,4 +666,17 @@ body.attrium-mod-screens.wp-customizer.in-sub-panel
   .wp-full-overlay-sidebar
   .wp-full-overlay-header {
   padding-left: 1rem;
+}
+
+// Dark-mode scrollbar for the customizer pane. The customizer has no
+// #attrium-host, so html.attrium-dark (toggled by CustomizerSupport's head
+// script) is the dark carrier — same oklch thumb values as the shell card.
+html.attrium-dark
+  body.attrium-mod-screens.wp-customizer
+  #widgets-right {
+  scrollbar-color: oklch(40% 0 0deg) transparent;
+
+  &::-webkit-scrollbar-thumb {
+    background-color: oklch(40% 0 0deg);
+  }
 }

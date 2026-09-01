@@ -2,14 +2,15 @@
 // single `attrium-mod-screens` body class (see _mixins.scss's screen()/screen-root()).
 // @use order is load order — keep it in the same sequence as the modules +
 // screens order of the former single-file build so the cascade is unchanged.
-// The Customizer reskin is consolidated into four files aligned with core's CSS
-// structure: _customize-shell.scss (overlay chrome + sidebar + footer),
-// _customize-controls.scss (accordion + controls + editor), _customize-themes.scss,
-// and _customize-menus.scss — adding a new screen means adding its @use here.
+// The Customizer reskin is consolidated into three files aligned with core's
+// CSS structure: _customize-shell.scss (overlay chrome + sidebar + footer),
+// _customize-controls.scss (accordion + controls + editor) and
+// _customize-menus.scss — adding a new screen means adding its @use here.
+// (The former _customize-themes.scss was removed: every declaration survived
+// the customize visual suite — see TODO.md.)
 @use '../screens/base';
 @use '../screens/customize-shell';
 @use '../screens/customize-controls';
-@use '../screens/customize-themes';
 @use '../screens/customize-menus';
 @use '../screens/pages';
 @use '../screens/posts';

@@ -65,7 +65,7 @@ function attrium_visual_freeze_updates() {
 attrium_visual_freeze_updates();
 
 /**
- * Give the active theme classic menu support.
+ * Give the active theme classic menu + widget support.
  *
  * wp-env activates a block theme (twentytwentyfive), which declares neither
  * `menus` nor `widgets`. nav-menus.php hard-exits with a 500 and the body
@@ -73,12 +73,19 @@ attrium_visual_freeze_updates();
  * baseline captured an error page and `scss/screens/_nav-menus.scss` had zero
  * real coverage. Declaring support renders the genuine Menus screen.
  *
+ * widgets.php hard-exits the same way (wp_die "not widget-aware") when
+ * `current_theme_supports('widgets')` is false, so a fresh-install block theme
+ * would render an error page and the Widgets capture would never reach the
+ * block editor (`.edit-widgets-header__title`). Declaring support routes it
+ * into widgets-form-blocks.php via wp_use_widgets_block_editor().
+ *
  * Runs late so it wins over the theme's own setup callback.
  */
 add_action(
     'after_setup_theme',
     static function () {
         add_theme_support( 'menus' );
+        add_theme_support( 'widgets' );
     },
     100
 );

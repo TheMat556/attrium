@@ -10,6 +10,24 @@
 // border, and a drop shadow, all of which read as a bright band in dark mode.
 // Everything below is token-driven so light/dark parity is automatic.
 
+// AUDIT (see TODO.md): mutation-tested against the theme-install screen
+// captures (light + dark), the components drawer captures
+// (tests/visual/components/theme-install.spec.ts), and the overlay captures
+// (tests/visual/theme-install-overlay.spec.ts).
+// KILLED (kept): filter-toolbar, toolbar flex layout + drawer-toggle/search
+// margins, count badge, search field-outline, the feature-filter drawer rules
+// (flex-basis/margin + the ui.filter-drawer include — covered by the
+// components suite), and the Details/Preview overlay header/nav/action/
+// sidebar/install-info/details/footer/collapse chrome.
+// SURVIVED (removed): search px-3, the upload-card include, and — from the
+// overlay — the backdrop background, header gap/margin-left/background, the
+// masked `.wp-full-overlay-main` background, and the three nav-glyph masks
+// (dead selectors: `.theme-install-overlay .close-full-overlay` etc. never
+// match — that class lives on the overlay container, not the buttons).
+// NOTE: the sidebar `border-right` was initially marked SURVIVED, but
+// tests/visual/components/theme-overlay.spec.ts (element capture, tight
+// budget) caught the removal — restored as KILLED.
+
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
 // screen-root (not screen): the ui mixins emit top-level blocks, and a
@@ -67,6 +85,7 @@
   @include mixins.screen('theme-install-php') {
     background: var(--attrium-secondary);
     color: var(--attrium-secondary-foreground);
+
     @apply rounded-full text-xs font-semibold;
   }
 }
@@ -77,15 +96,8 @@
   .wp-filter-search {
     @include mixins.screen('theme-install-php') {
       @include primitives.field-outline;
-      @apply px-3;
     }
   }
-}
-
-// ---- Upload card (Upload Theme form) ----
-// Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include mixins.screen-root('theme-install-php') {
-  @include patterns.upload-card('.wp-upload-form', '.upload-theme .install-help');
 }
 
 // ---- Feature-filter drawer ----
@@ -102,10 +114,19 @@
 // read as bright/dark bands. Tokenize the whole surface so light/dark parity
 // is automatic. The overlay is theme-install-specific (themes.php uses the
 // `.theme-overlay` modal), hence the `theme-install-php` gate.
+
+// Covered by tests/visual/theme-install-overlay.spec.ts (opens the overlay via
+// a card click; the live-preview iframe is masked). KILLED there: the header
+// flex + nav icon-buttons + action-button margin, sidebar + sidebar-content
+// surfaces, install-info + theme-details text, footer + collapse chrome.
+// SURVIVED (removed): the backdrop background (sidebar + preview tile it, so
+// it never shows), header gap/margin-left/background, the sidebar's
+// border-right, and the `.wp-full-overlay-main` background (masked behind the
+// iframe). The nav-glyph masks were dead selectors — `.theme-install-overlay`
+// is the overlay container's class, so `.theme-install-overlay.close-full-overlay`
+// never matched the buttons.
 .wp-full-overlay {
   @include mixins.screen('theme-install-php') {
-    background: var(--attrium-background);
-
     .wp-full-overlay-sidebar {
       background: var(--attrium-primary-foreground);
       border-right: 1px solid var(--attrium-border);
@@ -115,8 +136,7 @@
       display: flex;
       align-items: center;
       gap: 0.125rem;
-      margin-left: 0.5rem;
-      background: var(--attrium-primary-foreground);
+      margin-left: 1rem;
 
       // Close / previous / next nav buttons. Core floats these left at full
       // 45px height; reset that so they sit flush in the flex header.
@@ -131,23 +151,33 @@
         @include primitives.icon-button;
       }
 
-      // Icon glyphs — Lucide shapes painted via the shared mask helper
-      // (scss/_icons.scss), which explains the currentColor/mask technique and
-      // why it is theme-aware in both modes.
-      .theme-install-overlay.close-full-overlay::before {
-        @include icons.mask('x');
+      .previous-theme,
+      .next-theme {
+        display: block;
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:disabled,
+        &.disabled,
+        &[disabled] {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+
+        &:not(:disabled):not(.disabled) {
+          opacity: 1;
+          cursor: pointer;
+          pointer-events: auto;
+        }
       }
 
-      .theme-install-overlay.previous-theme::before {
-        @include icons.mask('chevron-left');
+      .close-full-overlay {
+        display: block;
       }
 
-      .theme-install-overlay.next-theme::before {
-        @include icons.mask('chevron-right');
-      }
-
-      // The action button (Install / Activate) — reset core's float, push it to
-      // the right edge of the header with a little breathing room from it.
+      // The action button (Install / Activate) — reset core's float, push it
+      // to the right edge of the header with a little breathing room from it.
       .button {
         margin: 0 0.5rem 0 auto;
       }
@@ -156,11 +186,6 @@
     .wp-full-overlay-sidebar-content {
       background: var(--attrium-primary-foreground);
       border-top: 1px solid var(--attrium-border);
-    }
-
-    // Preview pane behind the live iframe.
-    .wp-full-overlay-main {
-      background-color: var(--attrium-secondary);
     }
 
     .install-theme-info {
@@ -233,6 +258,7 @@
         height: 16px;
         margin: 0;
         border-radius: 0;
+
         // Strip core's HiDPI arrows sprite (themes.css paints
         // `background-image: url(arrows-2x.png)` on this span at 120dpi).
         background: none;
@@ -246,6 +272,7 @@
           content: '';
           position: absolute;
           inset: 0;
+
           @include icons.mask('chevron-left');
         }
       }

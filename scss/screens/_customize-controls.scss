@@ -4,10 +4,11 @@
 
 // Customizer form controls — accordion list + form controls + CodeMirror editor.
 // Overrides core's customize-controls.css.
-//
+
 // Part of the Customizer reskin split — see _customize-shell.scss for the
-// overlay chrome, _customize-themes.scss for the themes panel, and
-// _customize-menus.scss for the Menus panel.
+// overlay chrome and _customize-menus.scss for the Menus panel. (The former
+// _customize-themes.scss was removed — every declaration survived the
+// customize visual suite.)
 @include mixins.screen-root('wp-customizer') {
   // ---- Accordion list (top-level sections) ----
   // Section titles render as stacked cards. Core uses a 4px left rail for the
@@ -27,7 +28,17 @@
       color: var(--attrium-muted-foreground);
       width: 16px;
       height: 16px;
+
       @include icons.mask('chevron-down');
+    }
+
+    // Core (WP ≥ 6.8) recolors the disclosure arrow blue on hover/focus (its
+    // rule wins despite our base color). !important scoped to the title's hover
+    // states keeps the chevron on the muted foreground instead.
+    &:hover::after,
+    &:focus::after,
+    &:focus-visible::after {
+      color: var(--attrium-muted-foreground) !important;
     }
   }
 
@@ -65,7 +76,8 @@
   .customize-pane-child .customize-section-title,
   .customize-pane-child .customize-section-description-container,
   .customize-pane-child .customize-section-description,
-  .customize-pane-child .customize-section-description.open {
+  .customize-pane-child .customize-section-description.open,
+  .customize-pane-child .customize-panel-description {
     border-top: 0 !important;
     border-bottom: 0 !important;
     box-shadow: none !important;
@@ -117,6 +129,7 @@
 
     &::after {
       padding-left: 3px;
+
       @include icons.mask-inline('external-link', 14px);
     }
   }
@@ -132,6 +145,7 @@
       margin: auto;
       width: 16px;
       height: 16px;
+
       @include icons.mask('chevron-down');
     }
   }
@@ -183,7 +197,7 @@
     }
   }
 
-  .customize-control-header .header-view.selected:after {
+  .customize-control-header .header-view.selected::after {
     border-color: var(--attrium-ring);
   }
 
@@ -205,6 +219,11 @@
     font-size: 0.8125rem;
     line-height: 1.5;
 
+    // Inset the editor from the control's edges — mirrors the inline styles
+    // on the live site.
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+
     .CodeMirror-gutters {
       background: var(--attrium-secondary);
       border-right-color: var(--attrium-border);
@@ -225,6 +244,15 @@
 
     .CodeMirror-activeline-background {
       background: color-mix(in oklab, var(--attrium-primary) 5%, transparent);
+    }
+
+    // Same breathing room as the theme editor (_theme-editor.scss): core's
+    // default lines padding is `4px 0`, so code hugs the gutter/right edge.
+    // CodeMirror reads the computed padding of .CodeMirror-lines for its
+    // internal layout, so this is the canonical way to inset it.
+    .CodeMirror-lines {
+      padding-left: 16px;
+      padding-right: 16px;
     }
   }
 

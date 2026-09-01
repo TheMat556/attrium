@@ -37,6 +37,22 @@ class Scripts {
         return null;
     }
 
+    public static function get_build_asset( $src ) {
+        $manifest = self::get_manifest();
+
+        if ( ! $manifest ) {
+            return null;
+        }
+
+        foreach ( $manifest as $entry ) {
+            if ( isset($entry['src']) && $entry['src'] === $src ) {
+                return isset($entry['file']) ? $entry['file'] : null;
+            }
+        }
+
+        return null;
+    }
+
     public static function get_build_css( $src ) {
         $manifest = self::get_manifest();
 

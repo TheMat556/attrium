@@ -4,8 +4,7 @@
 // Customizer Menus panel (customize-nav-menus.css) — the screen-options gear
 // and sheet, menu item rows, the disclosure/reorder icons and the add-items
 // affordances. Part of the Customizer reskin split — see _customize-shell.scss
-// for the shell and _customize-controls.scss / _customize-themes.scss for the
-// other surfaces. Same screen-root gate
+// for the shell and _customize-controls.scss for the controls. Same screen-root gate
 // (body.attrium-mod-screens.wp-customizer); tokens resolve dark
 // automatically (html.attrium-dark in _tokens.scss).
 @include mixins.screen-root('wp-customizer') {
@@ -40,16 +39,19 @@
       left: 6px;
       width: 18px;
       height: 18px;
+
       @include icons.mask('settings');
     }
   }
 
   // The advanced-menu screen-options sheet (core: #fff face, #dcdcde top).
+  // The token border is intentionally dropped — the sheet reads as a flush
+  // extension of the panel surface.
   // NOTE: the screen-root gate already emits `body.attrium-mod-screens
   // .wp-customizer`, so no `.wp-customizer` prefix is needed on descendants.
   #screen-options-wrap {
     background: var(--attrium-primary-foreground);
-    border-top: 1px solid var(--attrium-border);
+    border-top: 0;
   }
 
   // Menu item rows — same reskin as the menus screen (_nav-menus.scss), which
@@ -83,6 +85,7 @@
     width: 16px;
     height: 16px;
     margin: 0 auto;
+
     @include icons.mask('chevron-down');
   }
 
@@ -98,6 +101,7 @@
     content: '';
     width: 20px;
     height: 20px;
+
     @include icons.mask('x');
   }
 
@@ -123,22 +127,26 @@
   .menu-item-reorder-nav .menus-move-up::before,
   .widget-reorder-nav .move-widget-up::before {
     content: '';
+
     @include icons.mask('chevron-up', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-down::before,
   .widget-reorder-nav .move-widget-down::before {
     content: '';
+
     @include icons.mask('chevron-down', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-left::before {
     content: '';
+
     @include icons.mask('chevron-left', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-right::before {
     content: '';
+
     @include icons.mask('chevron-right', 16px);
   }
 }

@@ -76,6 +76,18 @@ body.theme-install-php {
     background: var(--attrium-primary);
     color: var(--attrium-primary-foreground);
     text-shadow: none;
+
+    // The button is revealed when a card is hovered (and often auto-focused by
+    // the theme), so core's blue `box-shadow: 0 0 0 2px` focus ring plus the
+    // browser's default focus outline paint an unwanted "outline" around the
+    // pill at the moment it appears/after click. Kill both so it stays a clean
+    // primary button.
+    &:hover,
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
   }
 
   // ---- Footer (name + author + actions) ----
@@ -102,6 +114,16 @@ body.theme-install-php {
     height: auto;
     background: transparent;
     color: var(--attrium-foreground);
+  }
+
+  // Active-theme heading that themes using their own admin UI (e.g. Bricks
+  // renders `<h2 class="theme-name" id="bricks-name">` with an "Active:"
+  // prefix) draw a separator `border-top` on. Core's overlay heading has no
+  // top border, so drop any a theme injects; `!important` (scoped to the class)
+  // overrides a theme's id-scoped rule while leaving the rest of the reskin
+  // intact.
+  h2.theme-name {
+    border-top: 0 !important;
   }
 
   .theme-author {
