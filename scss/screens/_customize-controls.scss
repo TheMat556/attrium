@@ -7,27 +7,25 @@
 
 // Part of the Customizer reskin split — see _customize-shell.scss for the
 // overlay chrome and _customize-menus.scss for the Menus panel. (The former
-// _customize-themes.scss was removed — every declaration survived the
-// customize visual suite.)
+// The former theme-specific Customizer stylesheet was removed after its
+// declarations were covered by the visual suite.
 @include mixins.screen-root('wp-customizer') {
   // ---- Accordion list (top-level sections) ----
   // Section titles render as stacked cards. Core uses a 4px left rail for the
   // hover accent; drop that and use the accent token for the whole card face.
   #customize-theme-controls .accordion-section-title,
   #customize-outer-theme-controls .accordion-section-title {
+    @apply border-b-0 border-l-0;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
-    border-bottom: 0 !important;
-    border-left: 0;
+    @apply border-b-0! m-0 mx-2 mb-1;
     border-radius: var(--attrium-radius-md);
-    margin: 0 8px 4px;
 
     // Swap the dashicon disclosure for a Lucide chevron-down mask.
     &::after {
       content: '';
       color: var(--attrium-muted-foreground);
-      width: 16px;
-      height: 16px;
+      @apply size-4;
 
       @include icons.mask('chevron-down');
     }
@@ -46,10 +44,8 @@
   // box itself has no padding (the card background covers the margin area).
   #customize-theme-controls .accordion-section-title button.accordion-trigger,
   #customize-outer-theme-controls .accordion-section-title button.accordion-trigger {
-    padding: 0;
-    margin: 10px 30px 11px 14px;
-    width: calc(100% - 44px);
-    height: 2rem;
+    @apply p-0 h-8;
+    @apply my-2.5 mr-8 ml-3.5 w-[calc(100%-44px)];
 
     &:focus {
       box-shadow: none;
@@ -62,13 +58,13 @@
   #customize-theme-controls .control-section.open .accordion-section-title,
   #customize-outer-theme-controls .control-section:hover > .accordion-section-title,
   #customize-outer-theme-controls .control-section.open .accordion-section-title {
-    color: var(--attrium-foreground);
     background: var(--attrium-accent);
+    color: var(--attrium-foreground);
   }
 
   #customize-theme-controls .control-section.open .accordion-section-title,
   #customize-outer-theme-controls .control-section.open .accordion-section-title {
-    border-bottom: 0 !important;
+    @apply border-b-0!;
   }
 
   // ---- Sub-panel chrome (strip borders from every surface) ----
@@ -78,9 +74,8 @@
   .customize-pane-child .customize-section-description,
   .customize-pane-child .customize-section-description.open,
   .customize-pane-child .customize-panel-description {
-    border-top: 0 !important;
-    border-bottom: 0 !important;
-    box-shadow: none !important;
+    @apply border-t-0 border-b-0 shadow-none;
+    @apply border-t-0! border-b-0! shadow-none!;
   }
 
   // Site Identity section heading.
@@ -143,8 +138,7 @@
       position: absolute;
       inset: 0;
       margin: auto;
-      width: 16px;
-      height: 16px;
+      @apply size-4;
 
       @include icons.mask('chevron-down');
     }
@@ -211,13 +205,10 @@
   // native textarea. Style the editor as a rounded, recessed surface in both
   // themes, matching the theme-editor treatment.
   #customize-control-custom_css .CodeMirror {
-    background: var(--attrium-background);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
-    color: var(--attrium-foreground);
+    @include primitives.codemirror-editor;
+    border-color: var(--attrium-border);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.8125rem;
-    line-height: 1.5;
+    @apply text-[13px] leading-6;
 
     // Inset the editor from the control's edges — mirrors the inline styles
     // on the live site.
@@ -250,10 +241,6 @@
     // default lines padding is `4px 0`, so code hugs the gutter/right edge.
     // CodeMirror reads the computed padding of .CodeMirror-lines for its
     // internal layout, so this is the canonical way to inset it.
-    .CodeMirror-lines {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
   }
 
   // CodeMirror syntax highlighting.

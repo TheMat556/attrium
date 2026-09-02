@@ -96,6 +96,17 @@
          text-[var(--attrium-primary-foreground)];
 }
 
+// --- CodeMirror editor --------------------------------------------------------
+
+@mixin codemirror-editor {
+  @apply rounded-lg border bg-[var(--attrium-background)]
+         text-[var(--attrium-foreground)];
+
+  .CodeMirror-lines {
+    @apply px-4;
+  }
+}
+
 // --- Form field ---------------------------------------------------------------
 
 @mixin field-outline {
@@ -133,13 +144,7 @@
 // (positioning, disabled states). `$surface` is the resting fill — pass
 // `transparent` to blend into the strip until hovered.
 @mixin icon-button($surface: var(--attrium-primary-foreground)) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 0;
-  border-radius: 0.5rem;
+  @apply inline-flex items-center justify-center size-8 border-0 rounded-lg;
   background: $surface;
   color: var(--attrium-foreground);
 

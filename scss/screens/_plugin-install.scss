@@ -40,14 +40,13 @@
 // at `.tablenav.top` is duplicate chrome above the result grid, so remove it.
 .tablenav.top {
   @include mixins.screen('plugin-install-php') {
-    display: none;
+    @apply hidden;
   }
 }
 
 // ---- Upload card (Upload Plugin form) ----
-// Note: intentionally NOT patterns.upload-card — the plugin installer draws a
-// slimmer dashed edge (1px vs the theme uploader's 2px) and styles no
-// install-help line, so the recipe stays inline here.
+// The plugin installer uses a slimmer dashed edge and has no install-help
+// line, so these styles stay inline here.
 .wp-upload-form {
   @include mixins.screen('plugin-install-php') {
     background: var(--attrium-primary-foreground);
@@ -161,22 +160,16 @@
 // no separate dark block is needed.
 .plugins-popular-tags-wrapper .popular-tags {
   @include mixins.screen('plugin-install-php') {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    @apply flex flex-wrap gap-2;
     background: transparent;
     border-bottom: none;
 
     .tag-cloud-link {
-      display: inline-flex;
-      align-items: center;
-      height: 1.5rem;
+      @apply inline-flex items-center h-6;
       padding: 0 0.625rem;
       border: 1px solid var(--attrium-border);
       border-radius: 9999px;
-      font-size: 0.75rem !important;
-      font-weight: 600;
-      line-height: 1.5rem;
+      @apply text-xs! font-semibold leading-6;
       white-space: nowrap;
       text-decoration: none;
       color: var(--attrium-secondary-foreground);

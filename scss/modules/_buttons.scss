@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Buttons module — authored shadcn/cva-style: a shared base + per-variant
 // mixins + a size modifier, then a one-line map from native WP button classes
@@ -24,8 +25,7 @@
     // Core paints a blue focus ring (box-shadow) on every .button /
     // .button-primary via --wp-admin-theme-color. Attrium buttons have no
     // focus ring — remove it.
-    box-shadow: none;
-    outline: none;
+    @include primitives.focus-reset;
   }
 }
 
@@ -142,7 +142,7 @@
 // not(.hide-menu) .button.media-frame-menu-toggle`, (0,5,0) > ours), so the
 // toggle is preserved where core actually uses it.
 body.attrium-mod-buttons.wp-core-ui .button.media-frame-menu-toggle {
-  display: none;
+  @apply hidden;
 }
 
 // Buttons WordPress has stowed with its `.hidden` utility (`common.css`:
@@ -156,5 +156,5 @@ body.attrium-mod-buttons .button.hidden,
 body.attrium-mod-buttons .button-primary.hidden,
 body.attrium-mod-buttons .button-secondary.hidden,
 body.attrium-mod-buttons .button-link.hidden {
-  display: none !important;
+  @apply hidden!;
 }

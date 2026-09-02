@@ -10,9 +10,6 @@
 
 .privacy-settings-header {
   @include mixins.screen('options-privacy-php') {
-    // Core paints this #fff with a 1px bottom border (edit.css:759). Drop both
-    // so the card surface shows through. No radius here: the header is
-    // transparent and borderless, so corner rounding is invisible.
     @apply border-0;
     background: transparent;
   }
@@ -20,35 +17,23 @@
 
 .privacy-settings-body {
   @include mixins.screen('options-privacy-php') {
-    // Core centers the 800px-wide body with `margin: 0 auto`; keep that
-    // horizontal centering (auto) while adding the card's vertical spacing.
-    margin: 1.5rem auto;
+    @apply my-6 mx-auto;
   }
 }
 
-// Dark mode is covered by _base.scss's `#attrium-host.dark h1 { text-white }`
-// (an ID wins here), but the h1 still needs the token color in light mode,
-// where core leaves it #3c434a — keep for light parity. Core already sizes it
-// at 23px; assert it so it matches the shell's page headers everywhere.
 .privacy-settings-title-section h1 {
   @include mixins.screen('options-privacy-php') {
     color: var(--attrium-foreground);
-    font-size: 23px;
+    @apply text-2xl;
   }
 }
 
-// The Font Library-style underline tabs, centered like core's original header:
-// inactive labels are muted grey, the active one is theme-aware with a non-blue
-// bottom underline, and hover/focus lift the label to theme-aware foreground.
-// Replaces core's centered inline-grid and the admin-blue `box-shadow` underline.
-// Shared with _site-health.scss via primitives.underline-tabs.
 .privacy-settings-tabs-wrapper {
   @include mixins.screen('options-privacy-php') {
     @include primitives.underline-tabs('privacy-settings-tab');
   }
 }
 
-// Body paragraphs at the shell's 14px size.
 p {
   @include mixins.screen('options-privacy-php') {
     font-size: 14px;

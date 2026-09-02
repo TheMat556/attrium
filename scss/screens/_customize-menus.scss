@@ -11,7 +11,7 @@
   // The Menus panel's section heading is rendered as a list item rather than
   // an accordion title; remove core's divider from that exact heading.
   li.customize-control-title.customize-section-title-nav_menus-heading {
-    border-bottom: 0 !important;
+    @apply border-b-0!;
   }
 
   // The screen-options gear next to the help toggle in the Menus panel header
@@ -29,7 +29,7 @@
     }
 
     &::before {
-      display: none;
+      @apply hidden;
     }
 
     &::after {
@@ -37,8 +37,7 @@
       position: absolute;
       top: 6px;
       left: 6px;
-      width: 18px;
-      height: 18px;
+      @apply size-4;
 
       @include icons.mask('settings');
     }
@@ -81,10 +80,8 @@
   .menu-item .item-edit .toggle-indicator::before,
   #available-menu-items .accordion-section-title .toggle-indicator::before {
     content: '';
-    display: block;
-    width: 16px;
-    height: 16px;
-    margin: 0 auto;
+    @apply block w-4 h-4;
+    @apply mx-auto;
 
     @include icons.mask('chevron-down');
   }
@@ -99,8 +96,7 @@
   // at the same box; it keeps core's #d63638 red via currentColor.
   .menu-item-bar .item-delete::before {
     content: '';
-    width: 20px;
-    height: 20px;
+    @apply size-5;
 
     @include icons.mask('x');
   }

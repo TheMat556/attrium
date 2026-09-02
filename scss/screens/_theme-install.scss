@@ -10,23 +10,6 @@
 // border, and a drop shadow, all of which read as a bright band in dark mode.
 // Everything below is token-driven so light/dark parity is automatic.
 
-// AUDIT (see TODO.md): mutation-tested against the theme-install screen
-// captures (light + dark), the components drawer captures
-// (tests/visual/components/theme-install.spec.ts), and the overlay captures
-// (tests/visual/theme-install-overlay.spec.ts).
-// KILLED (kept): filter-toolbar, toolbar flex layout + drawer-toggle/search
-// margins, count badge, search field-outline, the feature-filter drawer rules
-// (flex-basis/margin + the ui.filter-drawer include — covered by the
-// components suite), and the Details/Preview overlay header/nav/action/
-// sidebar/install-info/details/footer/collapse chrome.
-// SURVIVED (removed): search px-3, the upload-card include, and — from the
-// overlay — the backdrop background, header gap/margin-left/background, the
-// masked `.wp-full-overlay-main` background, and the three nav-glyph masks
-// (dead selectors: `.theme-install-overlay .close-full-overlay` etc. never
-// match — that class lives on the overlay container, not the buttons).
-// NOTE: the sidebar `border-right` was initially marked SURVIVED, but
-// tests/visual/components/theme-overlay.spec.ts (element capture, tight
-// budget) caught the removal — restored as KILLED.
 
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
@@ -48,9 +31,7 @@
 // it pinned to the right edge, preserving the current horizontal grouping.
 .wp-filter {
   @include mixins.screen('theme-install-php') {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    @apply flex flex-wrap items-center;
     column-gap: 0.5rem;
 
     .button.drawer-toggle {
@@ -129,14 +110,12 @@
   @include mixins.screen('theme-install-php') {
     .wp-full-overlay-sidebar {
       background: var(--attrium-primary-foreground);
-      border-right: 1px solid var(--attrium-border);
+      @apply border-r;
+      border-right-color: var(--attrium-border);
     }
 
     .wp-full-overlay-header {
-      display: flex;
-      align-items: center;
-      gap: 0.125rem;
-      margin-left: 1rem;
+    @apply flex items-center gap-0.5 ml-4;
 
       // Close / previous / next nav buttons. Core floats these left at full
       // 45px height; reset that so they sit flush in the flex header.
@@ -153,9 +132,7 @@
 
       .previous-theme,
       .next-theme {
-        display: block;
-        opacity: 0.5;
-        cursor: not-allowed;
+        @apply block opacity-50 cursor-not-allowed;
 
         &:disabled,
         &.disabled,
@@ -173,13 +150,13 @@
       }
 
       .close-full-overlay {
-        display: block;
+        @apply block;
       }
 
       // The action button (Install / Activate) — reset core's float, push it
       // to the right edge of the header with a little breathing room from it.
       .button {
-        margin: 0 0.5rem 0 auto;
+        @apply mt-0 mr-2 mb-0 ml-auto;
       }
     }
 
@@ -228,16 +205,12 @@
     }
 
     .wp-full-overlay-footer {
-      display: flex;
-      align-items: center;
+      @apply flex items-center;
       background: var(--attrium-primary-foreground);
       border-top: 1px solid var(--attrium-border);
 
       .collapse-sidebar {
-        position: static;
-        gap: 0.25rem;
-        margin: 0.5rem;
-        padding: 0;
+        @apply static gap-1 m-2 p-0;
         color: var(--attrium-muted-foreground);
 
         &:hover,
@@ -253,11 +226,7 @@
       // is explicitly hidden, and the helper's `background` shorthand strips
       // the HiDPI arrow sprite core paints on the span itself.
       button.collapse-sidebar > span.collapse-sidebar-arrow {
-        position: relative;
-        width: 16px;
-        height: 16px;
-        margin: 0;
-        border-radius: 0;
+        @apply relative size-4 m-0 rounded-none;
 
         // Strip core's HiDPI arrows sprite (themes.css paints
         // `background-image: url(arrows-2x.png)` on this span at 120dpi).
@@ -265,7 +234,7 @@
         overflow: visible;
 
         &::before {
-          display: none;
+          @apply hidden;
         }
 
         &::after {

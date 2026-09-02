@@ -6,6 +6,15 @@
   }
 }
 
+// Same module gate emitted as an ancestor block. Use when every rule in a
+// file belongs to one module, keeping the generated selectors identical while
+// avoiding repeated nested gates.
+@mixin module-root($name) {
+  body.attrium-mod-#{$name} {
+    @content;
+  }
+}
+
 // Per-screen gate: requires the broad `attrium-mod-screens` flag AND
 // WordPress's own screen body class `<body-class>` (e.g. post-type-page,
 // emitted by core in wp-admin/admin-header.php). Both live on <body>, so they

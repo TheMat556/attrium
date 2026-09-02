@@ -1,70 +1,46 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Site Health page (site-health.php → body.site-health-php). Core hardcodes
-// #fff / #f0f0f1 / #dcdcde chrome across the header, accordion, and tabs.
+@include mixins.screen-root('site-health-php') {
+  // Site Health page. Core hardcodes #fff / #f0f0f1 / #dcdcde chrome across
+  // the header, accordion, and tabs.
 
-// -------------------------------------------------------------------------
-// Common foreground color — grouped in one rule so the mixin still runs in a
-// normal rule context and `&` expands to each selector in the list.
-// -------------------------------------------------------------------------
-.health-check-title-section h1,
-.site-health-progress-wrapper .site-health-progress-label,
-.health-check-accordion-trigger,
-.health-check-accordion-trigger .title,
-.health-check-accordion-panel,
-.health-check-accordion-panel p,
-.health-check-accordion-panel ul li,
-.site-health-issues-wrapper h2,
-.site-health-issues-wrapper h3,
-.site-health-issues-wrapper > p,
-.site-health-view-more .site-health-view-passed,
-.site-status-all-clear .encouragement,
-.site-status-all-clear p,
-.site-status-has-issues h2,
-.site-status-has-issues > p,
-.site-health-issue-count-title,
-.site-health-issue-count-title .issue-count {
-  @include mixins.screen('site-health-php') {
+  .health-check-title-section h1,
+  .site-health-progress-wrapper .site-health-progress-label,
+  .health-check-accordion-trigger,
+  .health-check-accordion-trigger .title,
+  .health-check-accordion-panel,
+  .health-check-accordion-panel p,
+  .health-check-accordion-panel ul li,
+  .site-health-issues-wrapper h2,
+  .site-health-issues-wrapper h3,
+  .site-health-issues-wrapper > p,
+  .site-health-view-more .site-health-view-passed,
+  .site-status-all-clear .encouragement,
+  .site-status-all-clear p,
+  .site-status-has-issues h2,
+  .site-status-has-issues > p,
+  .site-health-issue-count-title,
+  .site-health-issue-count-title .issue-count {
     color: var(--attrium-foreground);
   }
-}
 
-// -------------------------------------------------------------------------
-// Header – remove core's white background + bottom border
-// -------------------------------------------------------------------------
-.health-check-header {
-  @include mixins.screen('site-health-php') {
+  .health-check-header {
     @apply border-0;
     background: transparent;
   }
-}
 
-// -------------------------------------------------------------------------
-// Tabs – underline style (shared with _privacy.scss via primitives.underline-tabs)
-// -------------------------------------------------------------------------
-.health-check-tabs-wrapper {
-  @include mixins.screen('site-health-php') {
+  .health-check-tabs-wrapper {
     @include primitives.underline-tabs('health-check-tab');
   }
-}
 
-// -------------------------------------------------------------------------
-// Accordion container
-// -------------------------------------------------------------------------
-.health-check-accordion {
-  @include mixins.screen('site-health-php') {
+  .health-check-accordion {
     @apply rounded-[var(--attrium-radius-md)]
            border border-[var(--attrium-border)]
            overflow-hidden;
   }
-}
 
-// -------------------------------------------------------------------------
-// Accordion heading / trigger
-// -------------------------------------------------------------------------
-.health-check-accordion-heading {
-  @include mixins.screen('site-health-php') {
+  .health-check-accordion-heading {
     @apply border-0;
 
     .health-check-accordion-trigger {
@@ -72,13 +48,11 @@
              border-0 cursor-pointer transition-colors
              flex items-center gap-3;
       background: var(--attrium-primary-foreground);
-      // color is handled by the shared foreground group above
 
       &:hover {
         background: var(--attrium-accent);
       }
 
-      // Conflit with core focus: strip everything
       &:focus {
         outline: none;
         box-shadow: none;
@@ -120,11 +94,9 @@
       }
 
       .icon {
-        @apply ml-auto static;
+        @apply ml-auto static size-2;
         border: solid var(--attrium-foreground);
         border-width: 0 2px 2px 0;
-        width: 0.5rem;
-        height: 0.5rem;
         transform: translateY(-0.125rem) rotate(45deg);
         transition: transform 0.15s;
         pointer-events: none;
@@ -139,23 +111,12 @@
       }
     }
   }
-}
 
-// -------------------------------------------------------------------------
-// Accordion panel
-// -------------------------------------------------------------------------
-.health-check-accordion-panel {
-  @include mixins.screen('site-health-php') {
-    @apply px-4 text-sm;
+  .health-check-accordion-panel {
+    @apply px-4 text-sm block overflow-hidden border-b-0;
     background: var(--attrium-primary-foreground);
-    // color is handled by the shared foreground group above
-
-    // Collapse animation
-    display: block;
-    overflow: hidden;
     max-height: 0;
     padding-block: 0;
-    border-bottom: none;
     transition:
       max-height 0.3s ease,
       padding-block 0.3s ease;
@@ -168,24 +129,12 @@
       }
     }
   }
-}
 
-// Beat core's `[hidden] { display: none }` (edit.css) – same specificity, our
-// sheet loads later. display must stay block so removing `hidden` restarts the
-// max-height transition instead of snapping via display:none.
-.health-check-accordion-panel[hidden] {
-  @include mixins.screen('site-health-php') {
-    display: block;
+  .health-check-accordion-panel[hidden] {
+    @apply block;
   }
-}
 
-// Expanded cap for the max-height transition; must exceed the tallest panel.
-// Restore the vertical padding + separator that were collapsed above. The
-// separator is only drawn between items: panels are siblings of their headings,
-// so a panel with a following heading is not the last one – the card's own
-// border is the final bottom edge.
-.health-check-accordion-panel:not([hidden]) {
-  @include mixins.screen('site-health-php') {
+  .health-check-accordion-panel:not([hidden]) {
     max-height: 40rem;
     padding-block: 0.75rem;
 
@@ -193,16 +142,10 @@
       border-bottom: 1px solid var(--attrium-border);
     }
   }
-}
 
-// -------------------------------------------------------------------------
-// Issues list / view-more button / status sections
-// -------------------------------------------------------------------------
-.site-health-view-more {
-  @include mixins.screen('site-health-php') {
+  .site-health-view-more {
     .site-health-view-passed {
       background: var(--attrium-primary-foreground);
-      // color is handled by the shared foreground group above
       @apply border border-[var(--attrium-border)]
              rounded-[var(--attrium-radius-md)];
 
@@ -211,11 +154,8 @@
       }
     }
   }
-}
 
-.site-status-has-issues {
-  @include mixins.screen('site-health-php') {
-    margin: 1.5rem;
-    // h2 and >p colors are handled by the shared foreground group above
+  .site-status-has-issues {
+    @apply m-6;
   }
 }

@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Theme + Plugin file editors: theme-editor.php (body.theme-editor-php) and
 // plugin-editor.php (body.plugin-editor-php). Both share identical markup, so
@@ -6,15 +7,6 @@
 // gate. (The screen()/screen-root() mixins add the `attrium-mod-screens`
 // flag, so the module toggle disables this reskin like every other screen's.)
 
-// AUDIT (see TODO.md): every declaration was mutation-tested against the
-// theme-editor screen captures (tests/visual/screens.spec.ts, light + dark).
-// KILLED (kept): the file-tree frame + heading, folder-label weight, tree
-// links, the current-file marker, and the dark CodeMirror chrome/syntax.
-// SURVIVED (removed): interaction/edge states the static capture cannot
-// render — hover/focus rows, disclosure arrow, tree connectors, editor
-// notices, caret/selection/bracket/error highlighting — plus the notice
-// color/padding that duplicated core. Re-verify those if a spec ever captures
-// them (e.g. expanded folders or a focused/selected editor state).
 @include mixins.screen-root('theme-editor-php', 'plugin-editor-php') {
   // ---- File tree: token-driven, light/dark parity automatic ----
   // The tree sidebar (#templateside) is core-painted `#f6f7f7` with `#dcdcde`
@@ -33,7 +25,7 @@
 
     background: var(--attrium-primary-foreground);
     border: 1px solid var(--attrium-border);
-    border-left: none;
+    @apply border-l-0;
   }
 
   #templateside > h2 {
@@ -78,16 +70,9 @@
   // the gutter and the right edge. CodeMirror reads the computed padding of
   // .CodeMirror-lines for its internal layout, so this is the canonical way to
   // inset the code area horizontally — and it applies in both modes.
-  #template .CodeMirror-lines {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  // Inset the editor from the control's edges — mirrors the inline styles
-  // on the live site.
   #template .CodeMirror {
-    margin-left: 1rem;
-    margin-right: 0.5rem;
+    @include primitives.codemirror-editor;
+    @apply ml-4 mr-2;
   }
 
 
@@ -97,7 +82,8 @@
     // (light grey). Override the full shorthand so the editor frame has a visible
     // but subtle boundary matching the dark-mode --attrium-border token.
     #template .CodeMirror {
-      border: 1px solid oklch(100% 0 0deg / 10%);
+      @apply border;
+      border-color: var(--attrium-border);
     }
 
     // ---- CodeMirror chrome ----

@@ -1,5 +1,6 @@
 @use '../icons';
 @use '../mixins';
+@use '../ui/primitives';
 
 // Native <select> chevron, built from the shared Lucide icon map (one glyph
 // source). It can't use icons.mask() — a mask clips the whole element, which
@@ -47,8 +48,7 @@ $select-chevron-dark: icons.image('chevron-down', '%23FAFAFA');
     // (border-color:#2271b1, box-shadow:0 0 0 1px #2271b1). Attrium selects
     // keep the token border and have no focus ring — remove both.
     border-color: var(--attrium-border);
-    box-shadow: none;
-    outline: none;
+    @include primitives.focus-reset;
   }
 }
 

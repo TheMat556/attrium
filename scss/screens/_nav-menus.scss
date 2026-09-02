@@ -79,7 +79,7 @@
     }
 
     .menu-settings-group {
-      margin: 0.75rem;
+      @apply m-3;
     }
   }
 
@@ -92,7 +92,7 @@
   // last visible section — keying off visibility instead means the last visible
   // section never carries a border.
   .accordion-section {
-    border-bottom: 0;
+    @apply border-b-0;
 
     &:has(~ .accordion-section:not(.hide-if-js)) {
       border-bottom: 1px solid var(--attrium-border);
@@ -138,8 +138,7 @@
     // Hold it on the token foreground, matching the trigger label beside it.
     &:hover span.dashicons.dashicons-arrow-down,
     span.dashicons.dashicons-arrow-down {
-      color: var(--attrium-foreground);
-      opacity: 0.7;
+      @include primitives.muted-text(0.7);
     }
   }
 
@@ -255,12 +254,10 @@
   // column and let the quick-search input fill the panel width (previously fixed
   // at 190px, nav-menus.css:484).
   .quick-search-wrap {
-    display: flex;
-    flex-direction: column;
+    @apply flex flex-col;
 
     .quick-search {
-      display: flex;
-      width: auto;
+      @apply flex w-auto;
     }
   }
 
@@ -273,16 +270,14 @@
   .customlinkdiv,
   .posttypediv,
   .taxonomydiv {
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
+    @apply flex flex-col gap-2.5;
 
     // Children that core still spaces with margins — the gap owns the spacing
     // now, so strip them.
     .add-menu-item-tabs,
     .tabs-panel,
     .button-controls {
-      margin: 0;
+      @apply m-0;
     }
 
     // `.add-menu-item-tabs`'s bottom margin comes from an ID-anchored core rule
@@ -303,7 +298,7 @@
     background: var(--attrium-secondary);
 
     .major-publishing-actions {
-      border-top: 0;
+      @apply border-t-0;
     }
   }
 
@@ -345,8 +340,7 @@
   // greys that are near-invisible on the token surface in dark mode.
   .menu-item-handle .item-type,
   .item-edit {
-    color: var(--attrium-foreground);
-    opacity: 0.7;
+    @include primitives.muted-text(0.7);
   }
 
   // The disclosure's blue focus ring is drawn on its ::before glyph — swap it

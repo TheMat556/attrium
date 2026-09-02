@@ -38,7 +38,6 @@ export const ADMIN_PAGES: AdminPage[] = [
 	// so it is deterministic here even though the host dev tree is not.
 	{ name: 'theme-editor', path: '/wp-admin/theme-editor.php' },
 	{ name: 'nav-menus', path: '/wp-admin/nav-menus.php' },
-	{ name: 'widgets', path: '/wp-admin/widgets.php' },
 	{ name: 'tools', path: '/wp-admin/tools.php' },
 	{ name: 'privacy', path: '/wp-admin/options-privacy.php' },
 	// `_profile.scss` gates on `profile-php` and `user-edit-php`. user-edit is

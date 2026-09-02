@@ -66,7 +66,7 @@
     // (var(--wpds-font-size-xl)); bump it to the 23px used by the native
     // views. The id-based compound selector beats the bundle's rule.
     .admin-ui-page__header-title {
-      font-size: 23px;
+      @apply text-2xl;
     }
 
     .font-library__footer {
@@ -75,7 +75,7 @@
 
     // Make the stage scrollable so tall content doesn't overflow the viewport.
     .boot-layout__stage {
-      overflow: scroll;
+      @apply overflow-scroll;
     }
 
     // ---- Tab text colors + weight ----
@@ -96,8 +96,8 @@
     // by the label span, matching the selected tab's inline style.
     .font-library-page__tablist button[role="tab"] {
       color: var(--attrium-muted-foreground);
-      font-size: 14px;
-      font-weight: 500;
+      @apply text-sm;
+      @apply font-medium;
 
       &[aria-selected="true"] {
         color: var(--attrium-foreground);
@@ -117,7 +117,7 @@
     // classes on the element are per-build Emotion hashes).
     p,
     .components-navigator-screen .components-text {
-      font-size: 14px;
+      @apply text-sm;
     }
 
     // ---- Active tab underline ----

@@ -32,7 +32,7 @@
   .ai-plugin-callout {
     @include primitives.secondary-surface;
     color: var(--attrium-foreground);
-    overflow: hidden;
+    @apply overflow-hidden;
   }
 
   // ---- Connector rows (each is a wp-components Item) ----
@@ -45,12 +45,12 @@
   // Connector name (rendered as an <h2 data-wp-component="Text">).
   h2 {
     color: var(--attrium-foreground);
-    font-weight: 600;
+    @apply font-semibold;
   }
 
   // General paragraph copy at the shell's 14px body size.
   p {
-    font-size: 14px;
+    @apply text-sm;
   }
 
   // Connector description (a <span data-wp-component="Text">). Target the span
@@ -113,7 +113,7 @@
 .admin-ui-page__header {
   @include mixins.module('screens') {
     background: transparent !important;
-    border-bottom: none !important;
+    @apply border-b-0!;
     color: var(--attrium-foreground);
   }
 }
@@ -122,6 +122,6 @@
 // title below the shell's 23px; the mount id out-specifies its rule.
 #options-connectors-wp-admin-app .admin-ui-page__header-title {
   @include mixins.module('screens') {
-    font-size: 23px;
+    @apply text-2xl;
   }
 }

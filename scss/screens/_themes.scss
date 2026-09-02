@@ -10,7 +10,7 @@
 // Apply overflow: hidden to body for themes pages
 body.themes-php,
 body.theme-install-php {
-  overflow: hidden !important;
+  @apply overflow-hidden!;
 }
 
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
@@ -27,7 +27,7 @@ body.theme-install-php {
   // (`display: none` pulls it out of the cards grid, letting the grid reflow).
   .theme.add-new-theme,
   .add-new-theme {
-    display: none;
+    @apply hidden;
   }
 
   .theme {
@@ -111,7 +111,7 @@ body.theme-install-php {
   // reset it here too so no faux border-top shows on the active theme.
   .theme-name {
     @apply text-sm font-semibold m-0 px-4 py-3 shadow-none;
-    height: auto;
+    @apply h-auto;
     background: transparent;
     color: var(--attrium-foreground);
   }
@@ -123,7 +123,7 @@ body.theme-install-php {
   // overrides a theme's id-scoped rule while leaving the rest of the reskin
   // intact.
   h2.theme-name {
-    border-top: 0 !important;
+    @apply border-t-0!;
   }
 
   .theme-author {
@@ -199,8 +199,7 @@ body.theme-install-php {
     // is exactly `#attrium-host`'s box — and the backdrop dims the whole shell.
     // A dark scrim reads correctly in both modes.
     .theme-backdrop {
-      position: fixed;
-      inset: 0;
+      @apply fixed inset-0;
       background: rgb(0 0 0 / 60%);
     }
 
@@ -220,10 +219,7 @@ body.theme-install-php {
     // the nav buttons sit as compact icon buttons, and drop the strip's
     // bottom border — core paints it #dcdcde, a bright line in dark mode.
     .theme-header {
-      display: flex;
-      align-items: center;
-      gap: 0.125rem;
-      padding-left: 0.5rem;
+      @apply flex items-center gap-0.5 pl-2;
       border-bottom: 0;
     }
 
@@ -234,7 +230,7 @@ body.theme-install-php {
     .theme-header .left,
     .theme-header .right,
     .theme-header .close {
-      position: relative;
+      @apply relative;
 
       @include primitives.icon-button(transparent);
 
@@ -256,20 +252,19 @@ body.theme-install-php {
       // renders; painting the mask on the glyph-bearing `:before` did not
       // (and core's hardcoded `:before` colors fought the token color).
       &::before {
-        display: none;
+        @apply hidden;
       }
 
       &::after {
         content: '';
-        position: absolute;
-        inset: 0;
+      @apply absolute inset-0;
       }
     }
 
     // Push the close button to the right edge (core floats it right) with a
     // little breathing room, mirroring the installer overlay's header.
     .theme-header .close {
-      margin: 0 0.5rem 0 auto;
+      @apply mt-0 mr-2 mb-0 ml-auto;
     }
 
     // Icon glyphs — Lucide shapes painted via the shared mask helper
@@ -296,8 +291,7 @@ body.theme-install-php {
       @apply inline-block rounded-full text-xs font-medium;
       background: var(--attrium-secondary);
       color: var(--attrium-secondary-foreground);
-      padding: 2px 8px;
-      margin: 0 0 -10px;
+      @apply px-2 py-0.5 mt-0 mr-0 mb-[-10px] ml-0;
     }
 
     // `m-0` zeroes core's `margin: 10px 0 0` (themes.css) so the heading
@@ -335,7 +329,7 @@ body.theme-install-php {
 
       span {
         color: var(--attrium-foreground);
-        font-weight: 600;
+        @apply font-semibold;
       }
     }
 

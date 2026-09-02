@@ -40,6 +40,7 @@ $light: (
   '--attrium-accent': oklch(0.97 0 0),
   '--attrium-accent-foreground': oklch(0.205 0 0),
   '--attrium-ring': oklch(0.708 0 0),
+  '--attrium-scrollbar-thumb': oklch(0.7 0 0),
   '--attrium-radius-md': 0.5rem,
 
   // Semantic status colors (info, success, warning, error) — shared by notices,
@@ -113,6 +114,7 @@ $dark: (
   '--attrium-accent': oklch(0.269 0 0),
   '--attrium-accent-foreground': oklch(0.985 0 0),
   '--attrium-ring': oklch(0.556 0 0),
+  '--attrium-scrollbar-thumb': oklch(0.4 0 0),
   '--attrium-background': oklch(0.235 0 0),
 
   // Dark-mode semantic status colors — lighter hues for readability.

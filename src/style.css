@@ -3,9 +3,8 @@
 @import "shadcn-vue/tailwind.css";
 
 /* Shared Attrium palette — single source of truth, also @use'd by the SCSS
-   admin theme (scss/entries/base.scss) and injected into this shadow root by
-   main.ts (Vite compiles scss/_tokens.scss via ?inline). See
-   scss/_tokens.scss. */
+   admin theme (scss/entries/base.scss). The shadow tree receives these values
+   through CSS-variable inheritance from the document root. See scss/_tokens.scss. */
 
 /*
  * Submenu slide-down animation using CSS grid `grid-template-rows`.
@@ -145,10 +144,7 @@
      scrollbar-width/scrollbar-color on :host instead. */
   :host {
     scrollbar-width: thin;
-    scrollbar-color: oklch(0.7 0 0) transparent;
-  }
-  :host(.dark) {
-    scrollbar-color: oklch(0.4 0 0) transparent;
+    scrollbar-color: var(--attrium-scrollbar-thumb) transparent;
   }
   :host::-webkit-scrollbar,
   :host *::-webkit-scrollbar {
@@ -162,11 +158,11 @@
   :host::-webkit-scrollbar-thumb,
   :host *::-webkit-scrollbar-thumb {
     border-radius: 3px;
-    background: oklch(0.7 0 0);
+    background: var(--attrium-scrollbar-thumb);
   }
   :host(.dark)::-webkit-scrollbar-thumb,
   :host(.dark) *::-webkit-scrollbar-thumb {
-    background: oklch(0.4 0 0);
+    background: var(--attrium-scrollbar-thumb);
   }
 
   /* The content card is the sole scroll container. Its thumb must not paint
@@ -176,10 +172,7 @@
      the translucent card surface behind the track keeps its corner radius. */
   :host [data-attrium-scroll] {
     scrollbar-width: thin;
-    scrollbar-color: oklch(0.7 0 0) transparent;
-  }
-  :host(.dark) [data-attrium-scroll] {
-    scrollbar-color: oklch(0.4 0 0) transparent;
+    scrollbar-color: var(--attrium-scrollbar-thumb) transparent;
   }
   :host [data-attrium-scroll]::-webkit-scrollbar {
     width: 8px;
@@ -191,7 +184,7 @@
   :host [data-attrium-scroll]::-webkit-scrollbar-thumb {
     border-radius: 9999px;
     border: 2px solid transparent;
-    background: oklch(0.7 0 0);
+    background: var(--attrium-scrollbar-thumb);
     background-clip: padding-box;
   }
   :host(.dark) [data-attrium-scroll]::-webkit-scrollbar-thumb {

@@ -19,8 +19,8 @@
 
 // Per-panel reskins (controls, menus) sit in their own files.
 // Form controls + publish settings live in _customize-controls.scss, the Menus
-// panel in _customize-menus.scss. (The former _customize-themes.scss was
-// removed — every declaration survived the customize visual suite.)
+// panel in _customize-menus.scss. The former theme-specific Customizer
+// stylesheet was removed after its declarations were covered by the visual suite.
 @include mixins.screen-root('wp-customizer') {
   // ---- Theme font ----
   // The Customizer has no #attrium-host and never loads the Vue shell that
@@ -35,7 +35,6 @@
     font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
-
   // ---- Sidebar panel ----
   .wp-full-overlay-sidebar {
     background: var(--attrium-primary-foreground);
@@ -49,19 +48,16 @@
   // sidebar sizing and the pane ends up clipped. Pin the wrapper to fill the
   // sidebar and scroll as one surface so the pane always scrolls.
   #widgets-right {
-    position: relative;
-    height: 100%;
-    overflow: auto;
+    @apply relative h-full overflow-auto;
 
     // Theme-aware scrollbar — same pill-thumb treatment as the shell's content
     // card (src/style.css [data-attrium-scroll]). Firefox reads the two
     // longhands; Webkit the pseudo-element rules below.
     scrollbar-width: thin;
-    scrollbar-color: oklch(70% 0 0deg) transparent;
+    scrollbar-color: var(--attrium-scrollbar-thumb) transparent;
 
     &::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      @apply size-2;
     }
 
     &::-webkit-scrollbar-track {
@@ -69,9 +65,8 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      border-radius: 9999px;
-      border: 2px solid transparent;
-      background: oklch(70% 0 0deg);
+      @apply rounded-full border-2 border-transparent;
+      background: var(--attrium-scrollbar-thumb);
       background-clip: padding-box;
     }
   }
@@ -89,30 +84,28 @@
   .wp-full-overlay-sidebar .wp-full-overlay-header,
   #customize-header-actions {
     background: var(--attrium-primary-foreground);
-    border-bottom: 0;
+    @apply border-b-0;
   }
 
   // Core uses floats; flex the row so close (1), spinner (2), toggle (3),
   // save (4) are ordered by `order`.
   #customize-header-actions {
-    display: flex;
-    align-items: center;
-    padding-left: 0.5rem;
-    position: relative;
+    @apply flex items-center;
+    @apply pl-2 relative;
 
     > * {
-      position: relative;
+      @apply relative;
     }
 
     #customize-save-button-wrapper {
-      margin-top: 0;
+      @apply mt-0 ml-0;
       margin-left: unset;
       order: 4;
     }
 
     .spinner {
       order: 2;
-      margin-left: auto;
+      @apply ml-auto;
     }
 
     .customize-controls-preview-toggle {
@@ -147,15 +140,11 @@
 
   // Close (X) button — 45px bar, token face, Lucide x on `::after`.
   .customize-controls-close {
-    width: 1.75rem;
-    height: 1.75rem;
-    margin: 0;
-    box-sizing: border-box;
+    @apply w-7 h-7 m-0 box-border;
+
     border-radius: var(--attrium-radius-md);
     background: var(--attrium-primary-foreground);
-    border-top-width: 0;
-    border-right: 0;
-    border-bottom: 0;
+    @apply border-t-0 border-r-0 border-b-0;
     color: var(--attrium-foreground);
 
     &:hover,
@@ -166,7 +155,7 @@
     }
 
     &::before {
-      display: none;
+      @apply hidden;
     }
 
     &::after {
@@ -174,8 +163,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 16px;
-      height: 16px;
+      @apply size-4;
       transform: translate(-50%, -50%);
 
       @include icons.mask('x');
@@ -185,16 +173,14 @@
   // "Customize / Preview" toggle (mobile only, ≤640px). Rounded buttons
   // with Lucide mask icons.
   .customize-controls-preview-toggle {
-    left: unset;
-    border: unset;
-    padding: unset;
+    @apply left-auto border-0 p-0;
     margin-right: 0.5rem;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
 
     .controls,
     .preview {
-      padding: 0 10px;
+      @apply px-2.5;
       border-radius: var(--attrium-radius-md);
 
       &:hover {
@@ -203,8 +189,7 @@
     }
 
     &:focus {
-      box-shadow: none;
-      outline: none;
+      @apply shadow-none outline-none;
 
       .controls,
       .preview {
@@ -230,11 +215,11 @@
 
   // ---- "You are customizing …" info header ----
   #customize-controls .customize-info {
-    border-bottom: 0;
+    @apply border-b-0;
 
     .accordion-section-title {
       background: var(--attrium-primary-foreground);
-      border-bottom: 0;
+      @apply border-b-0;
       color: var(--attrium-foreground);
 
       .preview-notice,
@@ -254,16 +239,12 @@
       color: var(--attrium-muted-foreground);
 
       &::before {
-        display: none;
+        @apply hidden;
       }
 
       &::after {
         content: '';
-        position: absolute;
-        top: 5px;
-        left: 6px;
-        width: 20px;
-        height: 20px;
+      @apply absolute top-1.25 left-1.5 size-5;
 
         @include icons.mask('circle-help');
       }
@@ -296,7 +277,7 @@
   }
 
   .customize-section-description-container.section-meta {
-    border-bottom: 0;
+    @apply border-b-0;
   }
 
   #customize-controls .customize-pane-child .customize-section-title h3,
@@ -314,22 +295,16 @@
   // 1px #dcdcde border-top on the li, and a full-width button with a margin
   // overflows the sidebar edge (right margin invisible, corners square).
   .control-panel-themes .theme-section {
-    border-top: 0 !important;
-    border-radius: var(--attrium-radius-md);
-    margin: 0 8px 4px;
+    @apply border-t-0! rounded-[var(--attrium-radius-md)] mx-2 mb-1 mt-0;
   }
 
   .control-panel-themes .customize-themes-section-title {
-    width: 100%;
+    @apply w-full;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
     box-shadow: none;
-    border-top: none;
-    border-bottom: 0;
-    border-left: 0;
-    border-radius: var(--attrium-radius-md);
-    padding: 10px 15px;
-    font-weight: 600;
+    @apply border-t-0 border-b-0 border-l-0 rounded-[var(--attrium-radius-md)]
+           px-4 py-2.5 font-semibold;
 
     &:hover,
     &:focus {
@@ -361,9 +336,7 @@
     position: absolute;
     top: 9px;
     right: 15px;
-    width: 18px;
-    height: 18px;
-    border-radius: 100%;
+    @apply size-[18px] rounded-full;
     background: var(--attrium-primary);
   }
 
@@ -413,10 +386,10 @@
   // line, and rebalance the padding (tighter left, wider right — the chevron
   // reads better against the left edge) per the authored inline styles.
   .control-panel-themes .themes-filter-bar .customize-themes-mobile-back {
-    width: auto;
+    @apply w-auto;
     float: none;
     white-space: nowrap;
-    gap: 1rem;
+    @apply gap-4;
     padding-right: 0.75rem;
     padding-left: 0.25rem;
   }
@@ -426,7 +399,7 @@
   // standalone "Search themes" labels — the input placeholder carries the
   // affordance and the label only adds row noise.
   .control-panel-themes .themes-filter-bar {
-    justify-content: space-between;
+    @apply justify-between;
 
     // Core paints the bar a fixed #f0f0f1 in both modes — a bright strip in
     // dark mode and a face that swallows the search field's outline. Give it
@@ -435,8 +408,7 @@
     padding-top: 4px;
   }
 
-  .control-panel-themes .themes-filter-container > label {
-    display: none;
+  .control-panel-themes .themes-filter-container > label {      @apply hidden;
   }
 
   // The themes search field: core draws no face of its own and the generic
@@ -444,12 +416,11 @@
   // invisible. Fill the field with the surface token, re-assert the border +
   // radius, and pin the theme font (placeholder inherits it).
   .control-panel-themes .themes-filter-bar .wp-filter-search {
+    @apply rounded-[var(--attrium-radius-md)] border pl-8;
     background: var(--attrium-background);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
+    border-color: var(--attrium-border);
     font-family: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
       sans-serif;
-    padding-left: 2rem;
   }
 
   // Back-button glyph — Lucide chevron-left on `::after`.
@@ -458,16 +429,12 @@
     position: relative;
 
     &::before {
-      display: none;
+      @apply hidden;
     }
 
     &::after {
       content: '';
-      position: absolute;
-      top: 25px;
-      left: 9px;
-      width: 20px;
-      height: 20px;
+      @apply absolute top-[25px] left-[9px] size-5;
 
       @include icons.mask('chevron-left');
     }
@@ -475,15 +442,14 @@
 
   // Panel header (panel-meta — e.g. "Menus" / "Widgets" panel titles).
   .panel-meta {
-    display: flex;
-    flex-wrap: wrap;
+    @apply flex flex-wrap;
 
     > .customize-panel-back {
-      flex: 0 0 auto;
+      @apply shrink-0;
     }
 
     .accordion-section-title {
-      flex: 1 1;
+      @apply flex-1;
     }
   }
 
@@ -498,31 +464,31 @@
   #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
     .customize-pane-parent,
   #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
-    #customize-info {
-    display: none !important;
+    #customize-info {      @apply hidden!;
   }
 
   #customize-theme-controls .customize-pane-child:not(.open, .current-panel) {
     position: absolute !important;
     top: 0;
     left: 0;
-    width: 100%;
+    @apply w-full;
   }
 
   #customize-theme-controls .customize-pane-child.accordion-section-content {
-    padding: 1rem;
+    @apply p-4;
   }
 
   #customize-sidebar-outer-content {
+    @apply border-x;
     background: var(--attrium-primary-foreground);
-    border-right: 1px solid var(--attrium-border);
-    border-left: 1px solid var(--attrium-border);
+    border-color: var(--attrium-border);
   }
 
   // ---- Footer (collapse button + device switcher) ----
   .wp-full-overlay-footer {
+    @apply border-t;
     background: var(--attrium-primary-foreground);
-    border-top: 1px solid var(--attrium-border);
+    border-top-color: var(--attrium-border);
   }
 
   .wp-full-overlay-footer .devices {
@@ -572,27 +538,24 @@
     // Lucide masks for device switcher buttons.
     button.preview-desktop::before {
       content: '';
-      display: inline-block;
-      width: 18px;
-      height: 18px;
+      @apply inline-block;
+      @apply size-4;
 
       @include icons.mask('monitor', 18px);
     }
 
     button.preview-tablet::before {
       content: '';
-      display: inline-block;
-      width: 18px;
-      height: 18px;
+      @apply inline-block;
+      @apply size-4;
 
       @include icons.mask('tablet', 18px);
     }
 
     button.preview-mobile::before {
       content: '';
-      display: inline-block;
-      width: 18px;
-      height: 18px;
+      @apply inline-block;
+      @apply size-4;
 
       @include icons.mask('smartphone', 18px);
     }
@@ -606,16 +569,12 @@
     position: relative;
 
     &::before {
-      display: none;
+      @apply hidden;
     }
 
     &::after {
       content: '';
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      width: 16px;
-      height: 16px;
+      @apply absolute inset-0 m-auto size-4;
 
       @include icons.mask('chevron-left');
     }
@@ -640,11 +599,11 @@
   #customize-controls #customize-notifications-area {
     position: relative;
     top: auto;
-    border-bottom: 0;
+    @apply border-b-0;
   }
 
   #customize-controls #customize-notifications-area .notice {
-    margin: 0.5rem;
+    @apply m-2;
   }
 }
 
@@ -666,17 +625,4 @@ body.attrium-mod-screens.wp-customizer.in-sub-panel
   .wp-full-overlay-sidebar
   .wp-full-overlay-header {
   padding-left: 1rem;
-}
-
-// Dark-mode scrollbar for the customizer pane. The customizer has no
-// #attrium-host, so html.attrium-dark (toggled by CustomizerSupport's head
-// script) is the dark carrier — same oklch thumb values as the shell card.
-html.attrium-dark
-  body.attrium-mod-screens.wp-customizer
-  #widgets-right {
-  scrollbar-color: oklch(40% 0 0deg) transparent;
-
-  &::-webkit-scrollbar-thumb {
-    background-color: oklch(40% 0 0deg);
-  }
 }

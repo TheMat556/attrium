@@ -7,7 +7,8 @@
 //
 // The two-tier convention (see _primitives.scss for the other tier):
 //   - primitives.* — element recipes: include inside a gated rule.
-//   - patterns.*   — composite recipes: include at top level under screen-root.
+//   -  patterns.*   — composite recipes: include at top level under screen-root.
+
 
 // --- Filter toolbar ------------------------------------------------------------
 
@@ -120,20 +121,5 @@
 @mixin hide-bottom-bulk-actions {
   .tablenav.bottom .bulkactions {
     @apply hidden;
-  }
-}
-
-@mixin upload-card($form-selector, $help-selector) {
-  #{$form-selector} {
-    @include primitives.surface(
-      var(--attrium-primary-foreground),
-      2px dashed var(--attrium-border),
-      var(--attrium-radius-md)
-    );
-    padding: 1rem;
-  }
-
-  #{$help-selector} {
-    color: var(--attrium-muted-foreground);
   }
 }

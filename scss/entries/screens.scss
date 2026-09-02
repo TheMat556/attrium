@@ -7,7 +7,7 @@
 // _customize-controls.scss (accordion + controls + editor) and
 // _customize-menus.scss — adding a new screen means adding its @use here.
 // (The former _customize-themes.scss was removed: every declaration survived
-// the customize visual suite — see TODO.md.)
+// the customize visual suite.)
 @use '../screens/base';
 @use '../screens/customize-shell';
 @use '../screens/customize-controls';
