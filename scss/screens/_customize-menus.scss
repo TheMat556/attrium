@@ -37,9 +37,9 @@
       position: absolute;
       top: 6px;
       left: 6px;
-      @apply size-4;
+      @apply size-5;
 
-      @include icons.mask('settings');
+      @include icons.mask('settings', 20px);
     }
   }
 
