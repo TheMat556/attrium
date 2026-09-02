@@ -3,8 +3,10 @@
 @import "shadcn-vue/tailwind.css";
 
 /* Shared Attrium palette — single source of truth, also @use'd by the SCSS
-   admin theme (scss/entries/base.scss). The shadow tree receives these values
-   through CSS-variable inheritance from the document root. See scss/_tokens.scss. */
+   admin theme (scss/entries/base.scss) and injected into this shadow root by
+   main.ts (Vite compiles scss/_tokens.scss via ?inline). CSS variables do not
+   cross the shadow-root boundary, so the sheet is required — not an
+   optimization. See scss/_tokens.scss. */
 
 /*
  * Submenu slide-down animation using CSS grid `grid-template-rows`.
