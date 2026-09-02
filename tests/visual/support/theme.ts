@@ -137,30 +137,37 @@ export async function growViewportToFit(
 	measure: () => Promise<number>,
 	label: string,
 ): Promise<void> {
-	const { width, height: vpHeight } = page.viewportSize() ?? {
-		width: 1440,
-		height: 900,
-	}
+	const { width } = page.viewportSize() ?? { width: 1440, height: 900 }
 
-	// Wait for the content to exceed the viewport. After the surface lays out,
-	// async scripts / lazy images / reflows may still be settling; measuring too
-	// early means `scrollHeight === clientHeight` and the capture is cropped.
+	// Wait for the measured height to SETTLE, not to exceed the viewport. After
+	// the surface lays out, async scripts / lazy images / reflows may still be
+	// moving it, and measuring mid-reflow crops the capture.
+	//
+	// Settling (two consecutive equal readings) is the correct signal, and
+	// "taller than the viewport" is not: a screen whose content genuinely fits
+	// in 900px can never satisfy it, so the old loop polled the full 5s and then
+	// warned about a crop that had not happened — on 32 of the 48 captures
+	// (every customize.spec capture plus 20 in screens.spec), i.e. ~2.5 min of
+	// pure sleep per suite run.
 	const MAX_WAIT_MS = 5000
 	const POLL_MS = 100
 	let needed = await measure()
-	for (
-		let waited = 0;
-		waited < MAX_WAIT_MS && needed <= vpHeight;
-		waited += POLL_MS
-	) {
+	let settled = false
+
+	for (let waited = 0; waited < MAX_WAIT_MS; waited += POLL_MS) {
 		await page.waitForTimeout(POLL_MS)
-		needed = await measure()
+		const again = await measure()
+		if (again === needed) {
+			settled = true
+			break
+		}
+		needed = again
 	}
-	if (needed <= vpHeight) {
+
+	if (!settled) {
 		console.warn(
-			`[visual] ${label} content height (${needed}px) did not exceed viewport ` +
-				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
-				`This usually means the page did not fully layout before snapshotting.`,
+			`[visual] ${label} content height never settled (last: ${needed}px) ` +
+				`after ${MAX_WAIT_MS}ms — the capture may be cropped or mid-reflow.`,
 		)
 	}
 

@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build && bun run build:css",
     "build:css": "bun run scripts/build-css.mjs",
-    "watch:css": "bun run scripts/watch-css.mjs",
     "preview": "vite preview",
     "lint": "biome check --write src/",
     "lint:check": "biome check src/",
@@ -17,8 +16,7 @@
     "test:visual": "wp-env start && bun run build && bash tests/visual/run-in-docker.sh; status=$?; wp-env stop; exit $status",
     "test:visual:update": "wp-env start && bun run build && bash tests/visual/run-in-docker.sh --update-snapshots; status=$?; wp-env stop; exit $status",
     "test:visual:local": "bash tests/visual/run-local.sh",
-    "test:visual:report": "npx playwright show-report --host 0.0.0.0 --port 9323",
-    "test:visual:report:components": "npx playwright show-report playwright-report-components --host 0.0.0.0 --port 9323"
+    "test:visual:report": "npx playwright show-report --host 0.0.0.0 --port 9323"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

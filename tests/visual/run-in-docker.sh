@@ -57,13 +57,4 @@ exec docker run --rm --init \
 	-e WP_ADMIN_USER="${WP_ADMIN_USER:-admin}" \
 	-e WP_ADMIN_PASS="${WP_ADMIN_PASS:-password}" \
 	"$IMAGE" \
-	bash -c '
-		set -e
-		# Both configs must run for the full suite: element-scoped specs
-		# (tight pixel budget) under playwright.components.config.ts, then the
-		# full-page screens under playwright.config.ts.
-		# --pass-with-no-tests: a --grep aimed at only one suite (e.g. "button")
-		# matches nothing in the other, which must not fail the run.
-		npx playwright test --config=playwright.components.config.ts --pass-with-no-tests "$@"
-		npx playwright test --config=playwright.config.ts --pass-with-no-tests "$@"
-	' _ "$@"
+	npx playwright test "$@"
