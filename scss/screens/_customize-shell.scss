@@ -71,13 +71,30 @@
     }
   }
 
-  // The sidebar scroll area: transparent in core; give it the panel surface
-  // and drop core's inline `top` offset so it sits directly under the
-  // header/notifications rail.
+  // The sidebar scroll area: core (themes.css) absolutely positions it between
+  // the 45px header and 45px #customize-footer-actions bars. Keep the top at
+  // its static position so the box starts below the in-flow
+  // #customize-notifications-area notice (the !important also overrides the
+  // inline `top` customize-controls.js writes for core's out-of-flow notice
+  // design, which would double-offset ours); anchor the BOTTOM 45px above the
+  // footer. The previous `bottom: unset !important` let the scroller (and the
+  // Additional CSS CodeMirror gutter, z-index:3) run under and paint over the
+  // fixed footer bar.
   .wp-full-overlay-sidebar-content {
     background: var(--attrium-primary-foreground);
-    top: unset !important;
-    bottom: unset !important;
+    top: auto !important;
+    bottom: 45px;
+
+    // Core drops the inset ≤640px (#customize-footer-actions is display:none
+    // there) and in the themes panel (footer slides away). Our selector
+    // out-specifies core's, so mirror both exceptions.
+    @media screen and (max-width: 640px) {
+      bottom: 0;
+    }
+  }
+
+  .wp-full-overlay.in-themes-panel .wp-full-overlay-sidebar-content {
+    bottom: 0;
   }
 
   // ---- Header actions (save button bar) ----
