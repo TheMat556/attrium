@@ -73,7 +73,8 @@
 
   // The sidebar scroll area: transparent in core; give it the panel surface
   // and drop core's inline `top` offset so it sits directly under the
-  // header/notifications rail.
+  // header/notifications rail. Keep the original geometry: the footer is
+  // layered above the scroll area instead of taking space out of it.
   .wp-full-overlay-sidebar-content {
     background: var(--attrium-primary-foreground);
     top: unset !important;
@@ -489,6 +490,7 @@
     @apply border-t;
     background: var(--attrium-primary-foreground);
     border-top-color: var(--attrium-border);
+    z-index: 10;
   }
 
   .wp-full-overlay-footer .devices {
