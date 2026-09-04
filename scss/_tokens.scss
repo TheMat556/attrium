@@ -93,12 +93,11 @@ $light: (
 // wp-admin element that happens to carry a `.dark` class.
 //
 // `html.attrium-dark` is the third carrier: the Customizer (customize.php) is
-// a standalone page with no #attrium-host, so ModuleRegistry's inline script
-// toggles `attrium-dark` on <html> before first paint (same attrium-theme
-// localStorage key the shell uses). Scoping to html — not the body element —
-// makes the tokens cascade to the whole page instantly and avoids the
-// body-class delay. See src/composables/useTheme.ts +
-// admin/src/Modules/ModuleRegistry.php
+// a standalone page with no #attrium-host, so CustomizerSupport toggles
+// `attrium-dark` on <html> before first paint (same attrium-theme localStorage
+// key the shell uses). Scoping to html — not the body element — makes the
+// tokens cascade to the whole page instantly and avoids the body-class delay.
+// See src/composables/useTheme.ts + admin/src/Modules/CustomizerSupport.php
 $dark: (
   '--attrium-primary': oklch(0.922 0 0),
   '--attrium-primary-foreground': oklch(0.205 0 0),

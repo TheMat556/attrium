@@ -39,9 +39,38 @@ class ModuleRegistry {
         return array_keys(array_filter($this->modules));
     }
 
-    public function body_classes( string $classes ): string {
+    /**
+     * The sanitized attrium-mod-* class names for every enabled module.
+     *
+     * Sanitization is load-bearing here, not defensive: module names come from
+     * the attrium_enabled_modules filter, so third-party code can inject
+     * arbitrary keys. On the Customizer these classes are applied with a single
+     * classList.add(...$classes) spread (see CustomizerSupport::body_classes()),
+     * and classList.add throws InvalidCharacterError on any token containing
+     * whitespace — because it is one spread call it is all-or-nothing, so one
+     * malformed module name would silently drop EVERY module class and disable
+     * the whole reskin. The returned array is sequentially indexed so
+     * wp_json_encode() emits a JSON array rather than an object.
+     */
+    public function get_module_classes(): array {
+        $classes = [];
+
         foreach ( $this->get_enabled_modules() as $module ) {
-            $classes .= " attrium-mod-{$module}";
+            $name = sanitize_html_class($module);
+
+            if ( $name === '' ) {
+                continue;
+            }
+
+            $classes[] = 'attrium-mod-' . $name;
+        }
+
+        return $classes;
+    }
+
+    public function body_classes( string $classes ): string {
+        foreach ( $this->get_module_classes() as $class ) {
+            $classes .= ' ' . $class;
         }
 
         return $classes;

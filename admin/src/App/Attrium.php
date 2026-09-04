@@ -96,14 +96,7 @@ class Attrium {
             return;
         }
 
-        $css_file = Scripts::get_build_css('src/main.ts');
-
-        if ( ! $css_file ) {
-            return;
-        }
-
-        $style = ATTRIUM_URL . 'app/dist/' . $css_file;
-        wp_enqueue_style('attrium', $style, [], ATTRIUM_VERSION);
+        Scripts::enqueue_build_style('src/main.ts');
     }
 
     public function load_base_scripts(): void {
