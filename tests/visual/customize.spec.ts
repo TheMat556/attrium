@@ -13,9 +13,10 @@ import {
  * the Vue shell (and its `#attrium-host`) off the page entirely, so the shared
  * `stabilize()` / `snapshotTarget()` helpers cannot run here: there is no host
  * to attach and no `#wpcontent` to reparent. Theme-awareness still works,
- * though — ModuleRegistry's `customizer_theme_script` reads the same
- * `attrium-theme` localStorage key and toggles `html.attrium-dark`, so
- * `applyTheme()` drives light/dark exactly as it does for the shell.
+ * though — CustomizerSupport::theme_script() (admin/src/Modules/
+ * CustomizerSupport.php) reads the same `attrium-theme` localStorage key and
+ * toggles `html.attrium-dark`, so `applyTheme()` drives light/dark exactly as
+ * it does for the shell.
  *
  * Captures target the sidebar (`#customize-controls`) — the surface the
  * `scss/screens/_customize*.scss` reskin covers. The preview pane (the live
@@ -77,6 +78,20 @@ async function settleCustomizer(
 	await page.evaluate(async () => {
 		await document.fonts.ready
 	})
+
+	// Diagnostic guards, in the same spirit as `stabilize()`'s shell
+	// assertion: a green suite must not hide a dead reskin. `attrium-mod-screens`
+	// is the gate every scss/screens/_customize-*.scss rule hangs off (applied
+	// by CustomizerSupport's footer inline script), and the Inter Variable
+	// check asserts the @font-face now arrives via the enqueued build
+	// stylesheet. Either failing would otherwise surface only as an unexplained
+	// pixel diff.
+	await expect(page.locator('body')).toHaveClass(/attrium-mod-screens/)
+	await expect
+		.poll(() =>
+			page.evaluate(() => document.fonts.check('16px "Inter Variable"')),
+		)
+		.toBe(true)
 
 	// No shadow root here, so the document-level freeze reaches everything.
 	await freezeAnimations(page)
