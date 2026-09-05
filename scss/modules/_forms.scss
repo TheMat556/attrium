@@ -1,12 +1,23 @@
+@use '../icons';
 @use '../mixins';
+@use '../ui/primitives';
 
+// Native <select> chevron, built from the shared Lucide icon map (one glyph
+// source). It can't use icons.mask() — a mask clips the whole element, which
+// would erase the select's own text, and <select> generates no ::before to
+// carry an icon — so it must be a real background-image alongside the text.
+// A baked-stroke background can't inherit currentColor (see _icons.scss), so
+// the glyph swaps per mode instead of tinting: light glyph by default, light-
+// on-dark under the dark carriers below.
+$select-chevron: icons.image('chevron-down', '%23232323');
+$select-chevron-dark: icons.image('chevron-down', '%23FAFAFA');
 
 @mixin select-base {
   @apply rounded-[var(--attrium-radius-md)]
          text-sm font-medium transition-colors duration-150
          appearance-none h-9 min-h-9;
 
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23232323' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: $select-chevron;
   background-position: right 0.5rem center;
   background-size: 1rem;
   padding-right: 2rem;
@@ -37,8 +48,7 @@
     // (border-color:#2271b1, box-shadow:0 0 0 1px #2271b1). Attrium selects
     // keep the token border and have no focus ring — remove both.
     border-color: var(--attrium-border);
-    box-shadow: none;
-    outline: none;
+    @include primitives.focus-reset;
   }
 }
 
@@ -74,13 +84,38 @@ select {
   @include mixins.module('forms') {
     @include select-base;
     @include select-outline;
+
+    // The closed select is token-painted, but the native dropdown it opens is
+    // drawn from the option/optgroup nodes' own colors — core/UA defaults of
+    // white bg + black text, which read as white-on-white (or white-on-attrium)
+    // on the dark surface and are unreadable. Paint the list with the same
+    // tokens so open + closed match in both modes.
+    option,
+    optgroup {
+      background: var(--attrium-background);
+      color: var(--attrium-foreground);
+    }
   }
 }
 
-#attrium-host.dark select {
-  @include mixins.module('forms') {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FAFAFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  }
+// Dark-mode chevron swap, one arm per surface. The resolver sets the
+// `attrium-dark` signal on <html> pre-paint and useTheme mirrors it onto
+// #attrium-host.dark, so the host arm is what fires on a normal admin page.
+// The customizer arm is scoped to `body.wp-customizer` for exactly the reason
+// the token carrier is (see the $dark comment in _tokens.scss): an unscoped
+// html-level arm also matches selects inside the fixed-position overlays core
+// appends to <body>, which sit outside the host and keep core's light chrome —
+// they would get the dark chevron on a white dialog. The module flag lives on
+// <body>. The order differs per surface:
+//   - Shell: body > #attrium-host > #wpcontent > select (main.ts reparents
+//     #wpcontent into the host), so the host reads as a DESCENDANT of the
+//     flag-bearing body.
+//   - Customizer: html.attrium-dark > body > select — body is a descendant of
+//     the flag-bearing html. module() can't express the agent-ancestor form, so
+//     both are written out here.
+body.attrium-mod-forms #attrium-host.dark select,
+html.attrium-dark body.wp-customizer.attrium-mod-forms select {
+  background-image: $select-chevron-dark;
 }
 
 input[type="file"] {

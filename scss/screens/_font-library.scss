@@ -1,5 +1,6 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
+@use '../ui/patterns';
 
 // Font Library (Appearance → Fonts, font-library.php). It is NOT in the native
 // override registry (src/views/overrides.ts), so it is embedded wp-admin content
@@ -14,7 +15,7 @@
 // Instead we reskin by REMAPPING those variables onto Attrium's --attrium-*
 // tokens. Because every override below is a var() reference, light/dark parity
 // is automatic: the slotted content lives inside #attrium-host, so the token
-// redefinitions under #attrium-host.dark (in _tokens.css) resolve here with no
+// redefinitions under #attrium-host.dark (in _tokens.scss) resolve here with no
 // separate dark block.
 //
 // Specificity: the app declares its variables on
@@ -44,7 +45,7 @@
     // Let the Attrium shell background show through by making all font library
     // containers transparent. The app already emits inline
     // `background:transparent;border:none` on these elements.
-    @include ui.transparent-react-shell;
+    @include patterns.transparent-react-shell;
 
     .font-library__tabpanel-layout,
     .components-navigator {
@@ -54,27 +55,27 @@
     // Tablist, header, and footer get background + border resets — the wpds
     // app adds borders that don't belong on the transparent canvas.
     .font-library-page__tablist {
-      @include ui.borderless-surface(bottom);
+      @include primitives.borderless-surface(bottom);
     }
 
     .admin-ui-page__header {
-      @include ui.borderless-surface(bottom);
+      @include primitives.borderless-surface(bottom);
     }
 
     // Match the Attrium shell's page headers: wpds renders the title at 20px
     // (var(--wpds-font-size-xl)); bump it to the 23px used by the native
     // views. The id-based compound selector beats the bundle's rule.
     .admin-ui-page__header-title {
-      font-size: 23px;
+      @apply text-2xl;
     }
 
     .font-library__footer {
-      @include ui.borderless-surface(top);
+      @include primitives.borderless-surface(top);
     }
 
     // Make the stage scrollable so tall content doesn't overflow the viewport.
     .boot-layout__stage {
-      overflow: scroll;
+      @apply overflow-scroll;
     }
 
     // ---- Tab text colors + weight ----
@@ -95,8 +96,8 @@
     // by the label span, matching the selected tab's inline style.
     .font-library-page__tablist button[role="tab"] {
       color: var(--attrium-muted-foreground);
-      font-size: 14px;
-      font-weight: 500;
+      @apply text-sm;
+      @apply font-medium;
 
       &[aria-selected="true"] {
         color: var(--attrium-foreground);
@@ -116,7 +117,7 @@
     // classes on the element are per-build Emotion hashes).
     p,
     .components-navigator-screen .components-text {
-      font-size: 14px;
+      @apply text-sm;
     }
 
     // ---- Active tab underline ----
@@ -149,7 +150,7 @@
 
     // ---- Google Fonts connect card ----
     .components-card {
-      @include ui.card-surface;
+      @include primitives.card-surface;
 
       .components-card__body,
       .components-card-body {

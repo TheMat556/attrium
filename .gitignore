@@ -45,7 +45,5 @@ Thumbs.db
 # tests/visual/**/*-snapshots/ ARE committed; everything else is transient.
 tests/visual/.auth/
 test-results/
-test-results-components/
 playwright-report/
-playwright-report-components/
 playwright/.cache/

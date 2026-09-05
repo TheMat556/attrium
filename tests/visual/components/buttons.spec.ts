@@ -32,7 +32,7 @@ for (const { theme } of THEMES) {
 
 		test('normal', async () => {
 			// No per-call options: the tight maxDiffPixels for element captures
-			// comes from the components config (playwright.components.config.ts).
+			// comes from the `components` project in playwright.config.ts.
 			await expect(button).toHaveScreenshot(
 				`button-primary-normal-${theme}.png`,
 			)

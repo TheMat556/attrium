@@ -80,8 +80,7 @@
 @media (max-width: 782px) {
   .notice:not(.hidden):not(.hide-if-js) {
     @include mixins.module('notices') {
-      margin-left: 15px;
-      margin-right: 15px;
+      @apply ml-[15px] mr-[15px];
     }
   }
 }

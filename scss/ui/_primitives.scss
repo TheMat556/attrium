@@ -1,0 +1,203 @@
+// Element-level UI recipes — pure style, included INSIDE a rule that already
+// carries its screen()/module() gate. These are safe to use anywhere.
+//
+// The two-tier convention (see _patterns.scss for the other tier):
+//   - primitives.* — element recipes: include inside a gated rule.
+//   - patterns.*   — composite recipes that emit their own top-level blocks:
+//     include at TOP LEVEL under screen-root(...), never screen(...).
+
+// --- Private helpers ---------------------------------------------------------
+
+@mixin surface(
+  $background,
+  $border: 1px solid var(--attrium-border),
+  $radius: var(--attrium-radius-md)
+) {
+  background: $background;
+  border: $border;
+  border-radius: $radius;
+}
+
+// --- Focus reset -----------------------------------------------------------
+
+@mixin focus-reset {
+  box-shadow: none;
+  outline: none;
+}
+
+// --- Primary link ------------------------------------------------------------
+// Token-colored link (no default blue), underline on hover/focus, and no
+// focus ring — the shared link treatment across the admin. Use wherever core
+// leaves an anchor its default blue; include at the top level of the element
+// rule (it emits its own `&:hover, &:focus` block).
+@mixin link-primary {
+  color: var(--attrium-primary);
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+// --- Muted foreground text ----------------------------------------------------
+// Foreground token dimmed by opacity rather than a separate muted color
+// token. Parameterized because different contexts want slightly different
+// dimming (e.g. a card byline is lighter than an overlay's).
+@mixin muted-text($opacity: 0.6) {
+  color: var(--attrium-foreground);
+  opacity: $opacity;
+}
+
+// --- Accent hover ---------------------------------------------------------------
+// Hover/focus wash for interactive icon surfaces (customizer back buttons,
+// theme source titles): token accent fill, token foreground, no focus shadow.
+// Include at the top level of the element rule — it emits its own
+// `&:hover, &:focus` block, so don't nest it inside another hover block.
+@mixin accent-hover {
+  &:hover,
+  &:focus {
+    background: var(--attrium-accent);
+    color: var(--attrium-foreground);
+    box-shadow: none;
+  }
+}
+
+// --- Segmented pill control ----------------------------------------------------
+
+@mixin pill-track {
+  @apply inline-flex w-fit items-center justify-center
+         rounded-lg p-[3px] border-0
+         bg-[var(--attrium-secondary)]
+         text-[var(--attrium-secondary-foreground)];
+}
+
+@mixin pill-segment {
+  @apply inline-flex items-center justify-center
+         rounded-md px-3 py-1.5 text-sm font-medium
+         no-underline transition-all border-0 bg-transparent
+         text-[var(--attrium-muted-foreground)];
+
+  &:hover,
+  &:focus {
+    @apply bg-transparent text-[var(--attrium-foreground)];
+  }
+
+  &:focus {
+    @apply shadow-none outline-none;
+  }
+}
+
+@mixin pill-segment-active {
+  @apply shadow-sm
+         bg-[var(--attrium-primary)]
+         text-[var(--attrium-primary-foreground)];
+}
+
+// --- CodeMirror editor --------------------------------------------------------
+
+@mixin codemirror-editor {
+  @apply rounded-lg border bg-[var(--attrium-background)]
+         text-[var(--attrium-foreground)];
+
+  .CodeMirror-lines {
+    @apply px-4;
+  }
+}
+
+// --- Form field ---------------------------------------------------------------
+
+@mixin field-outline {
+  @apply rounded-[var(--attrium-radius-md)] text-sm border
+         border-[var(--attrium-border)] bg-transparent
+         text-[var(--attrium-foreground)] h-9
+         transition-colors duration-150
+         focus-visible:outline-none focus-visible:ring-2
+         focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+}
+
+// --- Surfaces -----------------------------------------------------------------
+
+@mixin wp-filter-surface($background: transparent) {
+  @include surface($background);
+  @apply shadow-none;
+}
+
+@mixin card-surface {
+  @include surface(var(--attrium-primary-foreground));
+}
+
+// Elevated secondary surface — the same card recipe on the secondary token,
+// used for panels/rows that sit one step above the page card (filter-group
+// boxes, callouts, bulk-select pills). Mirrors card-surface; the caller adds
+// any per-site extras (overflow, color) after the call.
+@mixin secondary-surface {
+  @include surface(var(--attrium-secondary));
+}
+
+// --- Icon button -----------------------------------------------------------------
+// Compact 2rem square icon control (overlay nav strips, header close buttons):
+// token foreground, token hover fill, no border or focus ring. The caller
+// adds the glyph (mask on a pseudo-element) and any per-site extras
+// (positioning, disabled states). `$surface` is the resting fill — pass
+// `transparent` to blend into the strip until hovered.
+@mixin icon-button($surface: var(--attrium-primary-foreground)) {
+  @apply inline-flex items-center justify-center size-8 border-0 rounded-lg;
+  background: $surface;
+  color: var(--attrium-foreground);
+
+  &:hover,
+  &:focus {
+    background: var(--attrium-secondary);
+    color: var(--attrium-foreground);
+  }
+}
+
+// --- Underline tabs ---------------------------------------------------------------
+// Centered tab row where the active tab carries a token-primary bottom
+// underline (Site Health, Privacy Settings). Include INSIDE the tab bar
+// container under its screen gate; `$tab` is the tab link class. The bar
+// becomes a flex row and the tabs get the muted → foreground hover treatment.
+@mixin underline-tabs($tab) {
+  display: flex;
+  justify-content: center;
+
+  .#{$tab} {
+    color: var(--attrium-muted-foreground);
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin: 0;
+    padding: 0.5rem 1rem 1rem;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover,
+    &:focus {
+      color: var(--attrium-foreground);
+    }
+
+    &.active {
+      color: var(--attrium-foreground);
+      border-bottom-color: var(--attrium-primary);
+      box-shadow: none;
+      font-weight: 500;
+    }
+  }
+}
+
+// --- Borderless surface ----------------------------------------------------------
+// Transparent, borderless reset for React-hosted surfaces (boot-layout) that
+// carry their own card chrome. Element recipe — include inside a gated rule.
+@mixin borderless-surface($border-side: all) {
+  background: transparent !important;
+
+  @if $border-side == 'all' {
+    border: none !important;
+  } @else {
+    border-#{$border-side}: none !important;
+  }
+}

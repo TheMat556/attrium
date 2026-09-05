@@ -1,7 +1,9 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/patterns';
 
 // Plugins list (plugins.php): hide the bottom toolbar's bulk-actions block.
 // The plugins table itself (.wp-list-table widefat plugins) is already covered
 // by the shared `.widefat` rules in modules/_tables.scss — nothing to add here.
-@include ui.hide-bottom-bulk-actions('plugins-php');
+@include mixins.screen-root('plugins-php') {
+  @include patterns.hide-bottom-bulk-actions;
+}

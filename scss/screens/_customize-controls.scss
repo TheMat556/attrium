@@ -1,0 +1,271 @@
+@use '../icons';
+@use '../mixins';
+@use '../ui/primitives';
+
+// Customizer form controls — accordion list + form controls + CodeMirror editor.
+// Overrides core's customize-controls.css.
+
+// Part of the Customizer reskin split — see _customize-shell.scss for the
+// overlay chrome and _customize-menus.scss for the Menus panel. (The former
+// The former theme-specific Customizer stylesheet was removed after its
+// declarations were covered by the visual suite.
+@include mixins.screen-root('wp-customizer') {
+  // ---- Accordion list (top-level sections) ----
+  // Section titles render as stacked cards. Core uses a 4px left rail for the
+  // hover accent; drop that and use the accent token for the whole card face.
+  #customize-theme-controls .accordion-section-title,
+  #customize-outer-theme-controls .accordion-section-title {
+    @apply border-b-0 border-l-0;
+    background: var(--attrium-primary-foreground);
+    color: var(--attrium-foreground);
+    @apply border-b-0! m-0 mx-2 mb-1;
+    border-radius: var(--attrium-radius-md);
+
+    // Swap the dashicon disclosure for a Lucide chevron-down mask.
+    &::after {
+      content: '';
+      color: var(--attrium-muted-foreground);
+      @apply size-4;
+
+      @include icons.mask('chevron-down');
+    }
+
+    // Core (WP ≥ 6.8) recolors the disclosure arrow blue on hover/focus (its
+    // rule wins despite our base color). !important scoped to the title's hover
+    // states keeps the chevron on the muted foreground instead.
+    &:hover::after,
+    &:focus::after,
+    &:focus-visible::after {
+      color: var(--attrium-muted-foreground) !important;
+    }
+  }
+
+  // The trigger button fills the card. Move padding to margin so the button
+  // box itself has no padding (the card background covers the margin area).
+  #customize-theme-controls .accordion-section-title button.accordion-trigger,
+  #customize-outer-theme-controls .accordion-section-title button.accordion-trigger {
+    @apply p-0 h-8;
+    @apply my-2.5 mr-8 ml-3.5 w-[calc(100%-44px)];
+
+    &:focus {
+      box-shadow: none;
+      outline: none;
+    }
+  }
+
+  // Hover / open section — accent wash on the title card.
+  #customize-theme-controls .control-section:hover > .accordion-section-title,
+  #customize-theme-controls .control-section.open .accordion-section-title,
+  #customize-outer-theme-controls .control-section:hover > .accordion-section-title,
+  #customize-outer-theme-controls .control-section.open .accordion-section-title {
+    background: var(--attrium-accent);
+    color: var(--attrium-foreground);
+  }
+
+  #customize-theme-controls .control-section.open .accordion-section-title,
+  #customize-outer-theme-controls .control-section.open .accordion-section-title {
+    @apply border-b-0!;
+  }
+
+  // ---- Sub-panel chrome (strip borders from every surface) ----
+  .customize-pane-child,
+  .customize-pane-child .customize-section-title,
+  .customize-pane-child .customize-section-description-container,
+  .customize-pane-child .customize-section-description,
+  .customize-pane-child .customize-section-description.open,
+  .customize-pane-child .customize-panel-description {
+    @apply border-t-0 border-b-0 shadow-none;
+    @apply border-t-0! border-b-0! shadow-none!;
+  }
+
+  // Site Identity section heading.
+  #sub-accordion-section-title_tagline,
+  #accordion-section-title_tagline > .accordion-section-title,
+  #sub-accordion-section-title_tagline > .accordion-section-title,
+  #accordion-section-nav_menus > .accordion-section-title,
+  #sub-accordion-section-nav_menus > .accordion-section-title {
+    border-bottom: 0 !important;
+  }
+
+  // The Menus heading — stable aria-controls hook.
+  h3.accordion-section-title:has(> .accordion-trigger[aria-controls="nav_menus-content"]) {
+    box-shadow: none !important;
+  }
+
+  // Nav-menu subsection headings.
+  .control-section-nav_menu .accordion-section-title {
+    border-top: 0 !important;
+  }
+
+  // ---- Form controls ----
+  .customize-control-title,
+  #customize-controls .customize-section-title span.customize-action {
+    color: var(--attrium-foreground);
+  }
+
+  .accordion-section,
+  #accordion-section-themes > .accordion-section-title {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  .customize-control-description,
+  #customize-controls .customize-section-description,
+  #customize-controls .description {
+    color: var(--attrium-muted-foreground);
+  }
+
+  .customize-control .customize-inside-control-row {
+    color: var(--attrium-foreground);
+  }
+
+  .customize-section-description a.external-link {
+    @include primitives.link-primary;
+
+    &::after {
+      padding-left: 3px;
+
+      @include icons.mask-inline('external-link', 14px);
+    }
+  }
+
+  // Selects with a custom dropdown strip.
+  .customize-control .dropdown-arrow {
+    background: var(--attrium-primary-foreground);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      @apply size-4;
+
+      @include icons.mask('chevron-down');
+    }
+  }
+
+  // ---- Publish Settings pane ----
+  #customize-control-changeset_status .customize-inside-control-row,
+  #customize-control-changeset_preview_link input,
+  #customize-control-changeset_scheduled_date {
+    background: var(--attrium-primary-foreground);
+    border-bottom-color: var(--attrium-border);
+  }
+
+  #customize-control-changeset_status .customize-inside-control-row:first-of-type {
+    border-top-color: var(--attrium-border);
+  }
+
+  #customize-control-changeset_preview_link input {
+    border-top: 0;
+  }
+
+  #customize-control-changeset_preview_link a {
+    @include primitives.link-primary;
+  }
+
+  #customize-control-trash_changeset .button-link::before {
+    @include icons.mask-inline('trash-2', 18px);
+  }
+
+  // ---- Media / attachment views ----
+  .customize-control .attachment-media-view .placeholder,
+  .customize-control .attachment-media-view .button-add-media {
+    border-color: var(--attrium-border);
+  }
+
+  .customize-control .attachment-media-view .button-add-media {
+    background: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
+
+    &:hover {
+      background: var(--attrium-primary-foreground);
+      color: var(--attrium-foreground);
+    }
+
+    &:focus {
+      background: var(--attrium-primary-foreground);
+      border-color: var(--attrium-ring);
+      border-style: solid;
+      box-shadow: 0 0 0 1px var(--attrium-ring);
+    }
+  }
+
+  .customize-control-header .header-view.selected::after {
+    border-color: var(--attrium-ring);
+  }
+
+  .customize-control-dropdown-pages .new-content-item-wrapper,
+  #available-menu-items .accordion-section-content .new-content-item-wrapper {
+    background: var(--attrium-secondary);
+  }
+
+  // ---- Custom CSS CodeMirror editor ----
+  // The Customizer's Additional CSS control uses CodeMirror instead of the
+  // native textarea. Style the editor as a rounded, recessed surface in both
+  // themes, matching the theme-editor treatment.
+  #customize-control-custom_css .CodeMirror {
+    @include primitives.codemirror-editor;
+    border-color: var(--attrium-border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    @apply text-[13px] leading-6;
+
+    // Inset the editor from the control's edges — mirrors the inline styles
+    // on the live site.
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+
+    .CodeMirror-gutters {
+      background: var(--attrium-secondary);
+      border-right-color: var(--attrium-border);
+    }
+
+    .CodeMirror-linenumber {
+      color: var(--attrium-muted-foreground);
+    }
+
+    .CodeMirror-cursor {
+      border-left-color: var(--attrium-foreground);
+    }
+
+    .CodeMirror-selected,
+    &.CodeMirror-focused .CodeMirror-selected {
+      background: color-mix(in oklab, var(--attrium-primary) 18%, transparent);
+    }
+
+    .CodeMirror-activeline-background {
+      background: color-mix(in oklab, var(--attrium-primary) 5%, transparent);
+    }
+
+    // Same breathing room as the theme editor (_theme-editor.scss): core's
+    // default lines padding is `4px 0`, so code hugs the gutter/right edge.
+    // CodeMirror reads the computed padding of .CodeMirror-lines for its
+    // internal layout, so this is the canonical way to inset it.
+  }
+
+  // CodeMirror syntax highlighting.
+  #customize-control-custom_css .cm-comment {
+    color: var(--attrium-muted-foreground);
+  }
+
+  #customize-control-custom_css .cm-keyword,
+  #customize-control-custom_css .cm-qualifier {
+    color: var(--attrium-primary);
+  }
+
+  #customize-control-custom_css .cm-atom,
+  #customize-control-custom_css .cm-number {
+    color: var(--attrium-warning);
+  }
+
+  #customize-control-custom_css .cm-def,
+  #customize-control-custom_css .cm-variable,
+  #customize-control-custom_css .cm-property {
+    color: var(--attrium-info);
+  }
+
+  #customize-control-custom_css .cm-string,
+  #customize-control-custom_css .cm-string-2 {
+    color: var(--attrium-success);
+  }
+}

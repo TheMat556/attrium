@@ -9,7 +9,7 @@ from SCSS/theme edits.
 ```text
 @wordpress/env  →  bun run build  →  Playwright (Docker image)  →  diff vs baseline
  disposable WP     builds theme CSS    renders + compares            fail on diff
- on :8888          (admin-theme.css)   in a fixed container
+ on :8888          (admin-theme-*.css) in a fixed container
 ```
 
 - **`.wp-env.json`** — spins up WordPress 6.7 + MySQL in Docker with this plugin
@@ -26,11 +26,19 @@ from SCSS/theme edits.
 - **Screenshots always render inside the pinned Playwright Docker image**
   (`tests/visual/run-in-docker.sh`). Font antialiasing differs between machines;
   the container guarantees the committed baselines match locally and in CI.
-- **Baselines** live in `tests/visual/screens.spec.ts-snapshots/` and **are
-  committed**. Everything else (`.auth/`, `test-results/`, `playwright-report/`)
-  is gitignored.
+- **One config, two projects.** `playwright.config.ts` runs `screens` (full-page
+  captures) and `components` (element captures under `components/`) in one pass.
+  They differ only in `maxDiffPixels` (200 vs 20). `workers: 4` and
+  `timeout: 60_000` are pinned, not defaults — the suite is read-only apart from
+  the mu-plugin fixtures (seeded behind an atomic `add_option` claim), and
+  `os.cpus()` inside the container reports the host's 12 hyperthreads instead of
+  its 4 CPUs, so Playwright's own default would pick 6 workers and time out.
+  Full suite: 5.2m at 1 worker, 2.7m at 2, 2.0m at 4.
+- **Baselines** live in `*-snapshots/` beside each spec and **are committed**.
+  Everything else (`.auth/`, `test-results/`, `playwright-report/`) is
+  gitignored.
 
-### Two things that look wrong but are load-bearing
+### Three things that look wrong but are load-bearing
 
 **Captures target `#attrium-host`, not the page.** `fullPage: true` does nothing
 in this app: the host is `position: fixed; inset: 0; overflow: hidden` and the app
@@ -46,11 +54,19 @@ is 2318px).
 **`threshold` must stay small.** It's a per-pixel *color* budget, not an
 antialiasing knob. At Playwright's default `0.2`, a deliberate regression shifting
 `--attrium-border` from `oklch(0.922)` to `oklch(0.86)` passed on all 31 screens.
-At `0.02` it fails on 16. Renderer jitter is absorbed by `maxDiffPixels: 200`
-instead — a flat count, so sensitivity doesn't shrink as screens get taller.
+At `0.02` it fails 53 of the 137 tests. Renderer jitter is absorbed by
+`maxDiffPixels` instead — a flat count, so sensitivity doesn't shrink as screens
+get taller.
 
 If you change either, re-run the border mutation above and confirm the suite
 still fails. A visual suite that can't fail is worse than none.
+
+**`snapshotPathTemplate` hardcodes `-chromium`.** Playwright's default template
+ends in `{-projectName}`, and the 132 committed baselines are named
+`*-chromium-linux.png` from when there was a single project called `chromium`.
+Pinning the segment explicitly is what let the suite split into `screens` +
+`components` without renaming every PNG — and it removes the old trap where
+renaming a project silently invalidated all of them.
 
 ## Requirements
 

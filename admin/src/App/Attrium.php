@@ -5,6 +5,7 @@ namespace Attrium\App;
 use Attrium\Settings\Settings;
 use Attrium\Utility\Menu;
 use Attrium\Utility\Scripts;
+use Attrium\Utility\Theme;
 
 defined('ABSPATH') || exit();
 
@@ -18,6 +19,7 @@ class Attrium {
         add_action('admin_enqueue_scripts', [ $this, 'suppress_wp_command_palette' ], 0);
         add_action('admin_enqueue_scripts', [ $this, 'load_styles' ], 1);
         add_action('admin_enqueue_scripts', [ $this, 'load_base_scripts' ], 1);
+        add_action('admin_head', [ $this, 'print_theme_script' ], 0);
         // Output on in_admin_header (not admin_head) so menu-header.php has
         // already resolved $parent_file/$submenu_file (including the
         // parent_file/submenu_file filters) before we read them below.
@@ -96,14 +98,28 @@ class Attrium {
             return;
         }
 
-        $css_file = Scripts::get_build_css('src/main.ts');
+        Scripts::enqueue_build_style('src/main.ts');
+    }
 
-        if ( ! $css_file ) {
+    /**
+     * Print the pre-paint light/dark resolver script.
+     *
+     * Runs on admin_head (not in_admin_header) because the class has to be
+     * on <html> before the browser paints, and in_admin_header fires after
+     * <body> opens; priority 0 precedes other head output.
+     *
+     * Gated with the same guard as load_styles(): the token stylesheet and
+     * the class that selects its dark half must be present or absent
+     * together. On screens where Attrium is off (block/site editor via
+     * is_overlay_screen()) the class must NOT be set, or it would flip
+     * --attrium-* for whatever Attrium CSS is still enqueued there.
+     */
+    public function print_theme_script(): void {
+        if ( ! self::is_overlay_screen() ) {
             return;
         }
 
-        $style = ATTRIUM_URL . 'app/dist/' . $css_file;
-        wp_enqueue_style('attrium', $style, [], ATTRIUM_VERSION);
+        Theme::print_resolver_script();
     }
 
     public function load_base_scripts(): void {

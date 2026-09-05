@@ -58,8 +58,9 @@ jobs:
         working-directory: ./admin
         run: composer install --no-interaction --no-progress
 
-      # Builds app/dist/admin-theme.css (and the Vue bundle) that the plugin
-      # enqueues; without this the theme CSS is absent and every screen diffs.
+      # Builds the app/dist/admin-theme-*.css topic chunks (and the Vue
+      # bundle) that the plugin enqueues; without this the theme CSS is
+      # absent and every screen diffs.
       - name: Build
         run: bun run build
 

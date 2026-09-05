@@ -9,7 +9,7 @@
 // and check through tokens for light/dark parity, and swap the focus ring for a
 // shadcn-style 2px ring in --attrium-ring (no blue, no outline).
 //
-// `#attrium-host.dark` redefines every --attrium-* token in _tokens.css, so no
+// `#attrium-host.dark` redefines every --attrium-* token in _tokens.scss, so no
 // separate dark block is needed here.
 
 // Base face: token border + token surface (the page-background card colour), flat

@@ -1,5 +1,6 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
+@use '../ui/patterns';
 @use '../icons';
 
 // Theme installer (theme-install.php → body.theme-install-php): reskin the
@@ -9,9 +10,15 @@
 // border, and a drop shadow, all of which read as a bright band in dark mode.
 // Everything below is token-driven so light/dark parity is automatic.
 
+
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.filter-toolbar('theme-install-php');
+// screen-root (not screen): the ui mixins emit top-level blocks, and a
+// top-level `&` from screen() would compile to a `:scope` that matches
+// nothing.
+@include mixins.screen-root('theme-install-php') {
+  @include patterns.filter-toolbar;
+}
 
 // ---- Toolbar layout: flexbox ----
 // Core only gives the plugin-install and upload `.wp-filter` a flex layout;
@@ -24,9 +31,7 @@
 // it pinned to the right edge, preserving the current horizontal grouping.
 .wp-filter {
   @include mixins.screen('theme-install-php') {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    @apply flex flex-wrap items-center;
     column-gap: 0.5rem;
 
     .button.drawer-toggle {
@@ -61,6 +66,7 @@
   @include mixins.screen('theme-install-php') {
     background: var(--attrium-secondary);
     color: var(--attrium-secondary-foreground);
+
     @apply rounded-full text-xs font-semibold;
   }
 }
@@ -70,23 +76,16 @@
   input[type="search"],
   .wp-filter-search {
     @include mixins.screen('theme-install-php') {
-      @include ui.field-outline;
-      @apply px-3;
+      @include primitives.field-outline;
     }
   }
 }
 
-// ---- Upload card (Upload Theme form) ----
-// Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.upload-card(
-  'theme-install-php',
-  '.wp-upload-form',
-  '.upload-theme .install-help'
-);
-
 // ---- Feature-filter drawer ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-@include ui.filter-drawer('theme-install-php');
+@include mixins.screen-root('theme-install-php') {
+  @include patterns.filter-drawer;
+}
 
 // ---- Theme Details full-screen overlay (`.wp-full-overlay`) ----
 // The installer's Details/Preview view is a full-screen overlay
@@ -96,78 +95,74 @@
 // read as bright/dark bands. Tokenize the whole surface so light/dark parity
 // is automatic. The overlay is theme-install-specific (themes.php uses the
 // `.theme-overlay` modal), hence the `theme-install-php` gate.
+
+// Covered by tests/visual/theme-install-overlay.spec.ts (opens the overlay via
+// a card click; the live-preview iframe is masked). KILLED there: the header
+// flex + nav icon-buttons + action-button margin, sidebar + sidebar-content
+// surfaces, install-info + theme-details text, footer + collapse chrome.
+// SURVIVED (removed): the backdrop background (sidebar + preview tile it, so
+// it never shows), header gap/margin-left/background, the sidebar's
+// border-right, and the `.wp-full-overlay-main` background (masked behind the
+// iframe). The nav-glyph masks were dead selectors — `.theme-install-overlay`
+// is the overlay container's class, so `.theme-install-overlay.close-full-overlay`
+// never matched the buttons.
 .wp-full-overlay {
   @include mixins.screen('theme-install-php') {
-    background: var(--attrium-background);
-
     .wp-full-overlay-sidebar {
       background: var(--attrium-primary-foreground);
-      border-right: 1px solid var(--attrium-border);
+      @apply border-r;
+      border-right-color: var(--attrium-border);
     }
 
     .wp-full-overlay-header {
-      display: flex;
-      align-items: center;
-      gap: 0.125rem;
-      margin-left: 0.5rem;
-      background: var(--attrium-primary-foreground);
+    @apply flex items-center gap-0.5 ml-4;
 
       // Close / previous / next nav buttons. Core floats these left at full
       // 45px height; reset that so they sit flush in the flex header.
+      // icon-button also drops core's 1px divider between the nav buttons
+      // (themes.css `.theme-install-overlay .close-full-overlay …
+      // border-right`) and shrinks core's 45px-wide boxes: the buttons are
+      // icon-only now, so the dead space read as a large gap between the
+      // icons.
       .close-full-overlay,
       .previous-theme,
       .next-theme {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        // Drop core's 1px divider between the nav buttons (themes.css
-        // `.theme-install-overlay .close-full-overlay … border-right`) and
-        // shrink core's 45px-wide boxes: the buttons are icon-only now, so the
-        // dead space read as a large gap between the icons.
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.5rem;
-        border: 0;
-        background: var(--attrium-primary-foreground);
-        color: var(--attrium-foreground);
+        @include primitives.icon-button;
+      }
 
-        &:hover,
-        &:focus {
-          background: var(--attrium-secondary);
-          color: var(--attrium-foreground);
+      .previous-theme,
+      .next-theme {
+        @apply block opacity-50 cursor-not-allowed;
+
+        &:disabled,
+        &.disabled,
+        &[disabled] {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+
+        &:not(:disabled):not(.disabled) {
+          opacity: 1;
+          cursor: pointer;
+          pointer-events: auto;
         }
       }
 
-      // Icon glyphs — Lucide shapes painted via the shared mask helper
-      // (scss/_icons.scss), which explains the currentColor/mask technique and
-      // why it is theme-aware in both modes.
-      .theme-install-overlay.close-full-overlay::before {
-        @include icons.mask('x');
+      .close-full-overlay {
+        @apply block;
       }
 
-      .theme-install-overlay.previous-theme::before {
-        @include icons.mask('chevron-left');
-      }
-
-      .theme-install-overlay.next-theme::before {
-        @include icons.mask('chevron-right');
-      }
-
-      // The action button (Install / Activate) — reset core's float, push it to
-      // the right edge of the header with a little breathing room from it.
+      // The action button (Install / Activate) — reset core's float, push it
+      // to the right edge of the header with a little breathing room from it.
       .button {
-        margin: 0 0.5rem 0 auto;
+        @apply mt-0 mr-2 mb-0 ml-auto;
       }
     }
 
     .wp-full-overlay-sidebar-content {
       background: var(--attrium-primary-foreground);
       border-top: 1px solid var(--attrium-border);
-    }
-
-    // Preview pane behind the live iframe.
-    .wp-full-overlay-main {
-      background-color: var(--attrium-secondary);
     }
 
     .install-theme-info {
@@ -210,16 +205,12 @@
     }
 
     .wp-full-overlay-footer {
-      display: flex;
-      align-items: center;
+      @apply flex items-center;
       background: var(--attrium-primary-foreground);
       border-top: 1px solid var(--attrium-border);
 
       .collapse-sidebar {
-        position: static;
-        gap: 0.25rem;
-        margin: 0.5rem;
-        padding: 0;
+        @apply static gap-1 m-2 p-0;
         color: var(--attrium-muted-foreground);
 
         &:hover,
@@ -235,29 +226,23 @@
       // is explicitly hidden, and the helper's `background` shorthand strips
       // the HiDPI arrow sprite core paints on the span itself.
       button.collapse-sidebar > span.collapse-sidebar-arrow {
-        position: relative;
-        width: 16px;
-        height: 16px;
-        margin: 0;
-        border-radius: 0;
+        @apply relative size-4 m-0 rounded-none;
+
         // Strip core's HiDPI arrows sprite (themes.css paints
         // `background-image: url(arrows-2x.png)` on this span at 120dpi).
         background: none;
         overflow: visible;
 
         &::before {
-          display: none;
+          @apply hidden;
         }
 
         &::after {
           content: '';
           position: absolute;
           inset: 0;
-          background-color: currentColor;
-          mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
-          mask-size: contain;
-          mask-position: center;
-          mask-repeat: no-repeat;
+
+          @include icons.mask('chevron-left');
         }
       }
     }

@@ -1,0 +1,202 @@
+// Single source of truth for the Attrium color palette.
+//
+// Consumed by BOTH build pipelines:
+//   - scss/entries/base.scss (@use 'tokens')            → light-DOM WP pages
+//   - src/style.css          (@import '../scss/_tokens.scss') → shadow-DOM Vue app
+//
+// The light/dark palettes are two Sass maps emitted by the @each loops at the
+// bottom, so a token can only be added once — forgetting the dark counterpart
+// fails the build via the $dark-optional guard below instead of silently
+// breaking dark mode. The emitted CSS is identical to hand-written rules:
+// `:root`/`:host` carry the light palette, and `#attrium-host.dark` /
+// `:host(.dark)` / `html.attrium-dark` the dark one.
+//
+// Each carrier comment explains the context it matches: a selector that
+// matches nothing in one context (e.g. :host on a WP page, or #attrium-host
+// inside the shadow root) is simply inert there, so the combined list is safe
+// everywhere.
+
+@use 'sass:list';
+@use 'sass:map';
+
+$light: (
+  // ---- Core palette -------------------------------------------------------
+  '--attrium-primary': oklch(0.205 0 0),
+  '--attrium-primary-foreground': oklch(0.985 0 0),
+
+  // Primary button fill — a solid, emphasized action surface distinct from the
+  // page card behind it. Mode-specific: in light it's a near-black button on a
+  // near-white card; in dark it's a mid-gray (clear of the oklch(0.235) card,
+  // not the near-white token) that reads as a button without being harsh.
+  // `-hover` lightens each mode's fill so the interaction is obvious.
+  '--attrium-primary-button': oklch(0.26 0 0),
+  '--attrium-primary-button-hover': oklch(0.36 0 0),
+  '--attrium-primary-button-foreground': oklch(0.985 0 0),
+  '--attrium-secondary': oklch(0.925 0 0),
+  '--attrium-secondary-foreground': oklch(0.205 0 0),
+  '--attrium-foreground': oklch(0.145 0 0),
+  '--attrium-muted-foreground': oklch(0.556 0 0),
+  '--attrium-border': oklch(0.922 0 0),
+  '--attrium-accent': oklch(0.97 0 0),
+  '--attrium-accent-foreground': oklch(0.205 0 0),
+  '--attrium-ring': oklch(0.708 0 0),
+  '--attrium-scrollbar-thumb': oklch(0.7 0 0),
+  '--attrium-radius-md': 0.5rem,
+
+  // Semantic status colors (info, success, warning, error) — shared by notices,
+  // site-health badges, and any future status indicators.
+  '--attrium-info': #3b82f6,
+  '--attrium-success': #22c55e,
+  '--attrium-warning': #f59e0b,
+  '--attrium-error': #ef4444,
+
+  // Recessed page-canvas surface, distinct from the elevated card surfaces.
+  // Light mode: softened off-white, intentionally darker than the pure-white
+  // Vue content card and the light sidebar.
+  '--attrium-background': oklch(0.965 0 0),
+
+  // Ignored pages keep their native light content; this stays light even in
+  // dark mode so the unstyled WordPress content remains readable behind the
+  // dark chrome.
+  '--attrium-ignored-background': oklch(0.985 0 0),
+
+  // Baseline text color for slotted WordPress content, matching wp-admin.
+  '--attrium-wp-content-foreground': #3c434a,
+
+  // Elevated/app surfaces (shadow-DOM shadcn theme)
+  '--attrium-surface': oklch(0.985 0 0),
+  '--attrium-card': oklch(1 0 0),
+  '--attrium-card-foreground': oklch(0.145 0 0),
+  '--attrium-popover': oklch(1 0 0),
+  '--attrium-popover-foreground': oklch(0.145 0 0),
+  '--attrium-muted': oklch(0.97 0 0),
+  '--attrium-input': oklch(0.922 0 0),
+  '--attrium-destructive': oklch(0.577 0.245 27.325),
+
+  // Sidebar (shadow-DOM Vue app)
+  '--attrium-sidebar-foreground': oklch(0.4 0 0),
+  '--attrium-sidebar-accent': oklch(0.93 0 0),
+  '--attrium-sidebar-accent-foreground': var(--attrium-foreground),
+
+  // Chart / data-viz palette
+  '--attrium-chart-1': oklch(0.646 0.222 41.116),
+  '--attrium-chart-2': oklch(0.6 0.118 184.704),
+  '--attrium-chart-3': oklch(0.398 0.07 227.392),
+  '--attrium-chart-4': oklch(0.828 0.189 84.429),
+  '--attrium-chart-5': oklch(0.769 0.188 70.08),
+);
+
+// Dark mode. `attrium-dark` on <html> is the SIGNAL, set pre-paint on every
+// Attrium page by the single resolver, Attrium\Utility\Theme's synchronous
+// inline script, which reads the `attrium-theme` localStorage key — absent or
+// `'auto'` follows prefers-color-scheme, `'light'`/`'dark'` are explicit
+// overrides.
+//
+// The signal is deliberately NOT a token carrier by itself. A dark carrier must
+// cover exactly the surface Attrium reskins, and on a normal admin page that is
+// the host subtree — not the document. Core appends fixed-position overlays
+// directly to <body>, outside #attrium-host, and they keep core's own light
+// chrome; but the module gates are descendant selectors (`body.attrium-mod-x &`,
+// see _mixins.scss), so Attrium's recipes still match inside them. Put the dark
+// palette on <html> and those overlays render dark text and buttons on a white
+// core dialog. Measured: theme-editor.php's #file-editor-warning dialog lost
+// contrast on its paragraphs and both buttons (visible in the
+// `theme-editor-dark` baseline, which captures it because it is fixed-position
+// and lands inside the host's bounding box). upload.php's media modal is the
+// same shape with no baseline.
+//
+// So the html-level carrier is scoped to `body.wp-customizer`, the one surface
+// where Attrium reskins the entire page and there is no host to hang the
+// palette on. `wp-customizer` is server-rendered by customize.php, so scoping
+// to body costs no cascade delay.
+//
+// #attrium-host.dark / :host(.dark) are the shell's MIRROR of the signal
+// (src/composables/useTheme.ts): CSS variables do not cross the shadow-root
+// boundary, so useTheme observes the carrier with a MutationObserver and
+// copies the class onto the host — the moved WP content inherits from
+// #attrium-host.dark, and from inside the shadow root the same host is
+// :host(.dark). A bare `.dark` is deliberately NOT listed — it would apply
+// this palette to any foreign wp-admin element that happens to carry a
+// `.dark` class.
+//
+// See src/composables/useTheme.ts + admin/src/Utility/Theme.php
+$dark: (
+  '--attrium-primary': oklch(0.922 0 0),
+  '--attrium-primary-foreground': oklch(0.205 0 0),
+
+  '--attrium-primary-button': oklch(0.42 0 0),
+  '--attrium-primary-button-hover': oklch(0.52 0 0),
+  '--attrium-primary-button-foreground': oklch(0.985 0 0),
+  '--attrium-secondary': oklch(0.269 0 0),
+  '--attrium-secondary-foreground': oklch(0.985 0 0),
+  '--attrium-foreground': oklch(0.985 0 0),
+  '--attrium-muted-foreground': oklch(0.708 0 0),
+  '--attrium-border': oklch(1 0 0 / 10%),
+  '--attrium-accent': oklch(0.269 0 0),
+  '--attrium-accent-foreground': oklch(0.985 0 0),
+  '--attrium-ring': oklch(0.556 0 0),
+  '--attrium-scrollbar-thumb': oklch(0.4 0 0),
+  '--attrium-background': oklch(0.235 0 0),
+
+  // Dark-mode semantic status colors — lighter hues for readability.
+  '--attrium-info': #60a5fa,
+  '--attrium-success': #4ade80,
+  '--attrium-warning': #fbbf24,
+  '--attrium-error': #f87171,
+
+  // Dark elevated/app surfaces
+  '--attrium-surface': oklch(0.205 0 0),
+  '--attrium-card': oklch(0.205 0 0),
+  '--attrium-card-foreground': oklch(0.985 0 0),
+  '--attrium-popover': oklch(0.205 0 0),
+  '--attrium-popover-foreground': oklch(0.985 0 0),
+  '--attrium-muted': oklch(0.269 0 0),
+  '--attrium-input': oklch(1 0 0 / 15%),
+  '--attrium-destructive': oklch(0.704 0.191 22.216),
+
+  // Dark sidebar
+  '--attrium-sidebar-foreground': oklch(0.7 0 0),
+  '--attrium-sidebar-accent': oklch(0.269 0 0),
+  '--attrium-sidebar-accent-foreground': oklch(0.9 0 0),
+
+  // Dark chart palette
+  '--attrium-chart-1': oklch(0.87 0 0),
+  '--attrium-chart-2': oklch(0.556 0 0),
+  '--attrium-chart-3': oklch(0.439 0 0),
+  '--attrium-chart-4': oklch(0.371 0 0),
+  '--attrium-chart-5': oklch(0.269 0 0),
+);
+
+// Light-only tokens. Anything here is deliberately NOT redefined in dark mode:
+// e.g. --attrium-ignored-background / --attrium-wp-content-foreground keep
+// their light values so unstyled WP content stays readable behind the dark
+// chrome, and --attrium-radius-md is mode-independent. Adding a NEW token must
+// fail the build until it's listed here or given a dark value.
+$dark-optional: (
+  '--attrium-radius-md',
+  '--attrium-ignored-background',
+  '--attrium-wp-content-foreground',
+);
+
+// Every light token must resolve in dark mode. The guard runs at compile time,
+// so forgetting the dark counterpart of a new token is a build error, not a
+// silent dark-mode regression.
+@each $key, $_ in $light {
+  @if not map.has-key($dark, $key) and not list.index($dark-optional, $key) {
+    @error "Token #{$key} has no dark-mode value. Add it to $dark in _tokens.scss, or add it to $dark-optional if it is intentionally light-only.";
+  }
+}
+:root,
+:host {
+  @each $key, $value in $light {
+    #{$key}: #{$value};
+  }
+}
+
+#attrium-host.dark,
+:host(.dark),
+html.attrium-dark body.wp-customizer {
+  @each $key, $value in $dark {
+    #{$key}: #{$value};
+  }
+}

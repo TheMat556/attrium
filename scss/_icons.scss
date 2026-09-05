@@ -35,6 +35,19 @@ $icons: (
   'x': "%3Cpath%20d='M18%206%206%2018'/%3E%3Cpath%20d='m6%206%2012%2012'/%3E",
   'chevron-left': "%3Cpath%20d='m15%2018-6-6%206-6'/%3E",
   'chevron-right': "%3Cpath%20d='m9%2018%206-6-6-6'/%3E",
+  'chevron-down': "%3Cpath%20d='m6%209%206%206%206-6'/%3E",
+  'chevron-up': "%3Cpath%20d='m18%2015-6-6-6%206'/%3E",
+  'check': "%3Cpath%20d='M20%206%209%2017l-5-5'/%3E",
+  'plus': "%3Cpath%20d='M5%2012h14'/%3E%3Cpath%20d='M12%205v14'/%3E",
+  'search': "%3Cpath%20d='m21%2021-4.34-4.34'/%3E%3Ccircle%20cx='11'%20cy='11'%20r='8'/%3E",
+  'circle-help': "%3Ccircle%20cx='12'%20cy='12'%20r='10'/%3E%3Cpath%20d='M9.09%209a3%203%200%200%201%205.83%201c0%202-3%203-3%203'/%3E%3Cpath%20d='M12%2017h.01'/%3E",
+  'sliders-horizontal': "%3Cpath%20d='M10%205H3'/%3E%3Cpath%20d='M12%2019H3'/%3E%3Cpath%20d='M14%203v4'/%3E%3Cpath%20d='M16%2017v4'/%3E%3Cpath%20d='M21%2012h-9'/%3E%3Cpath%20d='M21%2019h-5'/%3E%3Cpath%20d='M21%205h-7'/%3E%3Cpath%20d='M8%2010v4'/%3E%3Cpath%20d='M8%2012H3'/%3E",
+  'monitor': "%3Crect%20width='20'%20height='14'%20x='2'%20y='3'%20rx='2'/%3E%3Cline%20x1='8'%20x2='16'%20y1='21'%20y2='21'/%3E%3Cline%20x1='12'%20x2='12'%20y1='17'%20y2='21'/%3E",
+  'tablet': "%3Crect%20width='16'%20height='20'%20x='4'%20y='2'%20rx='2'%20ry='2'/%3E%3Cline%20x1='12'%20x2='12.01'%20y1='18'%20y2='18'/%3E",
+  'smartphone': "%3Crect%20width='14'%20height='20'%20x='5'%20y='2'%20rx='2'%20ry='2'/%3E%3Cpath%20d='M12%2018h.01'/%3E",
+  'settings': "%3Cpath%20d='M9.671%204.136a2.34%202.34%200%200%201%204.659%200%202.34%202.34%200%200%200%203.319%201.915%202.34%202.34%200%200%201%202.33%204.033%202.34%202.34%200%200%200%200%203.831%202.34%202.34%200%200%201-2.33%204.033%202.34%202.34%200%200%200-3.319%201.915%202.34%202.34%200%200%201-4.659%200%202.34%202.34%200%200%200-3.32-1.915%202.34%202.34%200%200%201-2.33-4.033%202.34%202.34%200%200%200%200-3.831A2.34%202.34%200%200%201%206.35%206.051a2.34%202.34%200%200%200%203.319-1.915'/%3E%3Ccircle%20cx='12'%20cy='12'%20r='3'/%3E",
+  'trash-2': "%3Cpath%20d='M10%2011v6'/%3E%3Cpath%20d='M14%2011v6'/%3E%3Cpath%20d='M19%206v14a2%202%200%200%201-2%202H7a2%202%200%200%201-2-2V6'/%3E%3Cpath%20d='M3%206h18'/%3E%3Cpath%20d='M8%206V4a2%202%200%200%201%202-2h4a2%202%200%200%201%202%202v2'/%3E",
+  'external-link': "%3Cpath%20d='M15%203h6v6'/%3E%3Cpath%20d='M10%2014%2021%203'/%3E%3Cpath%20d='M18%2013v6a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V8a2%202%200%200%201%202-2h6'/%3E",
 );
 
 // Wrap an icon's path markup in the Lucide document shell and return it as a
@@ -44,28 +57,36 @@ $icons: (
 // is verified to render as a Chromium mask:
 //   - `;utf8` param after the mime type
 //   - viewBox attribute ONLY (no width/height)
-//   - stroke='%23000' (encoded hex, not the keyword 'black')
+//   - encoded stroke color (not the keyword 'black')
 //   - every space encoded as %20
 // Deviating from it (e.g. data:image/svg+xml, + width/height + stroke='black')
 // makes the mask silently fail and hides the element entirely.
-@function _url($name) {
+@function image($name, $stroke: '%23000') {
   $body: map.get($icons, $name);
 
   @if $body == null {
     @error "icons: unknown icon '#{$name}'. Known: #{map.keys($icons)}";
   }
 
-  @return url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E#{$body}%3C/svg%3E");
+  @return url("data:image/svg+xml;utf8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='#{$stroke}'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E#{$body}%3C/svg%3E");
+}
+
+@function _url($name) {
+  @return image($name);
 }
 
 // Paint a named icon on the current element or pseudo-element. Sizing is the
 // caller's job — pass nothing here and set width/height alongside the call.
+// Pass `$size` when the icon must be re-asserted at an explicit size after
+// the default `contain` (e.g. when the painted box is larger than the glyph):
+// it is emitted as a trailing `mask-size`, exactly like a hand-written
+// `mask-size:` after the call.
 //
 // NOTE: unprefixed mask-* ONLY. The -webkit-mask-* longhands are NOT aliases
 // of the unprefixed ones in current Chromium — when both are declared the
 // glyph silently fails to paint. Every consumer must stick to the unprefixed
 // properties (same lesson as the checkmark in modules/_checkbox.scss).
-@mixin mask($name) {
+@mixin mask($name, $size: null) {
   background: currentColor;
 
   // The `background` SHORTHAND (not `background-color`) is deliberate: newer
@@ -77,4 +98,24 @@ $icons: (
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-image: _url($name);
+
+  @if $size != null {
+    mask-size: $size;
+  }
+}
+
+// Paint an icon as an inline glyph: the mask plus the box sizing and inline
+// layout the dashicon glyphs had (content, inline-block, size,
+// vertical-align). Use where the icon replaces an inline dashicon in the
+// middle of a label; callers still add their own positioning (margins,
+// relative offsets) around the call.
+@mixin mask-inline($name, $size) {
+  content: '';
+  display: inline-block;
+  width: $size;
+  height: $size;
+  vertical-align: middle;
+  // The box is exactly $size, so contain would resolve to the same value —
+  // pass it explicitly so the helper's `$size` contract holds everywhere.
+  @include mask($name, $size);
 }

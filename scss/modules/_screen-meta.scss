@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Screen Options + contextual Help panel (`#screen-meta`) — a shared WP UI
 // component rendered inside #wpbody-content (light-DOM slotted content), where
@@ -7,53 +8,45 @@
 // as an elevated card over the page surface in both modes. The opener links
 // (#screen-meta-links) are hidden here; the header BookOpen dropdown clicks the
 // same links via useScreenMeta, and WP's common.js toggles `display` inline.
-#screen-meta {
-  @include mixins.module('screen-meta') {
+@include mixins.module-root('screen-meta') {
+  #screen-meta {
     background: var(--attrium-surface);
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     margin-top: 1rem;
   }
-}
 
-#screen-meta-links {
-  @include mixins.module('screen-meta') {
-    display: none;
+  #screen-meta-links {
+    @apply hidden;
   }
-}
 
-// Core already sets both wraps' padding (8px 20px 12px, zeroed for the help
-// layout), so only the dark-mode-safe text color needs re-declaring here.
-#screen-options-wrap,
-#contextual-help-wrap {
-  @include mixins.module('screen-meta') {
+  // Core already sets both wraps' padding (8px 20px 12px, zeroed for the help
+  // layout), so only the dark-mode-safe text color needs re-declaring here.
+  #screen-options-wrap,
+  #contextual-help-wrap {
     color: var(--attrium-foreground);
   }
-}
 
-// Help layout — three-column split inside #contextual-help-columns: the tabs
-// on the left, content in the middle, sidebar on the right — all on the panel
-// surface, with 1px left/right borders separating the columns. Core floats the
-// three columns; convert the container to flex so the borders run edge-to-edge
-// and each column fills the height.
-#contextual-help-columns {
-  @include mixins.module('screen-meta') {
-    display: flex;
+  // Help layout — three-column split inside #contextual-help-columns: the tabs
+  // on the left, content in the middle, sidebar on the right — all on the panel
+  // surface, with 1px left/right borders separating the columns. Core floats the
+  // three columns; convert the container to flex so the borders run edge-to-edge
+  // and each column fills the height.
+  #contextual-help-columns {
+    @apply flex;
   }
-}
 
-// Help tabs — a vertical list of trigger links, with the active tab as a
-// raised pill. Colors mirror the subsubsub pill control (scss/modules/_tabs.scss):
-// primary active segment, muted inactive links. The track uses --attrium-muted
-// rather than --attrium-secondary: secondary (oklch 0.925) matches
-// --attrium-border (oklch 0.922) almost exactly in light mode, which would
-// hide the 1px separator between the tabs and the content. Muted sits between
-// the border and the panel surface, so the column borders stay visible on both
-// sides while the rail still reads as a distinct track. Core paints a blue
-// --wp-admin-theme-color bar + blue wash; swap both for tokens.
-.contextual-help-tabs {
-  @include mixins.module('screen-meta') {
-    flex: 0 0 150px;
+  // Help tabs — a vertical list of trigger links, with the active tab as a
+  // raised pill. Colors mirror the subsubsub pill control (scss/modules/_tabs.scss):
+  // primary active segment, muted inactive links. The track uses --attrium-muted
+  // rather than --attrium-secondary: secondary (oklch 0.925) matches
+  // --attrium-border (oklch 0.922) almost exactly in light mode, which would
+  // hide the 1px separator between the tabs and the content. Muted sits between
+  // the border and the panel surface, so the column borders stay visible on both
+  // sides while the rail still reads as a distinct track. Core paints a blue
+  // --wp-admin-theme-color bar + blue wash; swap both for tokens.
+  .contextual-help-tabs {
+    @apply basis-[150px] shrink-0;
     background: var(--attrium-muted);
     padding: 4px;
     border-top-left-radius: 0.5rem;
@@ -87,60 +80,37 @@
              shadow-sm;
     }
   }
-}
 
-// Vertical separator between the tabs column and the help content (core paints
-// it #c3c4c7 over an 8% blue wash) — removed; the columns now carry their own
-// left/right borders instead of a floating divider behind them.
-#contextual-help-back {
-  @include mixins.module('screen-meta') {
-    display: none;
+  // Vertical separator between the tabs column and the help content (core paints
+  // it #c3c4c7 over an 8% blue wash) — removed; the columns now carry their own
+  // left/right borders instead of a floating divider behind them.
+  #contextual-help-back {
+    @apply hidden;
   }
-}
 
-// Help content column — separated from the rails by 1px left/right borders.
-// (Ordered after the tabs rail in flex layout; background is inherited from
-// the panel surface, so none is declared here.)
-.contextual-help-tabs-wrap {
-  @include mixins.module('screen-meta') {
+  // Help content column — separated from the rails by 1px left/right borders.
+  // (Ordered after the tabs rail in flex layout; background is inherited from
+  // the panel surface, so none is declared here.)
+  .contextual-help-tabs-wrap {
     order: 2;
-    flex: 1;
-    min-width: 0;
+    @apply flex-1 min-w-0;
     border-left: 1px solid var(--attrium-border);
     border-right: 1px solid var(--attrium-border);
   }
-}
 
-.help-tab-content {
-  @include mixins.module('screen-meta') {
+  .help-tab-content {
     a {
-      color: var(--attrium-primary);
-      text-decoration: none;
-
-      &:hover,
-      &:focus {
-        text-decoration: underline;
-        @apply outline-none shadow-none;
-      }
+      @include primitives.link-primary;
     }
   }
-}
 
-.contextual-help-sidebar {
-  @include mixins.module('screen-meta') {
+  .contextual-help-sidebar {
     order: 3;
-    flex: 0 0 150px;
+    @apply basis-[150px] shrink-0;
     color: var(--attrium-muted-foreground);
 
     a {
-      color: var(--attrium-primary);
-      text-decoration: none;
-
-      &:hover,
-      &:focus {
-        text-decoration: underline;
-        @apply outline-none shadow-none;
-      }
+      @include primitives.link-primary;
     }
   }
 }
