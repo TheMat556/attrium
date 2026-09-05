@@ -4,6 +4,7 @@ namespace Attrium\Modules;
 
 use Attrium\Settings\Settings;
 use Attrium\Utility\Scripts;
+use Attrium\Utility\Theme;
 
 defined('ABSPATH') || exit();
 
@@ -17,8 +18,9 @@ defined('ABSPATH') || exit();
  * on the customizer's own hooks:
  * - the per-module CSS chunks and the shared build CSS (for the Inter
  *   @font-face) are enqueued on customize_controls_enqueue_scripts,
- * - light/dark resolution is a pre-paint inline script on
- *   customize_controls_head,
+ * - light/dark resolution is the shared pre-paint script in
+ *   Attrium\Utility\Theme — the same one Attrium prints on regular admin
+ *   pages — so customize.php and the shell cannot disagree,
  * - the attrium-mod-* body classes are an inline script on
  *   customize_controls_print_footer_scripts.
  */
@@ -34,7 +36,7 @@ class CustomizerSupport {
         }
 
         add_action('customize_controls_enqueue_scripts', [ $this, 'enqueue_styles' ]);
-        add_action('customize_controls_head', [ $this, 'theme_script' ]);
+        add_action('customize_controls_head', [ Theme::class, 'print_resolver_script' ]);
         add_action('customize_controls_print_footer_scripts', [ $this, 'body_classes' ]);
     }
 
@@ -56,38 +58,6 @@ class CustomizerSupport {
     public function enqueue_styles(): void {
         $this->registry->enqueue_styles();
         Scripts::enqueue_build_style('src/main.ts');
-    }
-
-    /**
-     * Apply the Attrium theme (light/dark) to the Customizer.
-     *
-     * The customizer has no #attrium-host, so the shell's useColorMode never
-     * runs on this page. Read the same attrium-theme storage key the shell
-     * uses and toggle `attrium-dark` on <html> before first paint: _tokens.scss
-     * carries the dark palette under html.attrium-dark, so the whole page
-     * resolves the dark tokens from the start (no light flash). An unset key
-     * or 'auto' follows prefers-color-scheme, mirroring useColorMode's
-     * default in src/composables/useTheme.ts. A storage listener keeps an open
-     * customizer in sync when the theme changes in another tab.
-     */
-    public function theme_script(): void {
-        $script = <<<'JS'
-        (function () {
-            function apply() {
-                var stored;
-                try { stored = localStorage.getItem('attrium-theme'); } catch (e) {}
-                var auto = !stored || stored === 'auto';
-                var dark = stored === 'dark' || (auto && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                document.documentElement.classList.toggle('attrium-dark', dark);
-            }
-            apply();
-            window.addEventListener('storage', function (e) {
-                if (e.key === 'attrium-theme') apply();
-            });
-        })();
-        JS;
-
-        wp_print_inline_script_tag($script);
     }
 
     /**

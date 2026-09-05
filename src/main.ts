@@ -25,6 +25,11 @@ host.style.zIndex = '50'
 host.style.overflow = 'hidden'
 document.body.prepend(host)
 
+// The theme is already resolved and on <html> before this bundle ran (see
+// Attrium\Utility\Theme), so this only mirrors that decision onto the freshly
+// created host so :host(.dark) and the dark: utilities resolve inside the
+// shadow root. The MutationObserver in useTheme.ts keeps them in sync
+// afterwards.
 applyThemeToHost()
 
 const shadow = host.attachShadow({ mode: 'open' })

@@ -2,39 +2,38 @@ import { expect, test } from '@playwright/test'
 import { applyTheme, HOST, stabilize } from './support/theme'
 
 /**
- * Pins Attrium's two theme resolvers to each other.
+ * Pins the single theme resolver to its three carriers.
  *
- * "Is the theme dark?" is answered twice, in two languages, because the two
- * answers are needed at different times:
- *   - `src/composables/useTheme.ts` — vueuse `useColorMode`, the shell's
- *     reactive owner (drives the toggle UI, writes storage, syncs across tabs).
- *     It cannot run pre-paint; it ships in the bundle.
- *   - `CustomizerSupport::theme_script()` — a synchronous inline script, because
- *     customize.php has no Attrium shell at all and a deferred module would
- *     paint light before flipping to dark.
+ * "Is the theme dark?" is answered once — by `Attrium\Utility\Theme`'s
+ * synchronous inline script in `<head>`, printed on every Attrium page,
+ * customize.php included (there is no shell there, but it still gets the
+ * same script). This spec proves that one decision lands on all three
+ * carriers: `html.attrium-dark` is set by the resolver itself, the shell's
+ * `#attrium-host.dark` is its shadow-root mirror, and the Customizer has
+ * only the html carrier — no host exists to mirror onto.
  *
- * That split is inherent, so the duplication is not going away. What can go
- * away is it drifting silently: the two must agree for every stored value, and
- * nothing else asserts that. `screens.spec.ts` and `customize.spec.ts` both
- * drive light/dark through `applyTheme()`, so the EXPLICIT values are covered
- * on both surfaces already. The uncovered states are the implicit ones, where
- * the answer comes from `prefers-color-scheme` instead of storage: key absent,
- * and key set to `auto`. Those are also the states a real first-time user
- * lands in.
+ * `screens.spec.ts` and `customize.spec.ts` both drive light/dark through
+ * `applyTheme()`, so the EXPLICIT values are covered on both surfaces
+ * already. The uncovered states are the implicit ones, where the answer
+ * comes from `prefers-color-scheme` instead of storage: key absent, and key
+ * set to `auto`. Those are also the states a real first-time user lands in.
  *
- * No screenshots here — this reads the resolved carrier class directly, so it
- * adds no baselines and cannot be broken by a legitimate restyle.
+ * No screenshots here — this reads the resolved carrier classes directly, so
+ * it adds no baselines and cannot be broken by a legitimate restyle.
  */
 
 /**
- * The carrier classes, one per surface. They differ by design: the shell's
- * `dark` on `#attrium-host` covers the shadow root (`:host(.dark)`) AND the
- * light-DOM WordPress content moved inside the host, while the Customizer has
- * no host and so uses `html.attrium-dark`. See the `$dark` carrier comment in
+ * The carriers the resolver's decision lands on. `html.attrium-dark` is
+ * universal — set pre-paint on every Attrium page — so it is asserted on
+ * both legs (two entries keep each message naming the surface it verifies).
+ * The shell's `dark` on `#attrium-host` is the shadow-root mirror of that
+ * class (useTheme's MutationObserver), needed because CSS variables do not
+ * cross the shadow-root boundary. See the `$dark` carrier comment in
  * `scss/_tokens.scss`.
  */
 const CARRIERS = {
 	shell: `${HOST}.dark`,
+	html: 'html.attrium-dark',
 	customizer: 'html.attrium-dark',
 } as const
 
@@ -52,9 +51,10 @@ const CUSTOMIZER_PATH = '/wp-admin/customize.php'
 
 /**
  * The implicit-resolution matrix. `stored: null` means the key is absent —
- * `applyTheme()` removes it on every navigation, which is required here (see
- * its docblock: both the persisted auth state and the shell itself write
- * `auto` back).
+ * `applyTheme()` removes it on every navigation, which is required here:
+ * `auth.setup.ts` lands on wp-admin before saving `storageState`, so
+ * `attrium-theme: auto` is baked into `.auth/state.json` and restored into
+ * every context. Removal re-establishes "absent" on each hop.
  */
 const CASES = [
 	{ stored: null, prefers: 'light', dark: false },
@@ -75,8 +75,10 @@ for (const { stored, prefers, dark } of CASES) {
 			await applyTheme(page, stored)
 
 			// Shell. stabilize() waits for the FOUC hider to be removed, which
-			// main.ts only does after applyThemeToHost() has run, so the carrier
-			// is settled by then — no polling needed.
+			// main.ts only does after applyThemeToHost() has run, so the host
+			// mirror is settled by then — no polling needed. The html carrier
+			// was set pre-paint by the resolver, so it is final since first
+			// parse.
 			await page.goto(SHELL_PATH)
 			await stabilize(page)
 
@@ -84,9 +86,13 @@ for (const { stored, prefers, dark } of CASES) {
 				.locator(HOST)
 				.evaluate((el) => el.classList.contains('dark'))
 
-			// Customizer. theme_script() is inline in <head>, so the class is on
-			// <html> from the first parse; reaching the control pane is settle
-			// enough.
+			const shellHtmlDark = await page.evaluate(() =>
+				document.documentElement.classList.contains('attrium-dark'),
+			)
+
+			// Customizer. The resolver script is inline in <head> — the same
+			// one every admin page gets — so the class is on <html> from the
+			// first parse; reaching the control pane is settle enough.
 			await page.goto(CUSTOMIZER_PATH)
 			await page.locator('#customize-controls').waitFor({ state: 'attached' })
 
@@ -95,9 +101,10 @@ for (const { stored, prefers, dark } of CASES) {
 			)
 
 			// Asserted against the expectation rather than against each other:
-			// equality alone would pass if both resolvers were wrong in the same
+			// equality alone would pass if all carriers were wrong in the same
 			// direction, which is exactly the drift a shared bug would cause.
 			expect(shellDark, `${CARRIERS.shell} (${label})`).toBe(dark)
+			expect(shellHtmlDark, `${CARRIERS.html} (${label})`).toBe(dark)
 			expect(customizerDark, `${CARRIERS.customizer} (${label})`).toBe(dark)
 		})
 	})

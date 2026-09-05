@@ -13,10 +13,10 @@ import {
  * the Vue shell (and its `#attrium-host`) off the page entirely, so the shared
  * `stabilize()` / `snapshotTarget()` helpers cannot run here: there is no host
  * to attach and no `#wpcontent` to reparent. Theme-awareness still works,
- * though — CustomizerSupport::theme_script() (admin/src/Modules/
- * CustomizerSupport.php) reads the same `attrium-theme` localStorage key and
- * toggles `html.attrium-dark`, so `applyTheme()` drives light/dark exactly as
- * it does for the shell.
+ * though — the resolver `Attrium\Utility\Theme` (admin/src/Utility/Theme.php)
+ * prints the same pre-paint script here as on every admin page, reading the
+ * `attrium-theme` localStorage key and toggling `html.attrium-dark`, so
+ * `applyTheme()` drives light/dark exactly as it does for the shell.
  *
  * Captures target the sidebar (`#customize-controls`) — the surface the
  * `scss/screens/_customize*.scss` reskin covers. The preview pane (the live

@@ -13,9 +13,13 @@
 //   - Body-class workarounds (outer-section-open, in-sub-panel)
 
 // The Customizer has no #attrium-host: theme-awareness comes from
-// ModuleRegistry's head script toggling html.attrium-dark on <html> from the
-// same attrium-theme localStorage key the shell uses. Every --attrium-* token
-// below resolves dark automatically via html.attrium-dark in _tokens.scss.
+// Attrium\Utility\Theme::print_resolver_script() setting the `attrium-dark`
+// signal on <html> — the same pre-paint script every admin page gets, so this
+// is not a special case. What IS specific to this surface is the token carrier:
+// customize.php is the one page Attrium reskins whole, so _tokens.scss hangs
+// the dark palette off `html.attrium-dark body.wp-customizer` here, where
+// everywhere else it hangs off the host. Every --attrium-* token below resolves
+// dark automatically through it.
 
 // Per-panel reskins (controls, menus) sit in their own files.
 // Form controls + publish settings live in _customize-controls.scss, the Menus

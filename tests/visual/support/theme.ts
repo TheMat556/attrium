@@ -29,35 +29,35 @@ export const HOST = '#attrium-host'
 
 /**
  * Every stored `attrium-theme` state Attrium has to resolve. `null` means the
- * key is absent, which `useColorMode` and CustomizerSupport::theme_script()
- * both treat the same as `'auto'`.
+ * key is absent, which the resolver (`Attrium\Utility\Theme`) treats the same
+ * as `'auto'`.
  */
 export type StoredTheme = Theme | 'auto' | null
 
 /**
  * Seed the theme before the page's own scripts run.
  *
- * Attrium is NOT driven by `prefers-color-scheme`: `useTheme.ts` reads the
- * `attrium-theme` localStorage key and `main.ts` applies the `dark` class to
- * `#attrium-host` at boot, BEFORE Vue mounts. So the value has to be seeded via
- * an init script (runs before page scripts on every navigation), not by
- * emulating the media feature.
+ * A stored value always wins over `prefers-color-scheme`, so the theme cannot
+ * be selected by emulating the media feature — it has to be seeded into the
+ * `attrium-theme` localStorage key via an init script (which runs before page
+ * scripts on every navigation). `Attrium\Utility\Theme` prints a synchronous
+ * pre-paint script that reads that key and toggles `html.attrium-dark`; on
+ * shell pages `src/composables/useTheme.ts` then mirrors the carrier onto
+ * `#attrium-host` as `dark`.
  *
  * BOTH variants are seeded explicitly. Writing only the dark key and treating
- * "no key" as light is wrong: `useColorMode` defaults to `auto`, which follows
+ * "no key" as light is wrong: an absent key resolves as `auto`, which follows
  * the OS preference — so on a machine (or container) reporting a dark
  * preference, the "light" tests silently render dark and match the wrong
  * baseline. Verified: with `colorScheme: 'dark'` emulated and no seed, the host
  * came up with the `dark` class applied.
  *
  * `null` REMOVES the key rather than skipping the seed, and that difference is
- * load-bearing for `theme-resolution.spec.ts`. Two things put a value back:
- * `auth.setup.ts` lands on wp-admin before saving `storageState`, so
- * `attrium-theme: auto` is baked into .auth/state.json and restored into every
- * context; and `useColorMode`'s underlying `useStorage` writes its default, so
- * the shell re-writes `auto` on each visit. Because `addInitScript` runs before
- * page scripts on EVERY navigation, removing here re-establishes "absent" for
- * each hop — including the second one, after the first page already wrote.
+ * load-bearing for `theme-resolution.spec.ts`: `auth.setup.ts` lands on
+ * wp-admin before saving `storageState`, so `attrium-theme: auto` is baked into
+ * .auth/state.json and restored into every context. Because `addInitScript`
+ * runs before page scripts on EVERY navigation, removing here re-establishes
+ * "absent" on each hop.
  */
 export async function applyTheme(
 	page: Page,

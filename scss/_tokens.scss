@@ -86,18 +86,40 @@ $light: (
   '--attrium-chart-5': oklch(0.769 0.188 70.08),
 );
 
-// Dark mode. useTheme toggles `.dark` on #attrium-host only: on WP pages that
-// matches #attrium-host.dark (the moved WP content inherits from it), and from
-// inside the shadow root the same host is :host(.dark). A bare `.dark` is
-// deliberately NOT listed — it would apply this palette to any foreign
-// wp-admin element that happens to carry a `.dark` class.
+// Dark mode. `attrium-dark` on <html> is the SIGNAL, set pre-paint on every
+// Attrium page by the single resolver, Attrium\Utility\Theme's synchronous
+// inline script, which reads the `attrium-theme` localStorage key — absent or
+// `'auto'` follows prefers-color-scheme, `'light'`/`'dark'` are explicit
+// overrides.
 //
-// `html.attrium-dark` is the third carrier: the Customizer (customize.php) is
-// a standalone page with no #attrium-host, so CustomizerSupport toggles
-// `attrium-dark` on <html> before first paint (same attrium-theme localStorage
-// key the shell uses). Scoping to html — not the body element — makes the
-// tokens cascade to the whole page instantly and avoids the body-class delay.
-// See src/composables/useTheme.ts + admin/src/Modules/CustomizerSupport.php
+// The signal is deliberately NOT a token carrier by itself. A dark carrier must
+// cover exactly the surface Attrium reskins, and on a normal admin page that is
+// the host subtree — not the document. Core appends fixed-position overlays
+// directly to <body>, outside #attrium-host, and they keep core's own light
+// chrome; but the module gates are descendant selectors (`body.attrium-mod-x &`,
+// see _mixins.scss), so Attrium's recipes still match inside them. Put the dark
+// palette on <html> and those overlays render dark text and buttons on a white
+// core dialog. Measured: theme-editor.php's #file-editor-warning dialog lost
+// contrast on its paragraphs and both buttons (visible in the
+// `theme-editor-dark` baseline, which captures it because it is fixed-position
+// and lands inside the host's bounding box). upload.php's media modal is the
+// same shape with no baseline.
+//
+// So the html-level carrier is scoped to `body.wp-customizer`, the one surface
+// where Attrium reskins the entire page and there is no host to hang the
+// palette on. `wp-customizer` is server-rendered by customize.php, so scoping
+// to body costs no cascade delay.
+//
+// #attrium-host.dark / :host(.dark) are the shell's MIRROR of the signal
+// (src/composables/useTheme.ts): CSS variables do not cross the shadow-root
+// boundary, so useTheme observes the carrier with a MutationObserver and
+// copies the class onto the host — the moved WP content inherits from
+// #attrium-host.dark, and from inside the shadow root the same host is
+// :host(.dark). A bare `.dark` is deliberately NOT listed — it would apply
+// this palette to any foreign wp-admin element that happens to carry a
+// `.dark` class.
+//
+// See src/composables/useTheme.ts + admin/src/Utility/Theme.php
 $dark: (
   '--attrium-primary': oklch(0.922 0 0),
   '--attrium-primary-foreground': oklch(0.205 0 0),
@@ -173,7 +195,7 @@ $dark-optional: (
 
 #attrium-host.dark,
 :host(.dark),
-html.attrium-dark {
+html.attrium-dark body.wp-customizer {
   @each $key, $value in $dark {
     #{$key}: #{$value};
   }

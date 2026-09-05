@@ -98,9 +98,15 @@ select {
   }
 }
 
-// Dark-mode chevron swap. The two dark carriers are #attrium-host.dark (inside
-// the Vue shell) and html.attrium-dark (the Customizer, which has no host).
-// The module flag lives on <body>. The order differs per carrier:
+// Dark-mode chevron swap, one arm per surface. The resolver sets the
+// `attrium-dark` signal on <html> pre-paint and useTheme mirrors it onto
+// #attrium-host.dark, so the host arm is what fires on a normal admin page.
+// The customizer arm is scoped to `body.wp-customizer` for exactly the reason
+// the token carrier is (see the $dark comment in _tokens.scss): an unscoped
+// html-level arm also matches selects inside the fixed-position overlays core
+// appends to <body>, which sit outside the host and keep core's light chrome —
+// they would get the dark chevron on a white dialog. The module flag lives on
+// <body>. The order differs per surface:
 //   - Shell: body > #attrium-host > #wpcontent > select (main.ts reparents
 //     #wpcontent into the host), so the host reads as a DESCENDANT of the
 //     flag-bearing body.
@@ -108,7 +114,7 @@ select {
 //     the flag-bearing html. module() can't express the agent-ancestor form, so
 //     both are written out here.
 body.attrium-mod-forms #attrium-host.dark select,
-html.attrium-dark body.attrium-mod-forms select {
+html.attrium-dark body.wp-customizer.attrium-mod-forms select {
   background-image: $select-chevron-dark;
 }
 
