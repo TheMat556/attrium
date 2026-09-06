@@ -5,7 +5,18 @@ namespace Attrium\Utility;
 defined('ABSPATH') || exit();
 
 class Scripts {
-    private static function get_manifest() {
+    private static function get_manifest(): ?array {
+        // Immutable within a request, but resolved by load_styles(),
+        // load_base_scripts() and build_attrium() — parse it once. A cached
+        // null (missing or invalid manifest) is correct for every caller.
+        static $cache       = null;
+        static $is_resolved = false;
+
+        if ( $is_resolved ) {
+            return $cache;
+        }
+
+        $is_resolved   = true;
         $manifest_path = ATTRIUM_PATH . 'app/dist/.vite/manifest.json';
 
         if ( ! file_exists($manifest_path) ) {
@@ -19,38 +30,55 @@ class Scripts {
         }
 
         $manifest = json_decode($content, true);
-        return is_array($manifest) ? $manifest : null;
+        $cache    = is_array($manifest) ? $manifest : null;
+
+        return $cache;
     }
 
-    public static function get_build_file( $src ) {
+    /**
+     * The manifest entry whose 'src' matches $src, or null.
+     *
+     * Single lookup shared by get_build_file() and get_build_css(); a
+     * malformed build entry degrades to null in the callers, never to a
+     * PHP warning.
+     */
+    private static function find_entry( string $src ): ?array {
         $manifest = self::get_manifest();
+
         if ( ! $manifest ) {
             return null;
         }
 
         foreach ( $manifest as $entry ) {
             if ( isset($entry['src']) && $entry['src'] === $src ) {
-                return $entry['file'];
+                return $entry;
             }
         }
 
         return null;
     }
 
-    public static function get_build_css( $src ) {
-        $manifest = self::get_manifest();
+    public static function get_build_file( string $src ): ?string {
+        $entry = self::find_entry($src);
 
-        if ( ! $manifest ) {
+        if ( ! isset($entry['file']) ) {
             return null;
         }
 
-        foreach ( $manifest as $entry ) {
-            if ( isset($entry['src']) && $entry['src'] === $src ) {
-                if ( isset($entry['css']) && is_array($entry['css']) && ! empty($entry['css']) ) {
-                    return $entry['css'][0];
-                }
-            }
+        return $entry['file'];
+    }
+
+    public static function get_build_css( string $src ): ?string {
+        $entry = self::find_entry($src);
+
+        if ( isset($entry['css']) && is_array($entry['css']) && ! empty($entry['css']) ) {
+            return $entry['css'][0];
         }
+
+        // cssCodeSplit: false merges every entry's CSS into the root
+        // style.css asset, and the src/main.ts manifest entry has no css
+        // key — this fallback is the normal path, not the exception.
+        $manifest = self::get_manifest();
 
         if ( isset($manifest['style.css']['file']) ) {
             return $manifest['style.css']['file'];
@@ -58,7 +86,6 @@ class Scripts {
 
         return null;
     }
-
     /**
      * Enqueue the shared build stylesheet under the `attrium` handle.
      *
@@ -74,7 +101,7 @@ class Scripts {
      * Caution: adding a non-?inline CSS import to any entry will ship that CSS
      * to every admin page AND to the Customizer through this method.
      */
-    public static function enqueue_build_style( $src ): void {
+    public static function enqueue_build_style( string $src ): void {
         $css_file = self::get_build_css($src);
 
         if ( ! $css_file ) {
