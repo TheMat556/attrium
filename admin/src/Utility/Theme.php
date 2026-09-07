@@ -50,32 +50,25 @@ class Theme {
 
         $printed = true;
 
-        // The 'attrium-theme' / 'attrium-dark' literals below are duplicated
-        // in src/composables/useTheme.ts (the shell's TS view of the same
-        // decision); theme-resolution.spec.ts pins the contract behaviorally
-        // across both surfaces, so a drift fails CI instead of shipping.
-        $script = <<<'JS'
-        (function () {
-            var query = window.matchMedia('(prefers-color-scheme: dark)');
+        // The resolver source lives in assets/theme-resolver.js so it gets
+        // real JS tooling; it is read here and printed inline below. It must
+        // never be enqueued or bundled — only a synchronous head script runs
+        // before first paint.
+        $path = ATTRIUM_PATH . 'assets/theme-resolver.js';
 
-            function apply() {
-                var stored;
-                try { stored = localStorage.getItem('attrium-theme'); } catch (e) {}
-                var auto = !stored || stored === 'auto';
-                var dark = stored === 'dark' || (auto && query.matches);
-                document.documentElement.classList.toggle('attrium-dark', dark);
-            }
+        if ( ! file_exists( $path ) ) {
+            trigger_error( "Attrium: theme resolver asset missing at {$path}.", E_USER_WARNING );
+            return;
+        }
 
-            apply();
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local file read; wp_remote_get() is for remote URLs.
+        $script = file_get_contents( $path );
 
-            window.addEventListener('storage', function (e) {
-                if (e.key === 'attrium-theme') apply();
-            });
+        if ( $script === false ) {
+            trigger_error( 'Attrium: theme resolver asset unreadable.', E_USER_WARNING );
+            return;
+        }
 
-            query.addEventListener('change', apply);
-        })();
-        JS;
-
-        wp_print_inline_script_tag($script);
+        wp_print_inline_script_tag( $script );
     }
 }
