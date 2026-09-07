@@ -8,7 +8,7 @@ defined('ABSPATH') || exit();
  * The single source of the Attrium light/dark decision.
  *
  * Everything that can change the answer is resolved here and only here: the
- * stored preference (`STORAGE_KEY`, 'attrium-theme') and the
+ * stored preference ('attrium-theme' in localStorage) and the
  * `prefers-color-scheme` media query. The rule: an absent key or 'auto'
  * follows prefers-color-scheme; 'light'/'dark' are explicit overrides. The
  * shell's toggle() in src/composables/useTheme.ts only ever writes the
@@ -18,7 +18,7 @@ defined('ABSPATH') || exit();
  * paint, and customize.php loads no Attrium bundle at all — the Vue shell
  * never boots there, so the resolution cannot live in the bundle.
  *
- * The script sets/clears `HTML_CLASS` ('attrium-dark') on <html>, never on
+ * The script sets/clears 'attrium-dark' on <html>, never on
  * #attrium-host: the host does not exist pre-paint (src/main.ts creates it),
  * and <html> always does. scss/_tokens.scss carries the dark palette under
  * html.attrium-dark, so the whole document resolves dark tokens from the
@@ -37,14 +37,23 @@ defined('ABSPATH') || exit();
  * application, not resolution.
  */
 class Theme {
-    public const STORAGE_KEY = 'attrium-theme';
-    public const HTML_CLASS  = 'attrium-dark';
-
-    // The nowdoc heredoc below cannot interpolate PHP constants, so the
-    // 'attrium-theme' / 'attrium-dark' literals in the script must stay in
-    // sync with STORAGE_KEY / HTML_CLASS. The constants exist so PHP callers
-    // and readers have a named reference.
     public static function print_resolver_script(): void {
+        // One resolver per page: a second call would register duplicate
+        // storage / matchMedia listeners. apply() is idempotent, so this is
+        // hygiene rather than correctness — and keeps the pre-paint output
+        // to a single script tag.
+        static $printed = false;
+
+        if ( $printed ) {
+            return;
+        }
+
+        $printed = true;
+
+        // The 'attrium-theme' / 'attrium-dark' literals below are duplicated
+        // in src/composables/useTheme.ts (the shell's TS view of the same
+        // decision); theme-resolution.spec.ts pins the contract behaviorally
+        // across both surfaces, so a drift fails CI instead of shipping.
         $script = <<<'JS'
         (function () {
             var query = window.matchMedia('(prefers-color-scheme: dark)');

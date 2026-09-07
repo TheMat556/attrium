@@ -8,9 +8,10 @@
 // carry an icon — so it must be a real background-image alongside the text.
 // A baked-stroke background can't inherit currentColor (see _icons.scss), so
 // the glyph swaps per mode instead of tinting: light glyph by default, light-
-// on-dark under the dark carriers below.
-$select-chevron: icons.image('chevron-down', '%23232323');
-$select-chevron-dark: icons.image('chevron-down', '%23FAFAFA');
+// on-dark under the dark carriers below. The ink is the --attrium-foreground
+// token, resolved to each mode's value by icons.image().
+$select-chevron: icons.image('chevron-down', '--attrium-foreground');
+$select-chevron-dark: icons.image('chevron-down', '--attrium-foreground', dark);
 
 @mixin select-base {
   @apply rounded-[var(--attrium-radius-md)]

@@ -20,25 +20,23 @@
 
   .filter-links {
     li > a {
-      @apply border-b-4 border-transparent font-medium;
+      @apply border-b-4 border-transparent font-medium opacity-65;
 
       color: var(--attrium-foreground);
-      opacity: 0.65;
 
       &:hover,
       &:focus {
         color: var(--attrium-foreground);
-        opacity: 1;
+        @apply opacity-100;
       }
     }
 
     .current,
     .current:hover,
     .current:focus {
+      @apply shadow-none opacity-100;
       border-bottom-color: var(--attrium-primary);
       color: var(--attrium-foreground);
-      opacity: 1;
-      @apply shadow-none;
     }
   }
 }
@@ -47,12 +45,12 @@
 
 @mixin filter-drawer {
   .filter-drawer {
-    background: transparent;
+    @apply bg-transparent border-t;
     border-top: 1px solid var(--attrium-border);
 
     .filter-group {
       @include primitives.surface(var(--attrium-secondary));
-      box-shadow: none;
+      @apply shadow-none;
 
       legend,
       label {
@@ -62,7 +60,7 @@
 
     .filter-group-feature input[type='checkbox'],
     .filter-group-feature input[type='radio'] {
-      position: absolute;
+      @apply absolute;
     }
 
     .apply-filters.button {
@@ -84,8 +82,8 @@
     // as invisible on the primary fill. `--attrium-primary-foreground` is
     // themed to contrast with `--attrium-primary` in both modes.
     .apply-filters.button span {
+      @apply opacity-85;
       color: var(--attrium-primary-foreground);
-      opacity: 0.85;
     }
 
     .filtered-by .tag {
@@ -94,9 +92,8 @@
         1px solid var(--attrium-border),
         9999px
       );
-      box-shadow: none;
       color: var(--attrium-secondary-foreground);
-      font-weight: 600;
+      @apply shadow-none font-semibold;
     }
 
     .button-link.edit-filters {
@@ -112,7 +109,7 @@
   .boot-layout__surfaces,
   .boot-layout__stage,
   .admin-ui-page {
-    background: transparent !important;
+    @apply bg-transparent!;
   }
 }
 

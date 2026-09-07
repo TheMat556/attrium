@@ -96,8 +96,7 @@
     // by the label span, matching the selected tab's inline style.
     .font-library-page__tablist button[role="tab"] {
       color: var(--attrium-muted-foreground);
-      @apply text-sm;
-      @apply font-medium;
+      @apply text-sm font-medium;
 
       &[aria-selected="true"] {
         color: var(--attrium-foreground);

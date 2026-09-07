@@ -85,8 +85,7 @@ body.theme-install-php {
     &:hover,
     &:focus,
     &:focus-visible {
-      outline: none;
-      box-shadow: none;
+      @apply outline-none shadow-none;
     }
   }
 
@@ -110,9 +109,7 @@ body.theme-install-php {
   // 1px` (themes.css:212) which paints a dark line across the top of the name —
   // reset it here too so no faux border-top shows on the active theme.
   .theme-name {
-    @apply text-sm font-semibold m-0 px-4 py-3 shadow-none;
-    @apply h-auto;
-    background: transparent;
+    @apply text-sm font-semibold m-0 px-4 py-3 shadow-none h-auto bg-transparent;
     color: var(--attrium-foreground);
   }
 
@@ -144,8 +141,7 @@ body.theme-install-php {
   // (themes.css:240) on non-active cards — reset both so the row blends into
   // the footer.
   .theme-actions {
-    @apply flex items-center gap-2 border-0 shadow-none;
-    background: transparent;
+    @apply flex items-center gap-2 border-0 shadow-none bg-transparent;
   }
 
   .theme-browser .theme .theme-actions .button:not(.button-primary),
@@ -199,8 +195,7 @@ body.theme-install-php {
     // is exactly `#attrium-host`'s box — and the backdrop dims the whole shell.
     // A dark scrim reads correctly in both modes.
     .theme-backdrop {
-      @apply fixed inset-0;
-      background: rgb(0 0 0 / 60%);
+      @apply fixed inset-0 bg-black/60;
     }
 
     .theme-wrap {
@@ -219,8 +214,7 @@ body.theme-install-php {
     // the nav buttons sit as compact icon buttons, and drop the strip's
     // bottom border — core paints it #dcdcde, a bright line in dark mode.
     .theme-header {
-      @apply flex items-center gap-0.5 pl-2;
-      border-bottom: 0;
+      @apply flex items-center gap-0.5 pl-2 border-b-0;
     }
 
     // Close / previous / next nav buttons. Core styles them as floated
@@ -240,9 +234,8 @@ body.theme-install-php {
       &.disabled,
       &.disabled:hover,
       &.disabled:focus {
-        background: transparent;
+        @apply bg-transparent cursor-default;
         color: var(--attrium-muted-foreground);
-        cursor: default;
       }
 
       // Core paints its dashicons glyph on the `:before` (content + font).
@@ -256,8 +249,7 @@ body.theme-install-php {
       }
 
       &::after {
-        content: '';
-      @apply absolute inset-0;
+        @apply content-[''] absolute inset-0;
       }
     }
 
@@ -288,10 +280,9 @@ body.theme-install-php {
     // secondary pill; core's negative bottom margin tucks the name up under
     // it, keep that so the badge keeps hugging the heading.
     .current-label {
-      @apply inline-block rounded-full text-xs font-medium;
+      @apply inline-block rounded-full text-xs font-medium px-2 py-0.5 mt-0 mr-0 mb-[-10px] ml-0;
       background: var(--attrium-secondary);
       color: var(--attrium-secondary-foreground);
-      @apply px-2 py-0.5 mt-0 mr-0 mb-[-10px] ml-0;
     }
 
     // `m-0` zeroes core's `margin: 10px 0 0` (themes.css) so the heading
@@ -351,7 +342,7 @@ body.theme-install-php {
       // background would paint a band behind the screenshot frame (same
       // reasoning as the installer overlay's `.theme-screenshot` override in
       // _theme-install.scss).
-      background: transparent;
+      @apply bg-transparent;
 
       // Round the screenshot frame — `.screenshot` is the box that draws the
       // border/shadow around the image, and core already clips it with

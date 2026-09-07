@@ -15,10 +15,9 @@
   // hover accent; drop that and use the accent token for the whole card face.
   #customize-theme-controls .accordion-section-title,
   #customize-outer-theme-controls .accordion-section-title {
-    @apply border-b-0 border-l-0;
+    @apply border-b-0 border-l-0 border-b-0! m-0 mx-2 mb-1;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
-    @apply border-b-0! m-0 mx-2 mb-1;
     border-radius: var(--attrium-radius-md);
 
     // Swap the dashicon disclosure for a Lucide chevron-down mask.
@@ -44,8 +43,7 @@
   // box itself has no padding (the card background covers the margin area).
   #customize-theme-controls .accordion-section-title button.accordion-trigger,
   #customize-outer-theme-controls .accordion-section-title button.accordion-trigger {
-    @apply p-0 h-8;
-    @apply my-2.5 mr-8 ml-3.5 w-[calc(100%-44px)];
+    @apply p-0 h-8 my-2.5 mr-8 ml-3.5 w-[calc(100%-44px)];
 
     &:focus {
       box-shadow: none;
@@ -74,7 +72,6 @@
   .customize-pane-child .customize-section-description,
   .customize-pane-child .customize-section-description.open,
   .customize-pane-child .customize-panel-description {
-    @apply border-t-0 border-b-0 shadow-none;
     @apply border-t-0! border-b-0! shadow-none!;
   }
 

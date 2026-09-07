@@ -33,11 +33,7 @@
     }
 
     &::after {
-      content: '';
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      @apply size-5;
+      @apply content-[''] absolute top-1.5 left-1.5 size-5;
 
       @include icons.mask('settings', 20px);
     }
@@ -50,7 +46,7 @@
   // .wp-customizer`, so no `.wp-customizer` prefix is needed on descendants.
   #screen-options-wrap {
     background: var(--attrium-primary-foreground);
-    border-top: 0;
+    @apply border-t-0;
   }
 
   // Menu item rows — same reskin as the menus screen (_nav-menus.scss), which
@@ -79,24 +75,22 @@
   // core flips).
   .menu-item .item-edit .toggle-indicator::before,
   #available-menu-items .accordion-section-title .toggle-indicator::before {
-    content: '';
-    @apply block w-4 h-4;
-    @apply mx-auto;
+    @apply content-[''] block size-4 mx-auto;
 
     @include icons.mask('chevron-down');
   }
 
   .menu-item.menu-item-edit-active .item-edit .toggle-indicator::before,
   #available-menu-items .open .accordion-section-title .toggle-indicator::before {
-    transform: rotate(180deg);
+    @apply rotate-180;
   }
 
   // Menu item remove button — core paints a no-alt (X) dashicon on the
   // `:before` (absolute, top: 9px / left: 5px). Swap it for a Lucide x mask
   // at the same box; it keeps core's #d63638 red via currentColor.
   .menu-item-bar .item-delete::before {
-    content: '';
-    @apply size-5;
+    @apply content-[''] size-5;
+
 
     @include icons.mask('x');
   }

@@ -31,21 +31,20 @@
 // it pinned to the right edge, preserving the current horizontal grouping.
 .wp-filter {
   @include mixins.screen('theme-install-php') {
-    @apply flex flex-wrap items-center;
-    column-gap: 0.5rem;
+    @apply flex flex-wrap items-center gap-x-2;
 
     .button.drawer-toggle {
-      margin: 0;
+      @apply m-0;
     }
 
     .search-form {
-      margin-left: auto;
+      @apply ml-auto;
     }
 
     // Zero both the tables module's `margin-top` and core's `margin: 11px 0`
     // so the search input sits dead-center in the toolbar row.
     .search-form p.search-box {
-      margin: 0;
+      @apply m-0;
     }
 
     // The feature-filter drawer is a child of `.wp-filter`, so making the
@@ -55,8 +54,7 @@
     // reset core's negative margins (common.css `.filter-drawer` uses
     // `margin: 0 -10px 0 -20px`) so it doesn't overflow the container.
     .filter-drawer {
-      flex-basis: 100%;
-      margin: 0;
+      @apply basis-full m-0;
     }
   }
 }
@@ -137,15 +135,11 @@
         &:disabled,
         &.disabled,
         &[disabled] {
-          opacity: 0.5;
-          cursor: not-allowed;
-          pointer-events: none;
+          @apply opacity-50 cursor-not-allowed pointer-events-none;
         }
 
         &:not(:disabled):not(.disabled) {
-          opacity: 1;
-          cursor: pointer;
-          pointer-events: auto;
+          @apply opacity-100 cursor-pointer pointer-events-auto;
         }
       }
 
@@ -185,7 +179,7 @@
         // `background: var(--attrium-secondary)` and also applies on
         // theme-install-php — the overlay screenshot is the image surface, a
         // fill paints an unwanted band behind it.
-        background: transparent;
+        @apply bg-transparent;
       }
     }
 
@@ -226,21 +220,19 @@
       // is explicitly hidden, and the helper's `background` shorthand strips
       // the HiDPI arrow sprite core paints on the span itself.
       button.collapse-sidebar > span.collapse-sidebar-arrow {
-        @apply relative size-4 m-0 rounded-none;
+        @apply relative size-4 m-0 rounded-none overflow-visible;
 
         // Strip core's HiDPI arrows sprite (themes.css paints
         // `background-image: url(arrows-2x.png)` on this span at 120dpi).
         background: none;
-        overflow: visible;
 
         &::before {
           @apply hidden;
         }
 
         &::after {
-          content: '';
-          position: absolute;
-          inset: 0;
+          @apply content-[''] absolute inset-0;
+
 
           @include icons.mask('chevron-left');
         }

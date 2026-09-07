@@ -80,7 +80,7 @@
 @media (max-width: 782px) {
   .notice:not(.hidden):not(.hide-if-js) {
     @include mixins.module('notices') {
-      @apply ml-[15px] mr-[15px];
+      @apply mx-4;
     }
   }
 }
