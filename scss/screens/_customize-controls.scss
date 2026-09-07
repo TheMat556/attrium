@@ -22,9 +22,8 @@
 
     // Swap the dashicon disclosure for a Lucide chevron-down mask.
     &::after {
-      content: '';
       color: var(--attrium-muted-foreground);
-      @apply size-4;
+      @apply content-[''] size-4;
 
       @include icons.mask('chevron-down');
     }
@@ -81,17 +80,17 @@
   #sub-accordion-section-title_tagline > .accordion-section-title,
   #accordion-section-nav_menus > .accordion-section-title,
   #sub-accordion-section-nav_menus > .accordion-section-title {
-    border-bottom: 0 !important;
+    @apply border-b-0!;
   }
 
   // The Menus heading — stable aria-controls hook.
   h3.accordion-section-title:has(> .accordion-trigger[aria-controls="nav_menus-content"]) {
-    box-shadow: none !important;
+    @apply shadow-none!;
   }
 
   // Nav-menu subsection headings.
   .control-section-nav_menu .accordion-section-title {
-    border-top: 0 !important;
+    @apply border-t-0!;
   }
 
   // ---- Form controls ----
@@ -102,8 +101,7 @@
 
   .accordion-section,
   #accordion-section-themes > .accordion-section-title {
-    border-top: 0 !important;
-    border-bottom: 0 !important;
+    @apply border-t-0! border-b-0!;
   }
 
   .customize-control-description,
@@ -120,7 +118,7 @@
     @include primitives.link-primary;
 
     &::after {
-      padding-left: 3px;
+      @apply pl-1;
 
       @include icons.mask-inline('external-link', 14px);
     }
@@ -131,11 +129,7 @@
     background: var(--attrium-primary-foreground);
 
     &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      @apply size-4;
+      @apply content-[''] absolute inset-0 m-auto size-4;
 
       @include icons.mask('chevron-down');
     }
@@ -154,7 +148,7 @@
   }
 
   #customize-control-changeset_preview_link input {
-    border-top: 0;
+    @apply border-t-0!;
   }
 
   #customize-control-changeset_preview_link a {
@@ -205,12 +199,7 @@
     @include primitives.codemirror-editor;
     border-color: var(--attrium-border);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    @apply text-[13px] leading-6;
-
-    // Inset the editor from the control's edges — mirrors the inline styles
-    // on the live site.
-    margin-left: 1rem;
-    margin-right: 0.5rem;
+    @apply text-xs leading-6 ml-4 mr-2;
 
     .CodeMirror-gutters {
       background: var(--attrium-secondary);

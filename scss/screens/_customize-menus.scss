@@ -63,9 +63,9 @@
   }
 
   .menu-item-settings {
+    @apply border-t-0;
     background: var(--attrium-primary-foreground);
     border: 1px solid var(--attrium-border);
-    border-top: none;
   }
 
   // Menu item disclosure arrows — core paints a down/up dashicon pair on the
@@ -116,26 +116,27 @@
   // the size is passed because the box is the whole button.
   .menu-item-reorder-nav .menus-move-up::before,
   .widget-reorder-nav .move-widget-up::before {
-    content: '';
+    @apply content-[''];
 
     @include icons.mask('chevron-up', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-down::before,
   .widget-reorder-nav .move-widget-down::before {
-    content: '';
+    @apply content-[''];
+
 
     @include icons.mask('chevron-down', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-left::before {
-    content: '';
+    @apply content-[''];
 
     @include icons.mask('chevron-left', 16px);
   }
 
   .menu-item-reorder-nav .menus-move-right::before {
-    content: '';
+    @apply content-[''];
 
     @include icons.mask('chevron-right', 16px);
   }

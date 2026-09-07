@@ -65,7 +65,7 @@
     }
 
     &::-webkit-scrollbar-track {
-      background: transparent;
+      @apply bg-transparent;
     }
 
     &::-webkit-scrollbar-thumb {
@@ -80,9 +80,8 @@
   // header/notifications rail. Keep the original geometry: the footer is
   // layered above the scroll area instead of taking space out of it.
   .wp-full-overlay-sidebar-content {
+    @apply top-[unset]! bottom-[unset]!;
     background: var(--attrium-primary-foreground);
-    top: unset !important;
-    bottom: unset !important;
   }
 
   // ---- Header actions (save button bar) ----
@@ -95,30 +94,26 @@
   // Core uses floats; flex the row so close (1), spinner (2), toggle (3),
   // save (4) are ordered by `order`.
   #customize-header-actions {
-    @apply flex items-center;
-    @apply pl-2 relative;
+    @apply flex items-center pl-2 relative;
 
     > * {
       @apply relative;
     }
 
     #customize-save-button-wrapper {
-      @apply mt-0 ml-0;
-      margin-left: unset;
-      order: 4;
+      @apply mt-0 ml-0 order-4 ml-0;
     }
 
     .spinner {
-      order: 2;
-      @apply ml-auto;
+      @apply order-2 ml-auto;
     }
 
     .customize-controls-preview-toggle {
-      order: 3;
+      @apply order-3;
     }
 
     .customize-controls-close {
-      order: 1;
+      @apply order-1;
     }
   }
 
@@ -140,7 +135,7 @@
 
   #customize-save-button-wrapper .save:focus,
   #publish-settings:focus {
-    box-shadow: none;
+    @apply shadow-none;
   }
 
   // Close (X) button — 45px bar, token face, Lucide x on `::after`.
@@ -156,7 +151,7 @@
     &:focus {
       background: var(--attrium-secondary);
       color: var(--attrium-foreground);
-      box-shadow: none;
+      @apply shadow-none;
     }
 
     &::before {
@@ -164,12 +159,7 @@
     }
 
     &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      @apply size-4;
-      transform: translate(-50%, -50%);
+      @apply content-[''] absolute top-1/2 left-1/2 size-4 -translate-x-1/2 -translate-y-1/2;
 
       @include icons.mask('x');
     }
@@ -178,8 +168,7 @@
   // "Customize / Preview" toggle (mobile only, ≤640px). Rounded buttons
   // with Lucide mask icons.
   .customize-controls-preview-toggle {
-    @apply left-auto border-0 p-0;
-    margin-right: 0.5rem;
+    @apply left-auto border-0 p-0 mr-2;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
 
@@ -204,9 +193,7 @@
 
     .controls::before,
     .preview::before {
-      margin-right: 6px;
-      position: relative;
-      top: 0;
+      @apply mr-1.5 relative top-0;
     }
 
     .controls::before {
@@ -248,8 +235,7 @@
       }
 
       &::after {
-        content: '';
-      @apply absolute top-1.25 left-1.5 size-5;
+        @apply content-[''] absolute top-1.25 left-1.5 size-5;
 
         @include icons.mask('circle-help');
       }
@@ -271,8 +257,8 @@
   }
 
   #customize-controls .no-widget-areas-rendered-notice {
+    @apply border-t-0!;
     background: var(--attrium-primary-foreground);
-    border-top: 0 !important;
     color: var(--attrium-muted-foreground);
   }
 
@@ -304,12 +290,10 @@
   }
 
   .control-panel-themes .customize-themes-section-title {
-    @apply w-full;
+    @apply w-full border-t-0 border-b-0 border-l-0 rounded-[var(--attrium-radius-md)]
+           px-4 py-2.5 font-semibold shadow-none;
     background: var(--attrium-primary-foreground);
     color: var(--attrium-foreground);
-    box-shadow: none;
-    @apply border-t-0 border-b-0 border-l-0 rounded-[var(--attrium-radius-md)]
-           px-4 py-2.5 font-semibold;
 
     &:hover,
     &:focus {
@@ -337,21 +321,12 @@
   // Natural paint order (positioned ::after above ::before) keeps the check on
   // top without z-index.
   .control-panel-themes .theme-section .customize-themes-section-title.selected::before {
-    content: '';
-    position: absolute;
-    top: 9px;
-    right: 15px;
-    @apply size-[18px] rounded-full;
+    @apply content-[''] absolute top-2.25 right-3.75 size-[18px] rounded-full;
     background: var(--attrium-primary);
   }
 
   .control-panel-themes .theme-section .customize-themes-section-title.selected::after {
-    content: '';
-    position: absolute;
-    top: 9px;
-    right: 15px;
-    width: 18px;
-    height: 18px;
+    @apply content-[''] absolute top-2.25 right-3.75 size-[18px];
     color: var(--attrium-primary-foreground);
 
     @include icons.mask('check', 14px);
@@ -382,7 +357,7 @@
   .customize-panel-back:focus,
   .customize-section-back:not(.customize-themes-mobile-back):hover,
   .customize-section-back:not(.customize-themes-mobile-back):focus {
-    border-right: 0 !important;
+    @apply border-r-0!;
   }
 
   // The mobile back button is a labeled primary action in the themes filter
@@ -391,12 +366,7 @@
   // line, and rebalance the padding (tighter left, wider right — the chevron
   // reads better against the left edge) per the authored inline styles.
   .control-panel-themes .themes-filter-bar .customize-themes-mobile-back {
-    @apply w-auto;
-    float: none;
-    white-space: nowrap;
-    @apply gap-4;
-    padding-right: 0.75rem;
-    padding-left: 0.25rem;
+    @apply w-auto float-none whitespace-nowrap gap-4 pr-3 pl-1;
   }
 
   // Themes filter bar: spread the back button / search / count across the
@@ -410,10 +380,11 @@
     // dark mode and a face that swallows the search field's outline. Give it
     // the panel surface so the field below reads as a recessed control.
     background: var(--attrium-primary-foreground);
-    padding-top: 4px;
+    @apply pt-1;
   }
 
-  .control-panel-themes .themes-filter-container > label {      @apply hidden;
+  .control-panel-themes .themes-filter-container > label {
+    @apply hidden;
   }
 
   // The themes search field: core draws no face of its own and the generic
@@ -431,15 +402,14 @@
   // Back-button glyph — Lucide chevron-left on `::after`.
   .customize-section-title > .customize-section-back,
   .panel-meta > .customize-panel-back {
-    position: relative;
+    @apply relative;
 
     &::before {
       @apply hidden;
     }
 
     &::after {
-      content: '';
-      @apply absolute top-[25px] left-[9px] size-5;
+      @apply content-[''] absolute top-[25px] left-[9px] size-5;
 
       @include icons.mask('chevron-left');
     }
@@ -463,20 +433,18 @@
   // under the info header. Hide the parent list + info header the instant
   // any pane is open (the overlay's section-open class clears too fast).
   #customize-theme-controls .customize-pane-child {
-    position: relative;
+    @apply relative;
   }
 
   #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
     .customize-pane-parent,
   #customize-controls:has(.customize-pane-child.open, .customize-pane-child.current-panel)
-    #customize-info {      @apply hidden!;
+    #customize-info {
+    @apply hidden!;
   }
 
   #customize-theme-controls .customize-pane-child:not(.open, .current-panel) {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    @apply w-full;
+    @apply absolute! top-0 left-0 w-full;
   }
 
   #customize-theme-controls .customize-pane-child.accordion-section-content {
@@ -491,10 +459,9 @@
 
   // ---- Footer (collapse button + device switcher) ----
   .wp-full-overlay-footer {
-    @apply border-t;
+    @apply border-t z-10;
     background: var(--attrium-primary-foreground);
     border-top-color: var(--attrium-border);
-    z-index: 10;
   }
 
   .wp-full-overlay-footer .devices {
@@ -543,25 +510,19 @@
 
     // Lucide masks for device switcher buttons.
     button.preview-desktop::before {
-      content: '';
-      @apply inline-block;
-      @apply size-4;
+      @apply content-[''] inline-block size-4;
 
       @include icons.mask('monitor', 18px);
     }
 
     button.preview-tablet::before {
-      content: '';
-      @apply inline-block;
-      @apply size-4;
+      @apply content-[''] inline-block size-4;
 
       @include icons.mask('tablet', 18px);
     }
 
     button.preview-mobile::before {
-      content: '';
-      @apply inline-block;
-      @apply size-4;
+      @apply content-[''] inline-block size-4;
 
       @include icons.mask('smartphone', 18px);
     }
@@ -572,15 +533,14 @@
     // ancestor (the position:fixed .collapse-sidebar button). Without this the
     // inset:0 + margin:auto mask centers in the whole button and the chevron
     // lands mid-label instead of where the core arrow glyph sat.
-    position: relative;
+    @apply relative;
 
     &::before {
       @apply hidden;
     }
 
     &::after {
-      content: '';
-      @apply absolute inset-0 m-auto size-4;
+      @apply content-[''] absolute inset-0 m-auto size-4;
 
       @include icons.mask('chevron-left');
     }
@@ -598,14 +558,12 @@
   .wp-full-overlay .collapse-sidebar:hover .collapse-sidebar-arrow,
   .wp-full-overlay .collapse-sidebar:focus .collapse-sidebar-arrow {
     box-shadow: 0 0 0 2px var(--attrium-ring);
-    outline: none;
+    @apply outline-none;
   }
 
   // ---- Customizer notifications ----
   #customize-controls #customize-notifications-area {
-    position: relative;
-    top: auto;
-    @apply border-b-0;
+    @apply relative top-auto border-b-0;
   }
 
   #customize-controls #customize-notifications-area .notice {
@@ -630,5 +588,5 @@ body.attrium-mod-screens.wp-customizer.outer-section-open
 body.attrium-mod-screens.wp-customizer.in-sub-panel
   .wp-full-overlay-sidebar
   .wp-full-overlay-header {
-  padding-left: 1rem;
+  @apply pl-4;
 }
