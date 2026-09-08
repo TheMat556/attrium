@@ -1,7 +1,9 @@
 // Base topic — the --attrium-* design tokens.
 //
-// The ONLY entry that emits CSS from _tokens.scss: `:root`/`:host` carry the
-// light palette and `#attrium-host.dark` / `:host(.dark)` / `html.attrium-dark`
-// the dark palette. Every other chunk references these vars at runtime, so
-// this chunk must load first (see ModuleRegistry::enqueue_styles()).
+// Emits the full palette: `:root`/`:host` carry the light values, the
+// $dark-carriers arms (owned here, see _tokens.scss) the dark ones. Topics
+// whose module graph reaches _tokens.scss — anything using icons — re-emit
+// the same declarations through Sass's once-per-compilation rule, which only
+// duplicates identical values; base remains the chunk that guarantees the
+// palette exists on every page (see ModuleRegistry::enqueue_styles()).
 @use '../tokens';

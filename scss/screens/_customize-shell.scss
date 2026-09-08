@@ -237,7 +237,7 @@
       &::after {
         @apply content-[''] absolute top-1.25 left-1.5 size-5;
 
-        @include icons.mask('circle-help');
+        @include icons.mask('circle-question-mark');
       }
 
       // The mask paints in currentColor, so core's hardcoded blue hover
@@ -548,11 +548,11 @@
 
   .wp-full-overlay.collapsed .collapse-sidebar-arrow::after,
   .rtl .wp-full-overlay .collapse-sidebar-arrow::after {
-    transform: rotate(180.001deg);
+    @apply rotate-180;
   }
 
   .rtl .wp-full-overlay.collapsed .collapse-sidebar-arrow::after {
-    transform: none;
+    @apply transform-none;
   }
 
   .wp-full-overlay .collapse-sidebar:hover .collapse-sidebar-arrow,

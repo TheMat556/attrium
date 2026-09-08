@@ -16,6 +16,8 @@ bun run build        # vue-tsc -b && vite build && build:css → app/dist/ (REQU
 bun run build:css    # per-topic chunks only: scripts/build-css.mjs compiles each scss/entries/*.scss
                      # → app/dist/admin-theme-{topic}.css (base tokens + one per enabled module + screens)
                      # All-or-nothing: if any topic fails to compile, app/dist is left untouched.
+                     # Stage 0 (scripts/check-icons.mjs) verifies scss/_icons.scss's $icons map against
+                     # the installed @lucide/vue — the paste and the shell's icons can't drift apart.
 bun run lint         # Biome check --write (fix)
 bun run lint:check   # Biome check (CI, no writes)
 bun run format       # Biome format --write
@@ -97,13 +99,13 @@ Nearly all tests are Playwright visual-regression snapshots that guard the SCSS/
 ## Conventions
 Two principles govern every change here:
 - **No FOUC.** Anything that must hold before first paint is a synchronous inline script in `<head>` (`admin_head` / `customize_controls_head`), never part of the deferred bundle or a hook that fires later. The boot flash is covered separately by the `#attrium-body-hider` CSS printed in `<head>` (armed via the `attrium-booting` body class) and the 5-second watchdog in `Attrium::build_attrium()`.
-- **Single owner (DRY).** Every decision has exactly one owner: `Theme` → light/dark, `overrides.ts` → native views, `_tokens.scss` → `--attrium-*` palette, `Menu` → sidebar JSON, `ModuleRegistry::get_module_classes()` → `attrium-mod-*` names. A second surface calls the owner (e.g. `CustomizerSupport` binds `Theme::print_resolver_script` directly) — it never copies the rule. A former per-surface copy of the theme resolver (`CustomizerSupport::theme_script()`) drifted and was deleted; don't reintroduce that pattern.
+- **Single owner (DRY).** Every decision has exactly one owner: `Theme` → light/dark, `overrides.ts` → native views, `_tokens.scss` → `--attrium-*` palette **and the dark-carrier selector arms** (`$dark-carrier-*` — mode-swapped values like the forms select chevron compose them instead of re-deriving selectors), `Menu` → sidebar JSON, `ModuleRegistry::get_module_classes()` → `attrium-mod-*` names. A second surface calls the owner (e.g. `CustomizerSupport` binds `Theme::print_resolver_script` directly) — it never copies the rule. A former per-surface copy of the theme resolver (`CustomizerSupport::theme_script()`) drifted and was deleted; don't reintroduce that pattern.
 - Biome formats JS/TS/Vue: **tabs**, line width 80. PHP is **4-space** indent (WordPress-Extra). Don't mix.
 - UI components in `src/components/ui/` are generated (shadcn-vue) — prefer regenerating over hand-editing.
 - Commit format: `<type>: <description>` (feat, fix, refactor, docs, test, chore, perf, ci).
 
 ## SCSS organization (`scss/`)
-- `_tokens.scss` is the single source of truth for the `--attrium-*` palette; it is a Sass map (light + dark) with a compile-time guard so a token can't miss its dark value. Emitted by `entries/base.scss` into `admin-theme-base.css` and injected into the Vue shadow root by `src/main.ts`.
+- `_tokens.scss` is the single source of truth for the `--attrium-*` palette; it is a Sass map (light + dark) with a compile-time guard so a token can't miss its dark value. It also owns the dark-carrier selector arms (`$dark-carriers`), which the palette emission and any mode-swapped value (e.g. the forms chevron) share. Emitted by `entries/base.scss` into `admin-theme-base.css` and injected into the Vue shadow root by `src/main.ts`.
 - `entries/*.scss` are the build topics — one per PHP module (`ModuleRegistry::enqueue_styles()` loads `admin-theme-{topic}.css`). `entries/screens.scss` is the one big chunk (all per-screen reskins); the module axis is chunked per-module but the screens axis is not yet.
 - `scss/ui/_primitives.scss` holds **element recipes** (pure style, include inside a gated rule: `link-primary`, `card-surface`, `icon-button`, `accent-hover`, …). `scss/ui/_patterns.scss` holds **composite recipes** that emit their own top-level blocks (`filter-toolbar`, `filter-drawer`, `hide-bottom-bulk-actions`, …) — include those at top level under `screen-root(...)`, never `screen(...)`. The namespace (`primitives.` vs `patterns.`) is the enforcement of that rule.
 - `scss/_mixins.scss` contains the gate mixins (`module`, `screen`, `screen-root`) and their selector helpers. Keep style recipes out of it.

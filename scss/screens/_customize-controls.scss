@@ -45,8 +45,7 @@
     @apply p-0 h-8 my-2.5 mr-8 ml-3.5 w-[calc(100%-44px)];
 
     &:focus {
-      box-shadow: none;
-      outline: none;
+      @apply shadow-none outline-none;
     }
   }
 
@@ -197,9 +196,9 @@
   // themes, matching the theme-editor treatment.
   #customize-control-custom_css .CodeMirror {
     @include primitives.codemirror-editor;
+    @apply text-xs leading-6 ml-4 mr-2;
     border-color: var(--attrium-border);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    @apply text-xs leading-6 ml-4 mr-2;
 
     .CodeMirror-gutters {
       background: var(--attrium-secondary);

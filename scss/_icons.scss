@@ -11,7 +11,9 @@
 //     carries content, e.g. a native <select> chevron, can't use a mask or a
 //     pseudo-element). $stroke is a color literal or a --attrium-* token name
 //     resolved against that mode's palette ($mode: light|dark) at compile time
-//     — a baked SVG can't read var() at runtime. Keep the light and dark URLs
+//     — a baked SVG can't read var() at runtime. It DEFAULTS to the
+//     --attrium-foreground token (not a raw black literal) so a forgotten
+//     argument still bakes the mode's themed ink. Keep the light and dark URLs
 //     in two variables and swap them under the dark carriers at the call site
 //     (see modules/_forms.scss). The stroke color is interpolated as-is
 //     (token oklch values pass through as oklch()), so the browser converts
@@ -38,7 +40,7 @@ $icons: (
   'check': "<path d='M20 6 9 17l-5-5'/>",
   'plus': "<path d='M5 12h14'/><path d='M12 5v14'/>",
   'search': "<path d='m21 21-4.34-4.34'/><circle cx='11' cy='11' r='8'/>",
-  'circle-help': "<circle cx='12' cy='12' r='10'/><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/><path d='M12 17h.01'/>",
+  'circle-question-mark': "<circle cx='12' cy='12' r='10'/><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/><path d='M12 17h.01'/>",
   'sliders-horizontal': "<path d='M10 5H3'/><path d='M12 19H3'/><path d='M14 3v4'/><path d='M16 17v4'/><path d='M21 12h-9'/><path d='M21 19h-5'/><path d='M21 5h-7'/><path d='M8 10v4'/><path d='M8 12H3'/>",
   'monitor': "<rect width='20' height='14' x='2' y='3' rx='2'/><line x1='8' x2='16' y1='21' y2='21'/><line x1='12' x2='12' y1='17' y2='21'/>",
   'tablet': "<rect width='16' height='20' x='4' y='2' rx='2' ry='2'/><line x1='12' x2='12.01' y1='18' y2='18'/>",
@@ -54,7 +56,7 @@ $icons: (
 // Chromium mask:
 //   - `;utf8` mime param, viewBox only (no width/height)
 //   - every space, angle bracket, `#` and `%` encoded by _encode
-@function image($name, $stroke: #000, $mode: light) {
+@function image($name, $stroke: '--attrium-foreground', $mode: light) {
   $body: map.get($icons, $name);
 
   @if $body == null {
@@ -130,6 +132,10 @@ $_uri-escapes: (
 // the call site (set width/height alongside, or pass $size to re-assert
 // mask-size after the default `contain`).
 //
+// The baked stroke is an explicit #000, not image()'s token default: a mask
+// reads ALPHA only, so the ink color is irrelevant, and a two-char literal
+// keeps every mask data URI minimal.
+//
 // Paints with the `background` SHORTHAND, not `background-color`: newer
 // WordPress core paints sprite images (e.g. themes.css HiDPI
 // `.collapse-sidebar-arrow { background-image: url(arrows-2x.png) }`)
@@ -146,7 +152,7 @@ $_uri-escapes: (
   mask-position: center;
   mask-size: contain;
   mask-repeat: no-repeat;
-  mask-image: image($name);
+  mask-image: image($name, #000);
 
   @if $size != null {
     mask-size: $size;

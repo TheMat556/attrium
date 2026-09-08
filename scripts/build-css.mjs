@@ -2,6 +2,10 @@
 // app/dist (admin-theme-{topic}.css), which ModuleRegistry::enqueue_styles()
 // then enqueues per enabled module.
 //
+// Stage 0 (scripts/check-icons.mjs) verifies the _icons.scss map against the
+// installed @lucide/vue before anything compiles, so the light-DOM glyphs
+// can't drift from the icons the Vue shell renders.
+//
 // Two stages per topic: Sass resolves the @use/@include graph, then the
 // Tailwind CLI expands the @apply utilities (each entry carries its own
 // `@reference "tailwindcss"`, which emits no CSS itself). Sass runs through its
@@ -20,6 +24,8 @@ import path from 'node:path'
 import { $ } from 'bun'
 import { compile } from 'sass'
 
+import { verifyIcons } from './check-icons.mjs'
+
 // Resolve everything from the project root, not process.cwd(), so the script
 // works when invoked by path (`bun run scripts/build-css.mjs`) from anywhere —
 // `bun run build:css` normalizes the cwd, a direct call does not. That includes
@@ -34,13 +40,16 @@ const entries = readdirSync(entriesDir)
 	.filter((file) => file.endsWith('.scss'))
 	.sort()
 
+// --- Stage 0: icon-map sync ---------------------------------------------------
+// Drift reports land in the shared error list, so one run reports every
+// drifted icon alongside any compile errors before app/dist is touched.
+const compiled = []
+const errors = [...verifyIcons()]
+
 // --- Stage 1: Sass (in memory) ----------------------------------------------
 // Compiled in a plain loop because sass's compile() is synchronous, and errors
 // are collected rather than thrown so ONE broken shared partial reports every
 // entry it breaks instead of just whichever rejected first.
-const compiled = []
-const errors = []
-
 for (const entry of entries) {
 	try {
 		const { css } = compile(path.join(entriesDir, entry), { sourceMap: false })

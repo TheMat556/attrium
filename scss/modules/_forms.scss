@@ -1,5 +1,6 @@
 @use '../icons';
 @use '../mixins';
+@use '../tokens';
 @use '../ui/primitives';
 
 // Native <select> chevron, built from the shared Lucide icon map (one glyph
@@ -99,23 +100,27 @@ select {
   }
 }
 
-// Dark-mode chevron swap, one arm per surface. The resolver sets the
+// Dark-mode chevron swap, one arm per light-DOM dark carrier. The carrier
+// selectors come from _tokens.scss ($dark-carrier-* — the same arms that
+// carry the dark palette), composed here with the forms module gate, so the
+// swap can't drift from the token carriers. The resolver sets the
 // `attrium-dark` signal on <html> pre-paint and useTheme mirrors it onto
 // #attrium-host.dark, so the host arm is what fires on a normal admin page.
-// The customizer arm is scoped to `body.wp-customizer` for exactly the reason
-// the token carrier is (see the $dark comment in _tokens.scss): an unscoped
-// html-level arm also matches selects inside the fixed-position overlays core
-// appends to <body>, which sit outside the host and keep core's light chrome —
-// they would get the dark chevron on a white dialog. The module flag lives on
-// <body>. The order differs per surface:
-//   - Shell: body > #attrium-host > #wpcontent > select (main.ts reparents
-//     #wpcontent into the host), so the host reads as a DESCENDANT of the
-//     flag-bearing body.
-//   - Customizer: html.attrium-dark > body > select — body is a descendant of
-//     the flag-bearing html. module() can't express the agent-ancestor form, so
-//     both are written out here.
-body.attrium-mod-forms #attrium-host.dark select,
-html.attrium-dark body.wp-customizer.attrium-mod-forms select {
+// The customizer arm keeps its body.wp-customizer scoping for exactly the
+// reason the token carrier does (see the $dark comment in _tokens.scss): an
+// unscoped html-level arm also matches selects inside the fixed-position
+// overlays core appends to <body>, which sit outside the host and keep core's
+// light chrome — they would get the dark chevron on a white dialog. The
+// module flag lives on <body> and composes differently per carrier:
+//   - Shell: the gate is an ANCESTOR of the carrier (body > #attrium-host >
+//     #wpcontent > select — main.ts reparents #wpcontent into the host).
+//   - Customizer: the gate class appends to the carrier's own body.wp-
+//     customizer compound (html.attrium-dark > body > select — body is a
+//     descendant of the flag-bearing html).
+// module() can't express either composed form, so both arms are written out
+// here; a carrier ADDED in _tokens.scss needs a matching arm.
+body.attrium-mod-forms #{tokens.$dark-carrier-host} select,
+#{tokens.$dark-carrier-customizer}.attrium-mod-forms select {
   background-image: $select-chevron-dark;
 }
 
