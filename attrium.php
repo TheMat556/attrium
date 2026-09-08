@@ -11,17 +11,18 @@
  * License:         GPLv2 or later
  */
 
-defined("ABSPATH") || exit();
+defined('ABSPATH') || exit();
 
 define('ATTRIUM_VERSION', '1.0.0');
 define('ATTRIUM_PATH', plugin_dir_path(__FILE__));
 define('ATTRIUM_URL', plugin_dir_url(__FILE__));
 
 $autoloader = ATTRIUM_PATH . 'admin/vendor/autoload.php';
-if (file_exists($autoloader)) {
+if ( file_exists($autoloader) ) {
     require_once $autoloader;
 }
 
 new Attrium\App\Attrium();
-new Attrium\Modules\ModuleRegistry();
+$attrium_module_registry = new Attrium\Modules\ModuleRegistry();
+new Attrium\Modules\CustomizerSupport($attrium_module_registry);
 new Attrium\Settings\Settings();

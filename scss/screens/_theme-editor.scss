@@ -1,22 +1,19 @@
+@use '../mixins';
+@use '../ui/primitives';
+
 // Theme + Plugin file editors: theme-editor.php (body.theme-editor-php) and
 // plugin-editor.php (body.plugin-editor-php). Both share identical markup, so
-// all reskin rules are scoped to the shared body classes in one selector.
+// all reskin rules are scoped to the shared body classes via one screen-root
+// gate. (The screen()/screen-root() mixins add the `attrium-mod-screens`
+// flag, so the module toggle disables this reskin like every other screen's.)
 
-body.theme-editor-php,
-body.plugin-editor-php {
+@include mixins.screen-root('theme-editor-php', 'plugin-editor-php') {
   // ---- File tree: token-driven, light/dark parity automatic ----
   // The tree sidebar (#templateside) is core-painted `#f6f7f7` with `#dcdcde`
   // borders, `#c3c4c7` connector lines, and `#043959` focus text
   // (common.css:3386-3527) — hardcoded greys that stay bright/unreadable in dark
   // mode. Everything below re-expresses the tree through --attrium-* tokens, so
   // both modes match the rest of the reskin with no separate dark block.
-
-  // Sidebar surface: transparent so the content card shows through. The file
-  // list frame below carries the surface (same pattern as every other reskinned
-  // panel: card surface + border + rounded corners).
-  #templateside {
-    background: transparent;
-  }
 
   // The scrollable file list frame. Core paints it #f6f7f7 (common.css:3404) —
   // a bright band in dark mode. Rest it on the card surface like every other
@@ -28,7 +25,7 @@ body.plugin-editor-php {
 
     background: var(--attrium-primary-foreground);
     border: 1px solid var(--attrium-border);
-    border-left: none;
+    @apply border-l-0;
   }
 
   #templateside > h2 {
@@ -39,33 +36,15 @@ body.plugin-editor-php {
     color: var(--attrium-muted-foreground);
   }
 
-  // Folder rows: semi-bold labels, foreground text. Core's JS adds `.hover` and
-  // `.focus` classes to rows/labels and paints them `#f0f0f1` / `#043959`
-  // (common.css:3451-3464) — a bright light-grey band / blue text in dark mode.
-  // Hover restyles with the theme accent token so it reads as a subtle elevation
-  // off the frame, and focus uses the theme ring.
+  // Folder rows: semi-bold labels, foreground text.
   [role='treeitem'] .folder-label {
     @apply font-semibold;
 
-    position: relative;
     color: var(--attrium-foreground);
-  }
-
-  // The disclosure arrow is a dashicons glyph in a `position:absolute` span
-  // (common.css:3425) with no offsets, so it renders at its static position —
-  // a 20px glyph on the 13px text line, sitting ~10px above the row's center.
-  // Anchor it to the now-relative .folder-label and center on the text line.
-  #templateside [role='treeitem'] .folder-label .icon {
-    top: 50%;
-    transform: translateY(-50%);
   }
 
   [role='treeitem'] a {
     color: var(--attrium-muted-foreground);
-
-    &:hover {
-      color: var(--attrium-foreground);
-    }
   }
 
   // File description sub-line ("(full/path.php)") — core hardcodes #646970
@@ -74,51 +53,28 @@ body.plugin-editor-php {
     color: var(--attrium-muted-foreground);
   }
 
-  // Tree connector lines (the `├─`-style guides core draws with
-  // border-left/border-bottom on .tree-folder children, common.css:3475-3503).
-  .tree-folder > li::before,
-  .tree-folder > li::after,
-  .tree-folder .tree-folder::after {
-    border-color: var(--attrium-border);
-  }
-
-  // Focus: core paints an inset `2px solid var(--wp-admin-theme-color)` outline
-  // (blue, common.css:3451). Use the theme ring token instead.
-  [role='treeitem'] a:focus,
-  [role='treeitem'] .folder-label.focus {
-    color: var(--attrium-foreground);
-    outline-color: var(--attrium-ring);
-  }
-
-  // Hovered rows/folder labels. Accent is visibly different from the
-  // primary-foreground frame in both modes (it's the same interaction the
-  // nav-menus accordion uses), so the hover band always reads.
-  [role='treeitem'].hover,
-  [role='treeitem'] .folder-label.hover {
-    background: var(--attrium-accent);
-  }
-
   // Current-file item is a `span.notice.notice-info`, which the enabled notices
   // module wraps in a full box on the primary-foreground card surface with p-4
   // padding — the same surface as the frame and far too large for an inline
-  // marker. Rest it on the elevated secondary surface with core's compact
-  // `5px 8px` padding, drop the box border, and keep the coloured left edge as
-  // the current-file marker (matching the accordion's selected/`open` state).
+  // marker. Rest it on the elevated secondary surface and drop the box border,
+  // keeping the coloured left edge as the current-file marker (matching the
+  // accordion's selected/`open` state).
   #templateside .current-file span.notice {
     @apply border-y-0 border-r-0 rounded-none font-semibold;
 
     background: var(--attrium-secondary);
-    color: var(--attrium-foreground);
-    padding: 5px 8px;
   }
 
-  // Editor pane: core gives `#template .CodeMirror` (and the textarea fallback) a
-  // square `1px solid #dcdcde` border. Round only the left corners to mirror the
-  // tree's right-only rounding.
-  #template .CodeMirror,
-  #template textarea {
-    @apply rounded-l-[var(--attrium-radius-md)];
+  // ---- Editor pane: breathing room ----
+  // CodeMirror's default lines padding is `4px 0` (common.css), so code hugs
+  // the gutter and the right edge. CodeMirror reads the computed padding of
+  // .CodeMirror-lines for its internal layout, so this is the canonical way to
+  // inset the code area horizontally — and it applies in both modes.
+  #template .CodeMirror {
+    @include primitives.codemirror-editor;
+    @apply ml-4 mr-2;
   }
+
 
   // ---- Dark mode: editor background, CodeMirror chrome & syntax ----
   #attrium-host.dark {
@@ -126,90 +82,57 @@ body.plugin-editor-php {
     // (light grey). Override the full shorthand so the editor frame has a visible
     // but subtle boundary matching the dark-mode --attrium-border token.
     #template .CodeMirror {
-      border: 1px solid oklch(1 0 0 / 10%);
-    }
-
-    .editor-notices .notice {
-      background: oklch(0.22 0 0);
-      color: oklch(0.85 0 0);
-      border-color: oklch(1 0 0 / 8%);
+      @apply border;
+      border-color: var(--attrium-border);
     }
 
     // ---- CodeMirror chrome ----
     .CodeMirror {
       background: var(--attrium-background);
-      color: oklch(0.85 0 0);
+      color: oklch(85% 0 0deg);
     }
 
     .CodeMirror-gutters {
-      background: oklch(0.17 0 0);
-      border-right-color: oklch(1 0 0 / 8%);
+      background: oklch(17% 0 0deg);
+      border-right-color: oklch(100% 0 0deg / 8%);
     }
 
     .CodeMirror-linenumber {
-      color: oklch(0.45 0 0);
-    }
-
-    .CodeMirror-cursor {
-      border-left-color: oklch(0.9 0 0);
-    }
-
-    .CodeMirror-selected {
-      background: oklch(0.55 0.1 240 / 25%);
-    }
-
-    .CodeMirror-focused .CodeMirror-selected {
-      background: oklch(0.55 0.1 240 / 30%);
+      color: oklch(45% 0 0deg);
     }
 
     .CodeMirror-activeline-background {
-      background: oklch(1 0 0 / 3%);
-    }
-
-    .CodeMirror-matchingbracket {
-      background: oklch(0.6 0.15 160 / 25%);
-      color: oklch(0.95 0 0) !important;
-      outline: 1px solid oklch(0.6 0.15 160 / 40%);
-    }
-
-    .CodeMirror-nonmatchingbracket {
-      background: oklch(0.6 0.2 30 / 25%);
-      color: oklch(0.9 0.15 30) !important;
+      background: oklch(100% 0 0deg / 3%);
     }
 
     // ---- CodeMirror syntax highlighting (mapped to avoid many one-off rules) ----
     $syntax-colors: (
-      'cm-comment': oklch(0.55 0.03 135),
-      'cm-keyword': oklch(0.65 0.15 285),
-      'cm-atom': oklch(0.7 0.14 55),
-      'cm-number': oklch(0.7 0.14 55),
-      'cm-def': oklch(0.7 0.08 220),
-      'cm-variable': oklch(0.7 0.08 220),
-      'cm-variable-2': oklch(0.6 0.1 200),
-      'cm-variable-3': oklch(0.65 0.12 170),
-      'cm-type': oklch(0.65 0.12 170),
-      'cm-string': oklch(0.65 0.12 145),
-      'cm-string-2': oklch(0.6 0.1 80),
-      'cm-operator': oklch(0.75 0.08 30),
-      'cm-meta': oklch(0.65 0.08 50),
-      'cm-builtin': oklch(0.6 0.12 200),
-      'cm-tag': oklch(0.65 0.14 30),
-      'cm-attribute': oklch(0.7 0.12 90),
-      'cm-qualifier': oklch(0.65 0.1 220),
-      'cm-error': oklch(0.85 0.18 30),
-      'cm-property': oklch(0.65 0.1 210),
-      'cm-punctuation': oklch(0.6 0 0),
+      'cm-comment': oklch(55% 0.03 135deg),
+      'cm-keyword': oklch(65% 0.15 285deg),
+      'cm-atom': oklch(70% 0.14 55deg),
+      'cm-number': oklch(70% 0.14 55deg),
+      'cm-def': oklch(70% 0.08 220deg),
+      'cm-variable': oklch(70% 0.08 220deg),
+      'cm-variable-2': oklch(60% 0.1 200deg),
+      'cm-variable-3': oklch(65% 0.12 170deg),
+      'cm-type': oklch(65% 0.12 170deg),
+      'cm-string': oklch(65% 0.12 145deg),
+      'cm-string-2': oklch(60% 0.1 80deg),
+      'cm-operator': oklch(75% 0.08 30deg),
+      'cm-meta': oklch(65% 0.08 50deg),
+      'cm-builtin': oklch(60% 0.12 200deg),
+      'cm-tag': oklch(65% 0.14 30deg),
+      'cm-attribute': oklch(70% 0.12 90deg),
+      'cm-qualifier': oklch(65% 0.1 220deg),
+      'cm-error': oklch(85% 0.18 30deg),
+      'cm-property': oklch(65% 0.1 210deg),
+      'cm-punctuation': oklch(60% 0 0deg),
     );
 
     @each $class, $color in $syntax-colors {
       .#{$class} {
         color: $color;
       }
-    }
-
-    // cm-error also gets a subtle background, separate from the color-only loop.
-    .cm-error {
-      background: oklch(0.6 0.2 30 / 12%);
     }
   }
 }

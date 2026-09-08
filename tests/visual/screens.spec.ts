@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { ADMIN_PAGES } from './pages'
-import { applyTheme, snapshotTarget, stabilize, THEMES } from './support/theme'
+import {
+	applyTheme,
+	freezeAnimations,
+	snapshotTarget,
+	stabilize,
+	THEMES,
+} from './support/theme'
 
 /**
  * Full-screen visual regression across the restyled wp-admin screens.
@@ -56,6 +62,7 @@ for (const { theme } of THEMES) {
 		for (const { name, path } of ADMIN_PAGES) {
 			test(`screen: ${name}`, async ({ page }) => {
 				await page.goto(path, { waitUntil: 'networkidle' })
+
 				await stabilize(page)
 
 				// Grows the viewport and captures #attrium-host, the shell that

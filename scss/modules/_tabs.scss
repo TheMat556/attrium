@@ -1,9 +1,9 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
 
 .subsubsub {
   @include mixins.module('tabs') {
-    @include ui.pill-track;
+    @include primitives.pill-track;
     @apply mb-4;
 
     li {
@@ -12,10 +12,10 @@
       color: transparent;
 
       a {
-        @include ui.pill-segment;
+        @include primitives.pill-segment;
 
         &.current {
-          @include ui.pill-segment-active;
+          @include primitives.pill-segment-active;
         }
 
         .count {

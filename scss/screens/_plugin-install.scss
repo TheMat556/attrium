@@ -1,5 +1,6 @@
 @use '../mixins';
-@use '../ui';
+@use '../ui/primitives';
+@use '../ui/patterns';
 
 // Plugin installer (plugin-install.php → body.plugin-install-php): reskins the
 // `.wp-filter` tab/search toolbar, the `.plugin-card` result cards, and the
@@ -7,26 +8,28 @@
 // (wp-admin/css/common.css + list-tables.css) hardcodes #fff surfaces and
 // #c3c4c7 / #dcdcde borders on the cards and a #f6f7f7 card footer — all read
 // as bright bands in dark mode. Everything below is token-driven (--attrium-*
-// tokens are redefined under #attrium-host.dark in _tokens.css), so light/dark
+// tokens are redefined under #attrium-host.dark in _tokens.scss), so light/dark
 // parity is automatic with no separate dark-mode block. Distinct from
 // _plugins.scss, which targets the installed-plugins list (body.plugins-php).
 
 // ---- Filter toolbar (Featured / Popular / Recommended / Favorites + search) ----
 // Same shared markup as the theme installer's toolbar (see _theme-install.scss),
-// so both pull the identical tab bar from ui.filter-toolbar().
-@include ui.filter-toolbar('plugin-install-php');
+// so both pull the identical tab bar from patterns.filter-toolbar.
+@include mixins.screen-root('plugin-install-php') {
+  @include patterns.filter-toolbar;
+}
 
 // ---- Search field (the selector is styled by the shared select module) ----
 // `#typeselector` is deliberately excluded here: the forms module already skins
-// every `select` with ui.select-base (dropdown chevron + `padding-right: 2rem`)
-// + ui.select-outline. Styling it in this group would apply `.wp-filter
+// every `select` with primitives.select-base (dropdown chevron + `padding-right: 2rem`)
+// + primitives.select-outline. Styling it in this group would apply `.wp-filter
 // #typeselector` > `select`, and the `.px-3` (specificity (0,1,1)) would
 // override the module's right padding — letting the chevron sit under the text.
 .wp-filter {
   .wp-filter-search,
   input[type="search"] {
     @include mixins.screen('plugin-install-php') {
-      @include ui.field-outline;
+      @include primitives.field-outline;
       @apply px-3;
     }
   }
@@ -37,11 +40,13 @@
 // at `.tablenav.top` is duplicate chrome above the result grid, so remove it.
 .tablenav.top {
   @include mixins.screen('plugin-install-php') {
-    display: none;
+    @apply hidden;
   }
 }
 
 // ---- Upload card (Upload Plugin form) ----
+// The plugin installer uses a slimmer dashed edge and has no install-help
+// line, so these styles stay inline here.
 .wp-upload-form {
   @include mixins.screen('plugin-install-php') {
     background: var(--attrium-primary-foreground);
@@ -77,9 +82,7 @@
 // collapses the source, it doesn't change specificity or cascade order.
 .plugin-card {
   @include mixins.screen('plugin-install-php') {
-    background: var(--attrium-primary-foreground);
-    border: 1px solid var(--attrium-border);
-    border-radius: var(--attrium-radius-md);
+    @include primitives.card-surface;
     overflow: hidden;
     @apply transition-colors duration-150;
 
@@ -101,14 +104,12 @@
     // Description + author byline.
     .column-description p,
     .desc p {
-      color: var(--attrium-foreground);
-      opacity: 0.75;
+      @include primitives.muted-text(0.75);
     }
 
     .authors cite,
     .authors a {
-      color: var(--attrium-foreground);
-      opacity: 0.6;
+      @include primitives.muted-text(0.6);
     }
 
     // Primary CTA — promote the install action to the primary variant so the
@@ -159,22 +160,16 @@
 // no separate dark block is needed.
 .plugins-popular-tags-wrapper .popular-tags {
   @include mixins.screen('plugin-install-php') {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    @apply flex flex-wrap gap-2;
     background: transparent;
     border-bottom: none;
 
     .tag-cloud-link {
-      display: inline-flex;
-      align-items: center;
-      height: 1.5rem;
+      @apply inline-flex items-center h-6;
       padding: 0 0.625rem;
       border: 1px solid var(--attrium-border);
       border-radius: 9999px;
-      font-size: 0.75rem !important;
-      font-weight: 600;
-      line-height: 1.5rem;
+      @apply text-xs! font-semibold leading-6;
       white-space: nowrap;
       text-decoration: none;
       color: var(--attrium-secondary-foreground);

@@ -28,23 +28,47 @@ export const AUTH_FILE = 'tests/visual/.auth/state.json'
 export const HOST = '#attrium-host'
 
 /**
+ * Every stored `attrium-theme` state Attrium has to resolve. `null` means the
+ * key is absent, which the resolver (`Attrium\Utility\Theme`) treats the same
+ * as `'auto'`.
+ */
+export type StoredTheme = Theme | 'auto' | null
+
+/**
  * Seed the theme before the page's own scripts run.
  *
- * Attrium is NOT driven by `prefers-color-scheme`: `useTheme.ts` reads the
- * `attrium-theme` localStorage key and `main.ts` applies the `dark` class to
- * `#attrium-host` at boot, BEFORE Vue mounts. So the value has to be seeded via
- * an init script (runs before page scripts on every navigation), not by
- * emulating the media feature.
+ * A stored value always wins over `prefers-color-scheme`, so the theme cannot
+ * be selected by emulating the media feature — it has to be seeded into the
+ * `attrium-theme` localStorage key via an init script (which runs before page
+ * scripts on every navigation). `Attrium\Utility\Theme` prints a synchronous
+ * pre-paint script that reads that key and toggles `html.attrium-dark`; on
+ * shell pages `src/composables/useTheme.ts` then mirrors the carrier onto
+ * `#attrium-host` as `dark`.
  *
  * BOTH variants are seeded explicitly. Writing only the dark key and treating
- * "no key" as light is wrong: `useColorMode` defaults to `auto`, which follows
+ * "no key" as light is wrong: an absent key resolves as `auto`, which follows
  * the OS preference — so on a machine (or container) reporting a dark
  * preference, the "light" tests silently render dark and match the wrong
  * baseline. Verified: with `colorScheme: 'dark'` emulated and no seed, the host
  * came up with the `dark` class applied.
+ *
+ * `null` REMOVES the key rather than skipping the seed, and that difference is
+ * load-bearing for `theme-resolution.spec.ts`: `auth.setup.ts` lands on
+ * wp-admin before saving `storageState`, so `attrium-theme: auto` is baked into
+ * .auth/state.json and restored into every context. Because `addInitScript`
+ * runs before page scripts on EVERY navigation, removing here re-establishes
+ * "absent" on each hop.
  */
-export async function applyTheme(page: Page, theme: Theme): Promise<void> {
+export async function applyTheme(
+	page: Page,
+	theme: StoredTheme,
+): Promise<void> {
 	await page.addInitScript((value) => {
+		if (value === null) {
+			localStorage.removeItem('attrium-theme')
+			return
+		}
+
 		localStorage.setItem('attrium-theme', value)
 	}, theme)
 }
@@ -92,6 +116,23 @@ export async function stabilize(page: Page): Promise<void> {
 		await document.fonts.ready
 	})
 
+	await freezeAnimations(page)
+}
+
+/**
+ * Hard ceiling on the grown viewport. Chromium refuses absurd window sizes and
+ * a runaway page shouldn't produce a 20k-pixel baseline.
+ */
+const MAX_CAPTURE_HEIGHT = 8000
+
+/**
+ * Neutralize animations/transitions/carets before a snapshot.
+ *
+ * `stabilize()` and the Customizer spec both need the same freeze; the Customizer
+ * has no shadow root, so a single document-level style tag reaches everything
+ * (the shell's shadow root is covered by Playwright's `animations: 'disabled'`).
+ */
+export async function freezeAnimations(page: Page): Promise<void> {
 	await page.addStyleTag({
 		content: `*, *::before, *::after {
 			animation-duration: 0s !important;
@@ -105,10 +146,81 @@ export async function stabilize(page: Page): Promise<void> {
 }
 
 /**
- * Hard ceiling on the grown viewport. Chromium refuses absurd window sizes and
- * a runaway page shouldn't produce a 20k-pixel baseline.
+ * Grow the viewport until the given measure() reports the full content height.
+ *
+ * Shared by `snapshotTarget` (the Vue shell's content card) and the Customizer
+ * spec (the sidebar scroll area): both apps are fixed/absolute (the document
+ * never scrolls), so content must be revealed by growing the viewport. Growing
+ * reflows the page, which can push the measured height up again, so the height
+ * is re-measured after each resize until it stops growing (or hits the cap).
+ *
+ * `label` is used in the warnings so a cropped capture names the surface.
  */
-const MAX_CAPTURE_HEIGHT = 8000
+export async function growViewportToFit(
+	page: Page,
+	measure: () => Promise<number>,
+	label: string,
+): Promise<void> {
+	const { width } = page.viewportSize() ?? { width: 1440, height: 900 }
+
+	// Wait for the measured height to SETTLE, not to exceed the viewport. After
+	// the surface lays out, async scripts / lazy images / reflows may still be
+	// moving it, and measuring mid-reflow crops the capture.
+	//
+	// Settling (two consecutive equal readings) is the correct signal, and
+	// "taller than the viewport" is not: a screen whose content genuinely fits
+	// in 900px can never satisfy it, so the old loop polled the full 5s and then
+	// warned about a crop that had not happened — on 32 of the 48 captures
+	// (every customize.spec capture plus 20 in screens.spec), i.e. ~2.5 min of
+	// pure sleep per suite run.
+	const MAX_WAIT_MS = 5000
+	const POLL_MS = 100
+	let needed = await measure()
+	let settled = false
+
+	for (let waited = 0; waited < MAX_WAIT_MS; waited += POLL_MS) {
+		await page.waitForTimeout(POLL_MS)
+		const again = await measure()
+		if (again === needed) {
+			settled = true
+			break
+		}
+		needed = again
+	}
+
+	if (!settled) {
+		console.warn(
+			`[visual] ${label} content height never settled (last: ${needed}px) ` +
+				`after ${MAX_WAIT_MS}ms — the capture may be cropped or mid-reflow.`,
+		)
+	}
+
+	// Grow the viewport and re-measure after each resize until it stops growing
+	// (or we hit the cap); the bound guards a page that grows on every reflow.
+	let height = Math.round(Math.min(needed, MAX_CAPTURE_HEIGHT))
+
+	for (let i = 0; i < 5; i++) {
+		if (height <= (page.viewportSize()?.height ?? 0)) break
+
+		await page.setViewportSize({ width, height })
+		await page.evaluate(async () => {
+			await document.fonts.ready
+		})
+
+		const remeasured = await measure()
+		if (remeasured <= height) break
+
+		needed = remeasured
+		height = Math.round(Math.min(remeasured, MAX_CAPTURE_HEIGHT))
+	}
+
+	if (needed > MAX_CAPTURE_HEIGHT) {
+		console.warn(
+			`[visual] ${label} content is ${needed}px tall; capture capped at ` +
+				`${MAX_CAPTURE_HEIGHT}px, so the remainder is NOT covered.`,
+		)
+	}
+}
 
 /**
  * Grow the viewport to fit the whole screen, and return the element to capture.
@@ -140,17 +252,13 @@ const MAX_CAPTURE_HEIGHT = 8000
  */
 export async function snapshotTarget(page: Page): Promise<Locator> {
 	const host = page.locator(HOST)
-	const { width, height: vpHeight } = page.viewportSize() ?? {
-		width: 1440,
-		height: 900,
-	}
 
 	// Total page height needed to show the whole content without the card
 	// scrolling internally: the card's full content height plus the fixed
 	// chrome above and below it (sidebar-inset top margin + header, bottom
 	// margin). The card box itself never moves (its content scrolls inside),
 	// so getBoundingClientRect offsets relative to the host are stable.
-	const neededHeight = () =>
+	const measure = () =>
 		host.evaluate((el) => {
 			const card = el.shadowRoot?.querySelector('[data-attrium-scroll]')
 			if (!card) return 0
@@ -163,61 +271,7 @@ export async function snapshotTarget(page: Page): Promise<Locator> {
 			)
 		})
 
-	// Wait for the card's content to exceed the viewport. After the Attrium
-	// shell mounts and #wpcontent is reparented, the embedded WordPress page
-	// may still be laying out (async scripts, lazy images, reflows from
-	// shadow-root style application). If we measure too early, the card's
-	// scrollHeight equals its clientHeight (nothing to scroll) and the capture
-	// is cropped. Poll until it stabilises above the viewport or we time out (a
-	// short timeout is fine — most screens settle in <1s).
-	const MAX_WAIT_MS = 5000
-	const POLL_MS = 100
-	let needed = await neededHeight()
-	for (
-		let waited = 0;
-		waited < MAX_WAIT_MS && needed <= vpHeight;
-		waited += POLL_MS
-	) {
-		await page.waitForTimeout(POLL_MS)
-		needed = await neededHeight()
-	}
-	if (needed <= vpHeight) {
-		console.warn(
-			`[visual] content height (${needed}px) did not exceed viewport ` +
-				`(${vpHeight}px) after ${MAX_WAIT_MS}ms — screenshot may be cropped. ` +
-				`This usually means the page did not fully layout before snapshotting.`,
-		)
-	}
-
-	// Growing the viewport reflows the embedded WP page (media grids,
-	// responsive tables), which can reveal more content and push scrollHeight
-	// up again — so the height must be RE-MEASURED after each resize, not
-	// assumed from the first reading. Loop until it stops growing (or we hit
-	// the cap); a handful of iterations is plenty, the bound is just a
-	// guard against a page that grows on every reflow forever.
-	let height = Math.min(needed, MAX_CAPTURE_HEIGHT)
-
-	for (let i = 0; i < 5; i++) {
-		if (height <= (page.viewportSize()?.height ?? 0)) break
-
-		await page.setViewportSize({ width, height })
-		await page.evaluate(async () => {
-			await document.fonts.ready
-		})
-
-		const remeasured = await neededHeight()
-		if (remeasured <= height) break
-
-		needed = remeasured
-		height = Math.min(remeasured, MAX_CAPTURE_HEIGHT)
-	}
-
-	if (needed > MAX_CAPTURE_HEIGHT) {
-		console.warn(
-			`[visual] screen content is ${needed}px tall; capture capped at ` +
-				`${MAX_CAPTURE_HEIGHT}px, so the remainder is NOT covered.`,
-		)
-	}
+	await growViewportToFit(page, measure, 'screen')
 
 	return host
 }

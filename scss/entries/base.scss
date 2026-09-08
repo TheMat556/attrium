@@ -1,0 +1,9 @@
+// Base topic — the --attrium-* design tokens.
+//
+// Emits the full palette: `:root`/`:host` carry the light values, the
+// $dark-carriers arms (owned here, see _tokens.scss) the dark ones. Topics
+// whose module graph reaches _tokens.scss — anything using icons — re-emit
+// the same declarations through Sass's once-per-compilation rule, which only
+// duplicates identical values; base remains the chunk that guarantees the
+// palette exists on every page (see ModuleRegistry::enqueue_styles()).
+@use '../tokens';

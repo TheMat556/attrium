@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Shared cell recipe. The table itself is styled inline in `.widefat` below —
 // only the cell geometry is factored out, because th and td genuinely share it.
@@ -94,9 +95,7 @@
 
     .row-actions {
       @apply mt-1 text-xs;
-
-      color: var(--attrium-foreground);
-      opacity: 0.5;
+      @include primitives.muted-text(0.5);
 
       a {
         @apply text-[var(--attrium-foreground)];
@@ -244,7 +243,7 @@
 
 p.search-box {
   @include mixins.module('tables') {
-    margin-top: 0.5rem;
+    @apply mt-2;
 
     input[type="search"] {
       @apply h-8 text-xs w-32;
@@ -253,10 +252,7 @@ p.search-box {
     // Below 1200px the tablenav runs out of room for a floated search box, so
     // it drops onto its own full-width row above the table.
     @media (max-width: 1200px) {
-      float: none;
-      width: 100%;
-      margin-bottom: 0.5rem;
-      margin-top: 0;
+      @apply float-none w-full mb-2 mt-0;
 
       input[type="search"] {
         @apply w-auto flex-1;
@@ -267,50 +263,36 @@ p.search-box {
 
 .tablenav.top {
   @include mixins.module('tables') {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    height: auto;
-    margin: 0 0 1rem;
+    @apply flex flex-wrap items-center justify-between gap-2 h-auto mb-4;
 
     .alignleft {
       float: none;
     }
 
     .actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      @apply flex items-center gap-2;
       float: none;
       padding: 0;
     }
 
     .tablenav-pages {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      margin-left: auto;
-      float: none;
+      @apply flex items-center gap-1 ml-auto float-none;
     }
 
     br.clear {
-      display: none;
+      @apply hidden;
     }
   }
 }
 
 .tablenav.bottom {
   @include mixins.module('tables') {
-    margin-top: 1rem;
+    @apply mt-4;
   }
 }
 
 .tablenav-pages-navspan.button.disabled {
   @include mixins.module('tables') {
-    opacity: 0.4;
-    cursor: default;
-    border-color: transparent !important;
+    @apply opacity-40 cursor-default border-transparent!;
   }
 }

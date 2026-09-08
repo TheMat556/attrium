@@ -68,8 +68,8 @@ attrium_visual_freeze_updates();
  * Give the active theme classic menu support.
  *
  * wp-env activates a block theme (twentytwentyfive), which declares neither
- * `menus` nor `widgets`. nav-menus.php hard-exits with a 500 and the body
- * "Your theme does not support navigation menus or widgets." — so the Menus
+ * `menus`. nav-menus.php hard-exits with a 500 and the body
+ * "Your theme does not support navigation menus." — so the Menus
  * baseline captured an error page and `scss/screens/_nav-menus.scss` had zero
  * real coverage. Declaring support renders the genuine Menus screen.
  *
@@ -94,9 +94,17 @@ add_action(
  * menu has items). Creating one deterministic menu fixtures the structure box
  * so those rules can be written and the baseline can lock them down.
  *
- * Guarded by name so the (test-only) menu is created once and left untouched on
- * subsequent loads; two custom-link items keep the row markup exercising a
- * hierarchy with no dependence on post objects existing.
+ * Two custom-link items keep the row markup exercising a hierarchy with no
+ * dependence on post objects existing.
+ *
+ * Claimed with `add_option`, not a read-then-create name check. The visual suite
+ * runs Playwright workers in parallel (see playwright.config.ts), so several
+ * requests can reach `admin_init` at once and a `wp_get_nav_menu_object()` guard
+ * is a check-then-act race. `add_option` is a single INSERT against the
+ * `option_name` UNIQUE key: exactly one caller gets `true` and seeds, every
+ * other returns immediately. The claim is released again if creation fails, so a
+ * later request retries instead of leaving the option set with no menu behind
+ * it.
  */
 add_action(
     'admin_init',
@@ -105,14 +113,13 @@ add_action(
             return;
         }
 
-        $menu_name = 'Attrium Menu';
-
-        if ( wp_get_nav_menu_object( $menu_name ) ) {
+        if ( ! add_option( 'attrium_visual_menu_seeded', '1' ) ) {
             return;
         }
 
-        $menu_id = wp_create_nav_menu( $menu_name );
+        $menu_id = wp_create_nav_menu( 'Attrium Menu' );
         if ( is_wp_error( $menu_id ) ) {
+            delete_option( 'attrium_visual_menu_seeded' );
             return;
         }
 
@@ -147,6 +154,12 @@ add_action(
  * ("Did you lose your phone…") wraps to two lines, adding ~21 px of
  * height that the committed baselines expect.  Injecting a second session
  * token keeps the button enabled and the text stable across environments.
+ *
+ * Read-modify-write, but safe under the parallel workers: the injected key is a
+ * fixed string, so concurrent writers converge on the same array rather than
+ * appending duplicates. No real token can be lost either — `auth.setup.ts` logs
+ * in once and every worker reuses that stored session, so nothing else is
+ * writing this meta during a run.
  */
 add_action(
     'admin_init',

@@ -5,6 +5,7 @@ namespace Attrium\App;
 use Attrium\Settings\Settings;
 use Attrium\Utility\Menu;
 use Attrium\Utility\Scripts;
+use Attrium\Utility\Theme;
 
 defined('ABSPATH') || exit();
 
@@ -18,11 +19,16 @@ class Attrium {
         add_action('admin_enqueue_scripts', [ $this, 'suppress_wp_command_palette' ], 0);
         add_action('admin_enqueue_scripts', [ $this, 'load_styles' ], 1);
         add_action('admin_enqueue_scripts', [ $this, 'load_base_scripts' ], 1);
+        add_action('admin_head', [ $this, 'print_theme_script' ], 0);
+        // Boot chrome in <head> (see build_attrium()): printed pre-paint, so
+        // the stock admin can never paint before the FOUC hider is armed.
+        add_action('admin_head', [ $this, 'build_attrium' ], 1);
         // Output on in_admin_header (not admin_head) so menu-header.php has
         // already resolved $parent_file/$submenu_file (including the
         // parent_file/submenu_file filters) before we read them below.
         add_action('in_admin_header', [ $this, 'output_data_attributes' ], 0);
-        add_action('in_admin_header', [ $this, 'build_attrium' ], 1);
+        // Arms the FOUC hider exactly where the standard admin body renders.
+        add_filter('admin_body_class', [ $this, 'add_booting_class' ]);
     }
 
     /**
@@ -96,14 +102,28 @@ class Attrium {
             return;
         }
 
-        $css_file = Scripts::get_build_css('src/main.ts');
+        Scripts::enqueue_build_style('src/main.ts');
+    }
 
-        if ( ! $css_file ) {
+    /**
+     * Print the pre-paint light/dark resolver script.
+     *
+     * Runs on admin_head (not in_admin_header) because the class has to be
+     * on <html> before the browser paints, and in_admin_header fires after
+     * <body> opens; priority 0 precedes other head output.
+     *
+     * Gated with the same guard as load_styles(): the token stylesheet and
+     * the class that selects its dark half must be present or absent
+     * together. On screens where Attrium is off (block/site editor via
+     * is_overlay_screen()) the class must NOT be set, or it would flip
+     * --attrium-* for whatever Attrium CSS is still enqueued there.
+     */
+    public function print_theme_script(): void {
+        if ( ! self::is_overlay_screen() ) {
             return;
         }
 
-        $style = ATTRIUM_URL . 'app/dist/' . $css_file;
-        wp_enqueue_style('attrium', $style, [], ATTRIUM_VERSION);
+        Theme::print_resolver_script();
     }
 
     public function load_base_scripts(): void {
@@ -211,6 +231,21 @@ class Attrium {
         wp_print_script_tag($scripts_tag);
     }
 
+    /**
+     * Print the boot chrome: overlay CSS, FOUC hider CSS, bootstrap watchdog.
+     *
+     * All three are static and must hold before the first body paint, so they
+     * print on admin_head (inside <head>), not in_admin_header. That hook
+     * fires after the admin menu and <div id="wpcontent"> are already in the
+     * byte stream (admin-header.php prints #wpcontent before in_admin_header),
+     * and the browser may paint the fully styled stock chrome in that window —
+     * exactly the flash this output exists to prevent. Head placement closes
+     * the race: the CSS is parsed before any body markup exists.
+     *
+     * The hider is armed by the attrium-booting body class (see
+     * add_booting_class()); the style element alone is inert. main.ts removes
+     * the element once the shell mounted, which de-arms the hiding.
+     */
     public function build_attrium(): void {
         if ( ! self::is_overlay_screen() ) {
             return;
@@ -233,10 +268,12 @@ class Attrium {
         #wpfooter{display:none !important}
         </style>";
 
-        // Temporary FOUC hider: hides everything until #attrium-host exists
-        // and the Vue app has moved #wpcontent into it, then main.ts removes
-        // this style so the slotted content shows through.
-        echo "<style id='attrium-body-hider'>body > *:not(#attrium-host){display:none}</style>";
+        // Temporary FOUC hider: keyed on the attrium-booting body class (see
+        // add_booting_class()), never on the style element alone, so pages
+        // without the standard admin body can never be blanked. main.ts
+        // removes this element once #wpcontent has been moved into the slot,
+        // which de-arms the hiding and reveals the slotted content.
+        echo "<style id='attrium-body-hider'>body.attrium-booting > *:not(#attrium-host){display:none}</style>";
 
         // Bootstrap watchdog (inline, non-module — runs regardless of module
         // loading). If the Vue bootstrap hasn't cleared this within 5 seconds,
@@ -245,6 +282,10 @@ class Attrium {
         // main.ts calls clearTimeout(window.__ATTRIUM_WATCHDOG__) on every
         // successful path; the timeout reaching zero is always a failure.
         //
+        // The attrium-booting guard makes the teardown a no-op on pages
+        // without the standard admin body (core iframe headers etc.), where
+        // the hider was never armed — no console noise there either.
+        //
         // 5s is a deliberately generous ceiling: a healthy boot clears this in
         // well under a second, so the only way to reach it is a genuine failure
         // (missing/404 bundle, JS error, stale manifest) on even a slow admin.
@@ -252,6 +293,7 @@ class Attrium {
         // tore Attrium down — keep it so field failures are debuggable.
         echo "<script>
         window.__ATTRIUM_WATCHDOG__ = setTimeout(function(){
+            if(!document.body.classList.contains('attrium-booting'))return;
             console.error('[Attrium] Bootstrap watchdog fired after 5s — Vue app did not initialise. Removing overlay so WordPress admin remains usable.');
             var oe = document.getElementById('attrium-overlay-css');
             if(oe) oe.remove();
@@ -261,5 +303,27 @@ class Attrium {
             if(h) h.remove();
         }, 5000);
         </script>";
+    }
+
+    /**
+     * Arm the FOUC hider on the current page.
+     *
+     * The hiding CSS lives in <head> (see build_attrium()) but must only
+     * engage on pages that render the standard admin body. The
+     * admin_body_class filter fires exactly there — custom body builders
+     * (customize.php, core's iframe headers) never apply it — so this filter
+     * is the precise gate. Inert once main.ts removes the hider style
+     * element; the class itself carries no styling.
+     */
+    public function add_booting_class( string $classes ): string {
+        if ( ! self::is_overlay_screen() ) {
+            return $classes;
+        }
+
+        if ( ! Scripts::get_build_file('src/main.ts') ) {
+            return $classes;
+        }
+
+        return $classes . ' attrium-booting';
     }
 }
