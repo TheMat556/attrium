@@ -57,7 +57,7 @@ class Theme {
         $path = ATTRIUM_PATH . 'assets/theme-resolver.js';
 
         if ( ! file_exists( $path ) ) {
-            trigger_error( "Attrium: theme resolver asset missing at {$path}.", E_USER_WARNING );
+            wp_trigger_error( __METHOD__, 'Attrium: theme resolver asset missing at ' . $path . '.', E_USER_WARNING );
             return;
         }
 
@@ -65,7 +65,7 @@ class Theme {
         $script = file_get_contents( $path );
 
         if ( $script === false ) {
-            trigger_error( 'Attrium: theme resolver asset unreadable.', E_USER_WARNING );
+            wp_trigger_error( __METHOD__, 'Attrium: theme resolver asset unreadable.', E_USER_WARNING );
             return;
         }
 
