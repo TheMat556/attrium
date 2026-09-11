@@ -301,6 +301,7 @@
       background: var(--attrium-secondary);
       color: var(--attrium-secondary-foreground);
       box-shadow: none;
+      border-top: 1px solid var(--attrium-border);
       text-align: start;
 
       div {
@@ -500,12 +501,14 @@
   // Content region: core draws a #dcdcde border-top on .media-frame-content
   // (media-views.css) — a bright hairline across the modal directly under
   // the 50px header strip — so kill it; the panel border owns the edge.
-  // (Core also hardcodes the background to #fff, but the recessed canvas
-  // (.thumbnail) and the info column cover the whole region, so no surface
-  // is needed here.) Scoped to .edit-attachment-frame so the grid page's
-  // own .media-frame-content (the upload baseline) keeps core's chrome.
+  // Core also hardcodes the background to #fff, which would leave a white
+  // band behind the columns (the dark-mode "no bg behind the image" bug),
+  // so replace it with the panel token. Scoped to .edit-attachment-frame
+  // so the grid page's own .media-frame-content (the upload baseline)
+  // keeps core's chrome.
   .edit-attachment-frame .media-frame-content {
     border-top: 0;
+    background: var(--attrium-primary-foreground);
   }
 
   // Core paints an inset top "scroll affordance" shadow on the details
