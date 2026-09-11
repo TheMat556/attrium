@@ -112,8 +112,36 @@ export async function stabilize(page: Page): Promise<void> {
 	await expect(page.locator(HOST)).toBeAttached()
 	await expect(page.locator(`${HOST} > #wpcontent`)).toBeAttached()
 
+	// `document.fonts.ready` only waits for the current FontFaceSet to settle;
+	// it does not force a lazily-used font to download. That allowed the shell
+	// to be captured once with Inter and once with the fallback system font
+	// (especially on upload.php, whose media frame adds a large amount of text
+	// after navigation). Explicitly load every weight used by the shell before
+	// taking any screenshot.
 	await page.evaluate(async () => {
+		const weights = [400, 500, 600, 700]
+		const loaded = await Promise.all(
+			weights.map((weight) =>
+				document.fonts.load(`${weight} 16px "Inter Variable"`),
+			),
+		)
 		await document.fonts.ready
+
+		if (loaded.some((faces) => faces.length === 0)) {
+			throw new Error('Inter Variable font failed to load')
+		}
+		if (!document.fonts.check('400 16px "Inter Variable"')) {
+			throw new Error('Inter Variable font is not ready')
+		}
+
+		const host = document.querySelector('#attrium-host')
+		const sample = host?.shadowRoot?.querySelector<HTMLElement>(
+			'[data-attrium-scroll]',
+		)
+		if (!sample) throw new Error('Attrium font sample missing')
+		if (!getComputedStyle(sample).fontFamily.includes('Inter Variable')) {
+			throw new Error('Attrium shell is not using Inter Variable')
+		}
 	})
 
 	await freezeAnimations(page)

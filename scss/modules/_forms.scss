@@ -124,6 +124,18 @@ body.attrium-mod-forms #{tokens.$dark-carrier-host} select,
   background-image: $select-chevron-dark;
 }
 
+// The media-modal carrier ($dark-carrier-media in _tokens.scss) is the one
+// arm whose body compound sits INSIDE the selector, so its forms gate can't
+// be composed by appending to the variable — the selector is spelled out
+// with both module flags on the same body. No <select> renders inside the
+// upload.php modal today; the arm exists so one can appear without drifting
+// from the carrier (the convention above).
+html.attrium-dark
+body.attrium-mod-screens.attrium-mod-forms.upload-php
+.media-modal select {
+  background-image: $select-chevron-dark;
+}
+
 input[type="file"] {
   @include mixins.module('forms') {
     @apply rounded-[var(--attrium-radius-md)] text-sm font-medium

@@ -110,6 +110,17 @@ $light: (
 // palette on. `wp-customizer` is server-rendered by customize.php, so scoping
 // to body costs no cascade delay.
 //
+// A second scoped arm ships the palette into the upload.php media modal
+// ("Attachment details"): media-views.js appends #wp-media-modal straight to
+// <body> — the same body-level-overlay shape as the #file-editor-warning
+// above — and the screens topic reskins it with tokens
+// (scss/screens/_upload.scss), so the dark palette must arrive exactly
+// there. Gated by the screens module flag AND the upload-php body class so
+// the palette lands precisely with the reskin: without the module flag the
+// forms/buttons module recipes (which match the modal as body descendants)
+// would swap to dark tokens while the panel still wears core's white
+// chrome.
+//
 // #attrium-host.dark / :host(.dark) are the shell's MIRROR of the signal
 // (src/composables/useTheme.ts): CSS variables do not cross the shadow-root
 // boundary, so useTheme observes the carrier with a MutationObserver and
@@ -202,7 +213,8 @@ $dark-optional: (
 // (src/style.css context); it matches nothing in a light-DOM chunk.
 $dark-carrier-host: '#attrium-host.dark';
 $dark-carrier-customizer: 'html.attrium-dark body.wp-customizer';
-$dark-carriers: ($dark-carrier-host, ':host(.dark)', $dark-carrier-customizer);
+$dark-carrier-media: 'html.attrium-dark body.attrium-mod-screens.upload-php .media-modal';
+$dark-carriers: ($dark-carrier-host, ':host(.dark)', $dark-carrier-customizer, $dark-carrier-media);
 
 #{$dark-carriers} {
   @each $key, $value in $dark {
