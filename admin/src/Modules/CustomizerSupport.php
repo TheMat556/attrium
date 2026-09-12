@@ -31,7 +31,8 @@ class CustomizerSupport {
         $this->registry = $registry;
 
         // Excluded URLs never receive the theme: bail before any hook registration.
-        if ( Settings::is_ignored_url() ) {
+        // The ?attrium=off kill switch disables the reskin together with the shell.
+        if ( Settings::is_ignored_url() || Settings::is_disabled_by_query() ) {
             return;
         }
 
