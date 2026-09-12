@@ -46,8 +46,7 @@
     // Labels stay in flow (they are the selects' accessible names).
     .media-toolbar-secondary label,
     .media-toolbar-primary label {
-      @apply text-sm whitespace-nowrap;
-      color: var(--attrium-muted-foreground);
+      @apply text-sm whitespace-nowrap text-[var(--attrium-muted-foreground)];
     }
 
     // Core (6.7 floats, 7.1 grid) scatters baseline offsets through this
@@ -58,7 +57,7 @@
     .media-toolbar-secondary .view-switch,
     .media-toolbar-primary label,
     .media-toolbar-primary .search {
-      margin: 0;
+      @apply m-0;
     }
 
     // 8px gap + 8px margin = 16px between groups, 8px within.
@@ -69,7 +68,7 @@
 
     // Core gives toolbar buttons vertical margins for its own layout.
     .media-button {
-      margin: 0;
+      @apply m-0;
     }
 
     // Pinned right via margin-left: auto; nowrap guards against
@@ -121,9 +120,9 @@
 
   .view-switch a {
     @apply relative inline-flex items-center justify-center
-           rounded-[var(--attrium-radius-md)] no-underline size-8;
-    border: 1px solid transparent; // kept: the focus color can't shift layout
-    color: var(--attrium-muted-foreground);
+           rounded-[var(--attrium-radius-md)] no-underline size-8
+           border border-transparent text-[var(--attrium-muted-foreground)];
+    // Transparent border kept: the focus color can't shift layout.
 
     &::before {
       @apply hidden;
@@ -135,18 +134,16 @@
 
     &:hover,
     &:focus {
-      background: var(--attrium-accent);
-      color: var(--attrium-foreground);
+      @apply bg-[var(--attrium-accent)] text-[var(--attrium-foreground)];
     }
 
     &:focus {
       @include primitives.focus-reset;
-      border-color: var(--attrium-ring);
+      @apply border-[var(--attrium-ring)];
     }
 
     &.current {
-      background: var(--attrium-secondary);
-      color: var(--attrium-foreground);
+      @apply bg-[var(--attrium-secondary)] text-[var(--attrium-foreground)];
     }
   }
 
@@ -188,9 +185,8 @@
     // Flush tiles: only the 8px right padding remains (column gutter), so
     // rows stack with zero gap. The ::after strip and .check positions
     // below track this padding.
+    @apply text-[var(--attrium-foreground)];
     padding: 0 8px 0 0;
-
-    color: var(--attrium-foreground);
 
     .attachment-preview {
       @apply transition-colors duration-150;
@@ -206,7 +202,7 @@
 
     // Hover recolors only the border (ring token, per modules/_forms.scss).
     &:hover .attachment-preview {
-      border-color: var(--attrium-ring);
+      @apply border-[var(--attrium-ring)];
     }
 
     // Selection: core's inset rings become the primary color on the card
@@ -218,7 +214,7 @@
       box-shadow: none;
 
       .attachment-preview {
-        border-color: var(--attrium-primary);
+        @apply border-[var(--attrium-primary)];
         box-shadow: 0 0 0 1px var(--attrium-primary);
       }
     }
@@ -228,15 +224,14 @@
     // non-image tiles; 7.1 paints image names on li::after (outside the
     // preview's overflow clip, hence its own bottom radius below).
     .filename {
-      @apply truncate;
-      background: var(--attrium-secondary);
-      color: var(--attrium-secondary-foreground);
+      @apply truncate bg-[var(--attrium-secondary)]
+             text-[var(--attrium-secondary-foreground)]
+             border-t border-[var(--attrium-border)];
       box-shadow: none;
-      border-top: 1px solid var(--attrium-border);
       text-align: start;
 
       div {
-        padding: 0;
+        @apply p-0;
       }
     }
 
@@ -280,15 +275,13 @@
     }
 
     &:hover {
-      background: var(--attrium-accent);
-      color: var(--attrium-accent-foreground);
+      @apply bg-[var(--attrium-accent)] text-[var(--attrium-accent-foreground)];
     }
   }
 
   .attachments-browser .attachments .attachment.selected .check,
   .attachments-browser .attachments .attachment.details .check {
-    background: var(--attrium-primary);
-    color: var(--attrium-primary-foreground);
+    @apply bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)];
     box-shadow:
       0 0 0 1px var(--attrium-primary-foreground),
       0 0 0 2px var(--attrium-primary);
@@ -312,8 +305,8 @@
   // geometry, and overflow:auto doubles as the small-viewport fallback scroll.
   .media-modal-content {
     @apply rounded-[var(--attrium-radius-md)]
-           border border-[var(--attrium-border)];
-    background: var(--attrium-primary-foreground);
+           border border-[var(--attrium-border)]
+           bg-[var(--attrium-primary-foreground)];
     box-shadow: none;
   }
 
@@ -346,8 +339,7 @@
     &[disabled],
     &[disabled]:hover,
     &[disabled]:focus {
-      @apply bg-transparent cursor-default;
-      color: var(--attrium-muted-foreground);
+      @apply bg-transparent cursor-default text-[var(--attrium-muted-foreground)];
     }
 
     &::after {
@@ -376,8 +368,7 @@
   // leading-[50px] keeps the title's line box at strip height (the only
   // in-flow box in .media-frame-title).
   .edit-attachment-frame .media-frame-title h1 {
-    @apply m-0 text-base font-semibold leading-[50px];
-    color: var(--attrium-foreground);
+    @apply m-0 text-base font-semibold leading-[50px] text-[var(--attrium-foreground)];
   }
 
   // Content region: core draws a #dcdcde border-top on .media-frame-content
@@ -389,8 +380,7 @@
   // so the grid page's own .media-frame-content (the upload baseline)
   // keeps core's chrome.
   .edit-attachment-frame .media-frame-content {
-    border-top: 0;
-    background: var(--attrium-primary-foreground);
+    @apply border-t-0 bg-[var(--attrium-primary-foreground)];
   }
 
   // Core's inset "scroll affordance" shadows read as a grey band on the
@@ -403,12 +393,11 @@
   // --attrium-background is the recessed token: same as core's #f6f7f7 in
   // light, one step off-panel in dark. Text → muted, links on link-primary.
   .edit-attachment-frame .attachment-info {
-    @apply border-s border-[var(--attrium-border)];
-    background: var(--attrium-background);
-    color: var(--attrium-muted-foreground);
+    @apply border-s border-[var(--attrium-border)]
+           bg-[var(--attrium-background)] text-[var(--attrium-muted-foreground)];
 
     strong {
-      color: var(--attrium-foreground);
+      @apply text-[var(--attrium-foreground)];
     }
 
     a {
@@ -418,12 +407,12 @@
 
   .edit-attachment-frame .attachment-info .details,
   .edit-attachment-frame .attachment-info .settings {
-    border-bottom: 1px solid var(--attrium-border);
+    @apply border-b border-[var(--attrium-border)];
   }
 
   // Core owns the label/input floats; the inputs get the forms-module recipe.
   .attachment-details .setting .name {
-    color: var(--attrium-muted-foreground);
+    @apply text-[var(--attrium-muted-foreground)];
   }
 
   // 8.25rem ≈ six text lines (core squeezes to ~2.5); resize:vertical stays.
@@ -440,7 +429,7 @@
   // around it. Same recessed token as the info column: two symmetric
   // recessed columns on the elevated panel.
   .edit-attachment-frame .attachment-media-view .thumbnail {
-    background: var(--attrium-background);
+    @apply bg-[var(--attrium-background)];
   }
 
   // The background shorthand is load-bearing: background-color alone would
