@@ -90,6 +90,12 @@ class Settings {
         );
     }
 
+    /** Read-only ?attrium=off kill switch; no state change. */
+    public static function is_disabled_by_query(): bool {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only toggle (attrium=off), no state change.
+        return isset($_GET['attrium']) && 'off' === sanitize_key( wp_unslash( $_GET['attrium'] ) );
+    }
+
     /**
      * Whether the current admin URL matches any user-configured ignore entry.
      *

@@ -11,8 +11,7 @@ defined('ABSPATH') || exit();
 
 class Attrium {
     public function __construct() {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only toggle (attrium=off), no state change.
-        if ( isset($_GET['attrium']) && 'off' === sanitize_key( wp_unslash( $_GET['attrium'] ) ) ) {
+        if ( Settings::is_disabled_by_query() ) {
             return;
         }
 

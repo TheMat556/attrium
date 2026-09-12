@@ -11,7 +11,9 @@ class ModuleRegistry {
 
     public function __construct() {
         // Excluded URLs never receive the theme: bail before any hook registration.
-        if ( Settings::is_ignored_url() ) {
+        // The ?attrium=off kill switch disables the content reskin together
+        // with the shell (see Settings::is_disabled_by_query()).
+        if ( Settings::is_ignored_url() || Settings::is_disabled_by_query() ) {
             return;
         }
 
