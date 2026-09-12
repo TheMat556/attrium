@@ -3,14 +3,11 @@
 @use '../tokens';
 @use '../ui/primitives';
 
-// Native <select> chevron, built from the shared Lucide icon map (one glyph
-// source). It can't use icons.mask() — a mask clips the whole element, which
-// would erase the select's own text, and <select> generates no ::before to
-// carry an icon — so it must be a real background-image alongside the text.
-// A baked-stroke background can't inherit currentColor (see _icons.scss), so
-// the glyph swaps per mode instead of tinting: light glyph by default, light-
-// on-dark under the dark carriers below. The ink is the --attrium-foreground
-// token, resolved to each mode's value by icons.image().
+// Native <select> chevron from the Lucide map. It can't be a mask (that
+// would erase the select's text, and <select> grows no ::before) — so it's
+// a real background-image. A baked stroke can't inherit currentColor, so the
+// glyph swaps per mode (light default, dark under the carriers below), inked
+// with each mode's --attrium-foreground via icons.image().
 $select-chevron: icons.image('chevron-down', '--attrium-foreground');
 $select-chevron-dark: icons.image('chevron-down', '--attrium-foreground', dark);
 
@@ -30,33 +27,27 @@ $select-chevron-dark: icons.image('chevron-down', '--attrium-foreground', dark);
 
   &:hover,
   &:focus {
-    // Core tints select text to a dark blue on hover/focus
-    // (forms.min.css `select:hover{color:#2271b1}`), unreadable against the
-    // dark-mode accent background. Re-pin the token foreground. (Our
-    // `select:hover`/`:focus` are (0,2,2) > core's (0,2,1), so these win.)
+    // Core tints select text dark blue — unreadable on the dark accent.
+    // Re-pin foreground (ours (0,2,2) beats core's (0,2,1)).
     background-color: var(--attrium-accent);
     color: var(--attrium-foreground);
   }
 
   &:hover {
-    // The token border is near-invisible over the accent fill (and 10%-white
-    // in dark), so bump it to the ring token to stay clearly visible — same
-    // hover treatment as `label.bulk-select-button` in _nav-menus.scss.
+    // The token border vanishes over the accent fill, so bump to the ring
+    // token (same hover treatment as nav-menus' bulk-select button).
     border-color: var(--attrium-ring);
   }
 
   &:focus {
-    // Core paints a blue border + box-shadow ring on `select:focus`
-    // (border-color:#2271b1, box-shadow:0 0 0 1px #2271b1). Attrium selects
-    // keep the token border and have no focus ring — remove both.
+    // Core's blue focus border + box-shadow ring: Attrium keeps the token
+    // border and no ring — remove both.
     border-color: var(--attrium-border);
     @include primitives.focus-reset;
   }
 }
 
-// Text inputs — shared base, then the outline variant without hover dimming
-// (inputs aren't clickable surfaces like buttons; hover shouldn't change them).
-
+// Text inputs — shared base; no hover dimming (inputs aren't clickable).
 @mixin input-base {
   @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
          px-3 py-1.5
@@ -87,11 +78,8 @@ select {
     @include select-base;
     @include select-outline;
 
-    // The closed select is token-painted, but the native dropdown it opens is
-    // drawn from the option/optgroup nodes' own colors — core/UA defaults of
-    // white bg + black text, which read as white-on-white (or white-on-attrium)
-    // on the dark surface and are unreadable. Paint the list with the same
-    // tokens so open + closed match in both modes.
+    // The opened dropdown paints from the options' own colors (core/UA white
+    // bg + black text — unreadable on dark); tokenize so open matches closed.
     option,
     optgroup {
       background: var(--attrium-background);
@@ -100,36 +88,20 @@ select {
   }
 }
 
-// Dark-mode chevron swap, one arm per light-DOM dark carrier. The carrier
-// selectors come from _tokens.scss ($dark-carrier-* — the same arms that
-// carry the dark palette), composed here with the forms module gate, so the
-// swap can't drift from the token carriers. The resolver sets the
-// `attrium-dark` signal on <html> pre-paint and useTheme mirrors it onto
-// #attrium-host.dark, so the host arm is what fires on a normal admin page.
-// The customizer arm keeps its body.wp-customizer scoping for exactly the
-// reason the token carrier does (see the $dark comment in _tokens.scss): an
-// unscoped html-level arm also matches selects inside the fixed-position
-// overlays core appends to <body>, which sit outside the host and keep core's
-// light chrome — they would get the dark chevron on a white dialog. The
-// module flag lives on <body> and composes differently per carrier:
-//   - Shell: the gate is an ANCESTOR of the carrier (body > #attrium-host >
-//     #wpcontent > select — main.ts reparents #wpcontent into the host).
-//   - Customizer: the gate class appends to the carrier's own body.wp-
-//     customizer compound (html.attrium-dark > body > select — body is a
-//     descendant of the flag-bearing html).
-// module() can't express either composed form, so both arms are written out
-// here; a carrier ADDED in _tokens.scss needs a matching arm.
+// Dark chevron swap, one arm per light-DOM carrier. Carriers compose from
+// _tokens.scss ($dark-carrier-*) so the swap can't drift from the palette.
+// The module flag composes differently per carrier — ancestor of the host
+// arm (body > host > #wpcontent > select) but part of the customizer body's
+// own compound — which module() can't express, so both arms are written out.
+// A carrier added in _tokens.scss needs a matching arm here.
 body.attrium-mod-forms #{tokens.$dark-carrier-host} select,
 #{tokens.$dark-carrier-customizer}.attrium-mod-forms select {
   background-image: $select-chevron-dark;
 }
 
-// The media-modal carrier ($dark-carrier-media in _tokens.scss) is the one
-// arm whose body compound sits INSIDE the selector, so its forms gate can't
-// be composed by appending to the variable — the selector is spelled out
-// with both module flags on the same body. No <select> renders inside the
-// upload.php modal today; the arm exists so one can appear without drifting
-// from the carrier (the convention above).
+// The media-modal carrier nests the body compound INSIDE, so its gate can't
+// append to the variable — spelled out with both module flags. No <select>
+// lives in that modal today; the arm keeps future ones from drifting.
 html.attrium-dark
 body.attrium-mod-screens.attrium-mod-forms.upload-php
 .media-modal select {

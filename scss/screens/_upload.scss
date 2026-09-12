@@ -2,38 +2,13 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Media library (upload.php): reskin the JS-rendered media frame that
-// media-views.js builds in the light-DOM #wpbody, so these gated rules
-// reach it. Beyond the original dark-mode fix (killing core's hardcoded
-// #fff toolbar band), this file reworks three things core lays out badly:
-//   - the grid-mode toolbar: core's 48px band whose secondary half is a
-//     cramped two-row grid (labels row 1, selects row 2, the view-switch
-//     and the bulk buttons auto-placed into implicit columns) with the
-//     search floated right — rebuilt as one flex row of h-9 controls,
-//     search pinned to the right edge;
-//   - the view-switch and the tile check chips: dashicons / uploader
-//     sprites replaced with Lucide masks (the repo's canonical
-//     hide-the-glyph-::before / mask-on-::after swap, see
-//     screens/_themes.scss);
-//   - the attachments grid: floated tiles become flex-wrap with a FLUSH
-//     layout — the ul loses its left/right/bottom padding and the tiles
-//     their top/left/bottom padding, so cards sit edge-to-edge with the
-//     content area and stack with zero row gap; only each tile's 8px
-//     right padding remains as the column gutter (see the tile block);
-//   - the tiles themselves: core's flat #f0f0f1 squares with hardcoded
-//     inset shadow frames become the card recipe (token surface, hairline
-//     border, rounded corners) with token hover/focus/selection edges.
-//   - the edit-attachment modal ("Attachment details", #wp-media-modal):
-//     media-views.js appends it straight to <body> when a grid tile is
-//     clicked; it gets the themes.php details-modal treatment (token
-//     panel + rounded corners, Lucide icon buttons in the header, recessed
-//     info column) — see the modal section at the bottom for how the dark
-//     palette reaches a body-level overlay.
-// Core keeps owning the surrounding geometry (the absolute toolbar, the
-// grid's fixed top:72px offset, the JS-driven [data-columns] tile widths),
-// which is why the toolbar stays one UNwrapped row: wrapping could grow
-// past that offset and overlap the grid, so a cramped window scrolls
-// instead.
+// Media library (upload.php): reskin the JS-rendered media frame
+// (media-views.js builds it in #wpbody, so these gated rules reach it).
+// Core keeps the geometry (absolute toolbar, grid's fixed top:72px offset,
+// JS-driven [data-columns] tile widths) — so the toolbar stays one UNwrapped
+// row: wrapping would overlap the grid, and a cramped window scrolls instead.
+// The edit-attachment modal is appended to <body>, outside #attrium-host;
+// the dark palette reaches it via $dark-carrier-media (see _tokens.scss).
 @include mixins.screen-root('upload-php') {
 
   // ---- Toolbar -----------------------------------------------------------------
@@ -57,8 +32,7 @@
       @include primitives.wp-filter-surface(transparent);
     }
 
-    // One flex row instead of core's two-row grid. flex:none stops the
-    // group from squashing its controls when the window is narrow.
+    // flex:none keeps the group from squashing its controls when narrow.
     .media-toolbar-secondary {
       display: flex;
       flex: none;
@@ -69,19 +43,16 @@
       max-width: none;
     }
 
-    // The labels stay in flow (they are the selects' accessible names) but
-    // read as inline muted captions instead of core's stacked row.
+    // Labels stay in flow (they are the selects' accessible names).
     .media-toolbar-secondary label,
     .media-toolbar-primary label {
       @apply text-sm whitespace-nowrap;
       color: var(--attrium-muted-foreground);
     }
 
-    // Core (6.7) scatters baseline offsets through this toolbar — selects
-    // get margin-top: 11px, the search input margin: 32px 0 0, the selects
-    // margin-right: 2% — tuning its float layout. The flex row centers
-    // everything itself, so normalize them back to zero (both core lines:
-    // 6.7's floats and 7.1's two-row grid) and own the spacing below.
+    // Core (6.7 floats, 7.1 grid) scatters baseline offsets through this
+    // toolbar for its own layout; the flex row centers everything itself,
+    // so normalize them to zero.
     .media-toolbar-secondary label,
     .media-toolbar-secondary select,
     .media-toolbar-secondary .view-switch,
@@ -90,22 +61,19 @@
       margin: 0;
     }
 
-    // Group rhythm: the view-switch and each filter select end a control
-    // group (8px gap + 8px here = 16px between groups, 8px within).
+    // 8px gap + 8px margin = 16px between groups, 8px within.
     .media-toolbar-secondary .view-switch,
     .media-toolbar-secondary .attachment-filters {
       margin-inline-end: 0.5rem;
     }
 
-    // Core wedges toolbar buttons into its layout with vertical margins
-    // (both cores: .attachments-browser … > .media-button { margin: 10px 0 }).
+    // Core gives toolbar buttons vertical margins for its own layout.
     .media-button {
       margin: 0;
     }
 
-    // The search (core: floated right) pins to the right edge as a flex
-    // child; core's 11px vertical margin died with the float. nowrap
-    // guards against common.css's ≤1000px .search-form flex-wrap.
+    // Pinned right via margin-left: auto; nowrap guards against
+    // common.css's ≤1000px .search-form flex-wrap.
     .media-toolbar-primary {
       display: flex;
       flex: none;
@@ -117,10 +85,8 @@
       max-width: none;
     }
 
-    // Core parks the spinner in an implicit grid cell; as a
-    // visibility:hidden flex child it would permanently reserve 20px of
-    // row width. Pull it out of flow entirely and center it — it only
-    // paints while .is-active flips visibility during fetches.
+    // Core's spinner is visibility:hidden; as a flex child it would reserve
+    // row width, so pull it out of flow (it only paints while fetching).
     .spinner {
       position: absolute;
       top: 50%;
@@ -129,10 +95,7 @@
     }
   }
 
-  // Form controls in both toolbar variants — grid-mode's filter dropdowns
-  // (select.attachment-filters, incl. #media-attachment-filters) + search
-  // (#media-search-input), and list-mode's filter select + search — all get
-  // the same Attrium form-field look, so they share one gated block.
+  // Grid-mode and list-mode filter/search controls share one recipe.
   .media-toolbar select.attachment-filters,
   .media-toolbar #media-search-input,
   .wp-filter .filter-items select,
@@ -140,21 +103,15 @@
     @include primitives.field-outline;
   }
 
-  // List-view filter bar (.wp-filter without .media-toolbar).
   .wp-filter {
     @include primitives.wp-filter-surface(var(--attrium-background));
   }
 
   // ---- View-switch -----------------------------------------------------------
 
-  // Core paints dashicons (\f163 / \f509) on the a::before (list-tables.css)
-  // in grey/blue. Replace with Lucide via the canonical swap — hide the
-  // glyph-bearing ::before, mask a Lucide glyph onto an ::after overlay —
-  // and restyle the links as icon toggles that match the h-9 toolbar
-  // controls. inline-flex (not flex) so the list-mode .wp-filter bar, where
-  // the view-switch is inline content, keeps its line layout. The gap
-  // separates the two toggles — core rendered them flush against each
-  // other (floated links, no spacing).
+  // Core paints dashicons on a::before; swap for Lucide (hide ::before,
+  // mask the glyph on ::after). inline-flex so the list-mode bar keeps its
+  // line layout; the gap separates toggles core rendered flush.
   .view-switch {
     display: inline-flex;
     align-items: center;
@@ -193,9 +150,8 @@
     }
   }
 
-  // The links carry the screen-reader view labels; the ::after overlays
-  // carry the glyphs. Explicit 1rem on a 2rem box — `contain` (the mask
-  // helper's default) would scale the glyph up to fill the box.
+  // Explicit 1rem glyphs on 2rem boxes; the mask helper's contain default
+  // would scale the glyph up to fill the box.
   .view-switch .view-list::after {
     @include icons.mask('list', 1rem);
   }
@@ -206,14 +162,11 @@
 
   // ---- Attachments grid --------------------------------------------------------
 
-  // Core floats the [data-columns]-wide tiles (float:left, mirrored right
-  // in RTL — two code paths). flex-wrap keeps core's gutter mechanism
-  // (li padding, NOT ul gap — a gap would break the JS-driven
-  // [data-columns] percentage widths) with clean row alignment in both
-  // directions. Left/right/bottom padding is removed so the grid runs
-  // flush with the content area (core's 2px top hairline stays). The
-  // direct-child scopes keep the sidebar's .media-selection strip (a
-  // nested .attachments) on core's compact layout.
+  // Core floats the [data-columns]-wide tiles; flex-wrap keeps core's gutter
+  // mechanism (li padding, NOT ul gap — a gap would break the JS percentage
+  // widths). Tiles sit flush (core's 2px top hairline stays); the
+  // direct-child scope leaves the sidebar's nested .attachments on core's
+  // layout.
   .attachments-browser > .attachments,
   .attachments-wrapper > .attachments {
     display: flex;
@@ -227,21 +180,14 @@
 
   // ---- Tile chrome ---------------------------------------------------------------
 
-  // The tile card itself: core paints .attachment-preview as a flat #f0f0f1
-  // square framed by hardcoded inset shadows (its own vignette plus the
-  // .thumbnail::after hairline) — grey-on-grey in light, a bright band in
-  // dark. The Attrium tile is the card recipe: elevated token surface,
-  // hairline border, rounded corners clipping the image. The nesting root
-  // is li.attachment (not .attachment) on purpose: the ::after arm below
-  // has to out-specify core 7.1's `.wp-core-ui .attachment:not(:has(
-  // .filename))::after` name strip at equal class counts, and the extra
-  // element breaks the tie without depending on stylesheet load order.
+  // Core's .attachment-preview is a flat square with hardcoded inset shadow
+  // frames; the tile becomes the card recipe instead. The li.attachment
+  // root is deliberate: it out-specifies core 7.1's
+  // :not(:has(.filename))::after strip without depending on load order.
   .attachments-browser .attachments li.attachment {
-    // The flush tile layout: top/left/bottom padding removed, so the card
-    // hugs the li's edges and rows stack with ZERO row gap; the 8px right
-    // padding is the only gutter left (column spacing + grid's right
-    // breathing room). The card chrome below and the 7.1 ::after strip /
-    // .check chip positions all track this padding.
+    // Flush tiles: only the 8px right padding remains (column gutter), so
+    // rows stack with zero gap. The ::after strip and .check positions
+    // below track this padding.
     padding: 0 8px 0 0;
 
     color: var(--attrium-foreground);
@@ -250,28 +196,23 @@
       @apply transition-colors duration-150;
       @include primitives.card-surface;
       box-shadow: none; // core's inset vignette + hairline; the border owns the edge
-      overflow: hidden; // clip the image to the rounded corners
+      overflow: hidden;
     }
 
-    // Core's second hairline, painted over the image edge from inside the
-    // thumbnail — redundant under the preview's own border.
+    // Redundant under the preview's own border.
     .thumbnail::after {
       box-shadow: none;
     }
 
-    // Hover hints interactivity through the border alone — no fill flash
-    // behind the image. The ring token is the repo's hover border (see
-    // select:hover in modules/_forms.scss).
+    // Hover recolors only the border (ring token, per modules/_forms.scss).
     &:hover .attachment-preview {
       border-color: var(--attrium-ring);
     }
 
-    // Selection (and .details, the edit modal's selected variant): core
-    // paints inset white + grey/blue rings on the li; the token treatment
-    // puts the primary color on the card edge — the outset shadow adds the
-    // second pixel without resizing the aspect square (a thicker border
-    // would). This block must stay AFTER the hover arm so a hovered
-    // selected tile keeps the primary edge.
+    // Selection: core's inset rings become the primary color on the card
+    // edge; the outset shadow adds the second pixel without resizing the
+    // aspect square. Stays AFTER the hover arm so hovered+selected keeps
+    // the primary edge.
     &.selected,
     &.details {
       box-shadow: none;
@@ -282,20 +223,10 @@
       }
     }
 
-    // Filename caption bar: core's rgba(255,255,255,0.8) bar with #1d2327
-    // text, 5px/10px padding and word-wrap up to max-height 3rem — light-
-    // mode ink on a dark tile and a tall multi-line band over the image.
-    // The Attrium caption is ONE line: token surface, ellipsis
-    // truncation, and core's padding reduced to top/right so the text
-    // hugs the card's bottom-left corner (bottom/left padding removed).
-    // 6.7 renders a .filename
-    // element for non-image tiles (centered — re-pinned to start); 7.1
-    // paints image names on the li::after pseudo, which keeps only the
-    // truncation plus the bottom-corner radius the pseudo needs
-    // because it sits on the li, outside the preview's overflow clip.
-    // The pseudo never generates on 6.7 (nothing sets content there), so
-    // the suite covers this recipe through the .filename arm (the PDF
-    // fixture tile).
+    // Filename caption: core's centered, padded, word-wrapped bar becomes
+    // one truncated line on the token surface. 6.7 renders .filename for
+    // non-image tiles; 7.1 paints image names on li::after (outside the
+    // preview's overflow clip, hence its own bottom radius below).
     .filename {
       @apply truncate;
       background: var(--attrium-secondary);
@@ -312,16 +243,10 @@
     &::after {
       @apply truncate;
       border-radius: 0 0 var(--attrium-radius-md) var(--attrium-radius-md);
-      // Core (7.1) pins the strip with left: 8px + width: calc(100% - 16px)
-      // — an 8px inset on BOTH sides, tuned for its 8px-everywhere li
-      // padding. Overriding only part of the trio silently loses: the
-      // over-constrained resolution honors left + width and IGNORES right,
-      // so the strip kept core's 8px gap on the left (verified against a
-      // static 7.1 media-views.css repro). Pin BOTH offsets to the card's
-      // edges — left: 0 (the card starts at the li's left edge) and
-      // right: 8px (the column gutter) — and reset width to auto so the
-      // offsets are the source of truth; core's calc() width would win
-      // over `right` otherwise. bottom: 0 because rows are flush.
+      // Core 7.1 pins the strip with left:8px + width:calc(100% - 16px);
+      // overriding only part of the trio loses (left + width win, right is
+      // ignored), so pin left:0 / right:8px and reset width:auto.
+      // bottom:0 because rows are flush.
       bottom: 0;
       left: 0;
       right: 8px;
@@ -332,23 +257,14 @@
 
   // ---- Tile check chip ---------------------------------------------------------
 
-  // Core draws the uploader-icons.png checkmark on .media-modal-icon and
-  // recolors the chip with --wp-admin-theme-color on selection. Swap the
-  // sprite for the shared Lucide check (currentColor mask — one rule serves
-  // both modes) and pin the chip back onto the card's corner (see below);
-  // the selected/details arm owns the chip paint. The .attachments scope
-  // keeps every
-  // other .media-modal-icon use (media-modal-close, modal headers) on
-  // core's sprite; core still owns when the chip is shown (display:none
-  // until .selected / bulk-select mode) — only the paint changes. The
-  // extra .attachments-browser prefix out-specifies core's selected/details
-  // chip rules; the selected block MUST stay after the base block so a
-  // selected chip keeps its paint on hover.
+  // Tile check chip: swap core's uploader sprite for the Lucide check and
+  // pin the chip to the card corner. Scoped to .attachments so other
+  // .media-modal-icon uses keep core's sprite. The selected arm MUST follow
+  // the base arm so selection paint survives hover.
   .attachments-browser .attachments .attachment .check {
     @apply rounded-[var(--attrium-radius-md)];
-    // Core parks the chip at the li's top/right 0 — under the flush
-    // padding that is 8px right of the CARD's edge, so pin it back onto
-    // the card's corner (top is already flush: li top padding is 0).
+    // Core parks the chip at the li's top/right 0, 8px right of the card's
+    // edge under the flush padding — pin it back onto the card's corner.
     top: 0;
     right: 8px;
 
@@ -380,38 +296,20 @@
 
   // ---- Edit-attachment modal --------------------------------------------------
 
-  // Clicking a grid tile opens the "Attachment details" modal — the
-  // #wp-media-modal / edit-attachment-frame markup that media-views.js
-  // appends straight to <body>, OUTSIDE #attrium-host (the same
-  // body-level-overlay shape as theme-editor.php's #file-editor-warning,
-  // see _tokens.scss). Two consequences:
-  //   - this gate still reaches it, because body.upload-php is an ancestor
-  //     of the modal — the rules below are plain descendant selectors;
-  //   - the DARK palette does not: the carriers are #attrium-host.dark and
-  //     the Customizer body, neither of which covers a body-level modal. A
-  //     dedicated carrier arm ships it exactly here —
-  //     html.attrium-dark body.attrium-mod-screens.upload-php .media-modal
-  //     ($dark-carrier-media in _tokens.scss) — scoped to this reskin so
-  //     the forms/buttons module recipes, which also match the modal (they
-  //     gate on body.attrium-mod-* descendants), swap tokens in lockstep
-  //     with the panel surface instead of turning dark on core's white.
-  // The treatment mirrors the themes.php details modal (screens/_themes.scss
-  // .theme-overlay): rounded token panel over a dark scrim, Lucide icon
-  // buttons in the header, tokenized text and form surfaces.
+  // Edit-attachment modal: appended to <body>, OUTSIDE #attrium-host. This
+  // gate still reaches it (body.upload-php is an ancestor), but the dark
+  // palette needs $dark-carrier-media in _tokens.scss — scoped to this
+  // reskin so the forms/buttons recipes inside the modal swap in lockstep
+  // with the panel. Treatment mirrors .theme-overlay in screens/_themes.scss.
 
-  // Core's backdrop is #000 at opacity 0.7; match the theme-overlay scrim
-  // (bg-black/60) so both modals read as the same elevation. `opacity: 1`
-  // is load-bearing — the alpha moves into the background, otherwise the
-  // two would multiply to 0.42.
+  // Match the theme-overlay scrim. opacity:1 is load-bearing: the alpha is
+  // in the background, otherwise the two multiply to 0.42.
   .media-modal-backdrop {
     @apply bg-black/60 opacity-100;
   }
 
-  // The panel: core's #fff slab with a 0 5px 15px drop shadow becomes the
-  // card recipe — token surface, hairline border, rounded corners. Core
-  // keeps the geometry (the 30px fixed inset, the 50px header strip, the
-  // absolutely positioned two-column layout), and `overflow: auto` stays
-  // core's small-viewport fallback scroll (auto clips at the radius too).
+  // Core's #fff slab + drop shadow becomes the card recipe; core keeps the
+  // geometry, and overflow:auto doubles as the small-viewport fallback scroll.
   .media-modal-content {
     @apply rounded-[var(--attrium-radius-md)]
            border border-[var(--attrium-border)];
@@ -419,39 +317,28 @@
     box-shadow: none;
   }
 
-  // Header: core stacks the three nav buttons as absolute 50px boxes with
-  // 1px divider borders; make the strip a flex row so they sit as compact
-  // icon buttons at the inline end, like .theme-overlay .theme-header. The
-  // 50px height is core's frame constant (.media-frame-content top: 50px
-  // and the title's line box are calibrated to it).
+  // Flex row of compact icon buttons. 50px is core's frame constant (the
+  // content offset and title line box depend on it).
   .edit-attachment-frame .edit-media-header {
     @apply flex h-[50px] items-center justify-end gap-0.5 pe-2;
   }
 
-  // Nav buttons (previous / next / close). Core paints them as 50px grey
-  // boxes with dashicons glyphs (\f341/\f345/\f335) and a #dcdcde hover
-  // fill; reset to the theme-overlay icon buttons with Lucide masks. Core
-  // parks them at `position: absolute` (right 0/51/102px, top 0);
-  // `relative` + zeroed insets put them back in the flex row's flow while
-  // keeping a positioned box for the ::after overlay. The [disabled] arm
-  // sits after the icon-button hover arm so a disabled prev/next keeps the
-  // muted paint.
+  // Core's absolute grey boxes + dashicons become in-flow icon buttons with
+  // Lucide masks (relative + zeroed insets keeps a box for the ::after
+  // overlay). The [disabled] arm follows hover so disabled prev/next stays
+  // muted.
   .edit-attachment-frame .edit-media-header .left,
   .edit-attachment-frame .edit-media-header .right,
   .media-modal-close {
     @apply relative inset-0;
     @include primitives.icon-button(transparent);
 
-    // Core's dashicons glyph on the ::before (the close button's glyph
-    // lives on its .media-modal-icon span — hidden below). The !important
-    // on core's `font` line doesn't matter: `display: none` wins on the
-    // normal declarations.
+    // display:none beats core's !important `font` line.
     &::before {
       @apply hidden;
     }
 
-    // Core paints a blue focus glow on the close button
-    // (media-views.css .media-modal-close:focus box-shadow).
+    // Core paints a blue focus glow on the close button.
     &:focus {
       @apply shadow-none;
     }
@@ -468,8 +355,6 @@
     }
   }
 
-  // Glyphs, via the shared Lucide mask helper (scss/_icons.scss) — the
-  // explicit 1rem keeps the glyph from scaling up to the 2rem button.
   .edit-media-header .left::after {
     @include icons.mask('chevron-left', 1rem);
   }
@@ -478,9 +363,8 @@
     @include icons.mask('chevron-right', 1rem);
   }
 
-  // The close button's glyph span: core paints the \f335 dashicon on
-  // .media-modal-icon::before; the glyph moves to the button's ::after, so
-  // the span renders nothing (the screen-reader label is a sibling span).
+  // The glyph moves to the button's ::after; the span carries nothing (the
+  // screen-reader label is a sibling span).
   .media-modal-close .media-modal-icon {
     @apply hidden;
   }
@@ -489,10 +373,8 @@
     @include icons.mask('x', 1rem);
   }
 
-  // Title: core's 22px h1 reads oversized next to the compact icon
-  // buttons; match the theme-overlay heading scale. leading-[50px] keeps
-  // the title's line box the strip's height — it is the only in-flow box
-  // in .media-frame-title.
+  // leading-[50px] keeps the title's line box at strip height (the only
+  // in-flow box in .media-frame-title).
   .edit-attachment-frame .media-frame-title h1 {
     @apply m-0 text-base font-semibold leading-[50px];
     color: var(--attrium-foreground);
@@ -511,19 +393,15 @@
     background: var(--attrium-primary-foreground);
   }
 
-  // Core paints an inset top "scroll affordance" shadow on the details
-  // frame and the info column — faux depth that reads as a grey band on
-  // the token panel. The border owns the edge instead.
+  // Core's inset "scroll affordance" shadows read as a grey band on the
+  // token panel; the border owns the edge instead.
   .edit-attachment-frame .attachment-details,
   .edit-attachment-frame .attachment-info {
     box-shadow: none;
   }
 
-  // Info column (the right 35%): core's #f6f7f7 with a #dcdcde left edge.
-  // --attrium-background is the recessed-surface token (its light value,
-  // oklch(0.965), IS #f6f7f7; dark swaps it one step off the panel). The
-  // column text is core's #646970 → muted-foreground, with strong labels
-  // lifted to the foreground token and links on the primary link recipe.
+  // --attrium-background is the recessed token: same as core's #f6f7f7 in
+  // light, one step off-panel in dark. Text → muted, links on link-primary.
   .edit-attachment-frame .attachment-info {
     @apply border-s border-[var(--attrium-border)];
     background: var(--attrium-background);
@@ -538,57 +416,36 @@
     }
   }
 
-  // Details/settings section dividers: core's #dcdcde hairlines → token.
   .edit-attachment-frame .attachment-info .details,
   .edit-attachment-frame .attachment-info .settings {
     border-bottom: 1px solid var(--attrium-border);
   }
 
-  // Setting labels (Alternative Text, Title, …): core's #646970 labels →
-  // muted foreground. Core owns the two-column label/input layout (the
-  // 30%/65% floats); the inputs themselves are the forms module's recipe,
-  // which matches the modal as a body descendant.
+  // Core owns the label/input floats; the inputs get the forms-module recipe.
   .attachment-details .setting .name {
     color: var(--attrium-muted-foreground);
   }
 
-  // Setting textareas (Caption, Description): core squeezes them to 62px —
-  // under the forms module's padding that is ~2.5 lines, cramped for
-  // prose. 8.25rem ≈ six text lines; core's resize:vertical stays, so the
-  // box can still be grown by hand.
+  // 8.25rem ≈ six text lines (core squeezes to ~2.5); resize:vertical stays.
   .edit-attachment-frame .attachment-details .setting textarea {
     height: 8.25rem;
   }
 
-  // Alt text (core: 50px, the tightest) gets its own smaller-but-comfortable
-  // 6rem ≈ four lines — the a11y field deserves room without dominating
-  // the column. Must out-specify the .setting rule above, hence the extra
-  // .alt-text in the chain (it is core's own specificity ordering too).
+  // The extra .alt-text matches core's specificity ordering so this wins.
   .edit-attachment-frame .attachment-details .alt-text textarea {
     height: 6rem;
   }
 
-  // Preview region: the media column's canvas. Core leaves .thumbnail (the
-  // padded wrapper around the preview image and its actions row) on the
-  // panel surface — which is why a background set on the img alone never
-  // shows: an opaque image covers its own box, so only the border/radius
-  // are visible while the 16px mat around it stays bare panel. Give the
-  // wrapper the recessed --attrium-background (the same token as the info
-  // column): the modal reads as two symmetric recessed columns on the
-  // elevated panel, and the image card below gets a canvas to sit on.
+  // An opaque image covers its own box, so only the wrapper shows a mat
+  // around it. Same recessed token as the info column: two symmetric
+  // recessed columns on the elevated panel.
   .edit-attachment-frame .attachment-media-view .thumbnail {
     background: var(--attrium-background);
   }
 
-  // Preview image: core hardcodes a #c3c4c7 transparency checkerboard on
-  // .details-image (background-image + position/size longhands, dropped for
-  // the .icon non-image variant). Card the image like a grid tile instead —
-  // card-surface is the elevated-card-on-recessed-canvas recipe
-  // (primary-foreground surface, hairline border, rounded corners). The
-  // `background` shorthand inside the mixin is load-bearing: a plain
-  // background-color would leave core's checkerboard gradients painted on
-  // top of it; it also outvotes the .icon arm's `background: none` (lower
-  // specificity) so the icon preview is carded the same way.
+  // The background shorthand is load-bearing: background-color alone would
+  // leave core's checkerboard gradients on top; it also beats the
+  // lower-specificity .icon arm.
   .edit-attachment-frame .attachment-media-view .details-image {
     @include primitives.card-surface;
   }
