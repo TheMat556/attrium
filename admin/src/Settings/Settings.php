@@ -90,15 +90,7 @@ class Settings {
         );
     }
 
-    /**
-     * Whether the current request disables Attrium via the ?attrium=off
-     * query-string kill switch. Read-only toggle, no state change.
-     *
-     * Single owner for the kill switch: Attrium (shell), ModuleRegistry
-     * (content CSS + body classes) and CustomizerSupport all bail on this,
-     * so the shell and the wp-body reskin are always present or absent
-     * together.
-     */
+    /** Read-only ?attrium=off kill switch; no state change. */
     public static function is_disabled_by_query(): bool {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only toggle (attrium=off), no state change.
         return isset($_GET['attrium']) && 'off' === sanitize_key( wp_unslash( $_GET['attrium'] ) );
