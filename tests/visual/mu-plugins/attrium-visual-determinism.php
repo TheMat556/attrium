@@ -3,17 +3,14 @@
  * Plugin Name: Attrium Visual-Regression Determinism
  * Description: Test-environment-only shims that make wp-admin byte-stable for visual regression. Mapped into wp-env via .wp-env.json; NEVER shipped with the plugin.
  *
- * Without this, the visual suite is unpinnable: WordPress phones home to
- * wp.org and renders the live "WordPress X.Y.Z is available!" nag, per-theme
- * "New version available" banners, and update counts in the admin bar. Those
- * strings change every time WordPress or a bundled theme ships a release, so
- * every committed baseline would break on someone else's schedule — not
- * because Attrium's CSS changed.
+ * Without this, the visual suite is unpinnable: WordPress renders live wp.org
+ * update state (core nag, per-theme banners, admin-bar counts) that changes on
+ * someone else's release schedule and would break baselines with no CSS change.
  *
- * The alternative (masking the banners) is strictly worse: a Playwright mask
- * paints an opaque box over the region, and these banners sit directly on top
- * of the notice/table/card styling the suite exists to verify. Suppressing the
- * update state at the source keeps the screens fully visible AND deterministic.
+ * Masking is strictly worse: a Playwright mask paints an opaque box over the
+ * region, and these banners sit on top of the notice/table/card styling the
+ * suite exists to verify. Suppressing the state at the source keeps the
+ * screens fully visible AND deterministic.
  *
  * @package Attrium
  */
@@ -23,18 +20,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Report "everything is up to date" for core, plugins and themes.
  *
- * Short-circuiting the three update transients removes, in one go:
- *   - the `.update-nag` core banner on every admin screen,
- *   - the 14 `.update-message` overlays on themes.php,
- *   - the `#wp-admin-bar-updates` counter (which Attrium's own header scrapes
- *     via useToolbar, so it would otherwise leak into the shell too),
- *   - `.theme-count` / `.update-plugins` bubble counts.
- *
- * `pre_site_transient_*` runs before any HTTP request, so this also makes the
- * suite fully offline and removes wp.org latency from every page load.
+ * Removes the `.update-nag` banner, the themes.php `.update-message`
+ * overlays, the `#wp-admin-bar-updates` counter (scraped into Attrium's own
+ * header via useToolbar) and the bubble counts — before any HTTP request,
+ * so the suite is also fully offline with no wp.org latency.
  */
 function attrium_visual_freeze_updates() {
-    $now = 1700000000; // Fixed timestamp: these are rendered as "checked" times.
+    $now = 1700000000; // Fixed "checked" time.
 
     add_filter(
         'pre_site_transient_update_core',
@@ -67,13 +59,8 @@ attrium_visual_freeze_updates();
 /**
  * Give the active theme classic menu support.
  *
- * wp-env activates a block theme (twentytwentyfive), which declares neither
- * `menus`. nav-menus.php hard-exits with a 500 and the body
- * "Your theme does not support navigation menus." — so the Menus
- * baseline captured an error page and `scss/screens/_nav-menus.scss` had zero
- * real coverage. Declaring support renders the genuine Menus screen.
- *
- * Runs late so it wins over the theme's own setup callback.
+ * wp-env's block theme declares no `menus`, so nav-menus.php 500s and the
+ * baseline captured an error page. Runs late to win over the theme's setup.
  */
 add_action(
     'after_setup_theme',
@@ -86,25 +73,13 @@ add_action(
 /**
  * Give the Menus screen a real, fixed menu to edit.
  *
- * a fresh install has "no menus", so nav-menus.php renders only the
- * `#menu-settings-column` "add items" panels and an empty `#menu-management`
- * "Menu structure" box — `.menu-item` / `.menu-item-handle` /
- * `.menu-item-settings` rows never exist, and `_nav-menus.scss` has no rule for
- * them (they'd keep core's #fff chrome and read as a white band when a real
- * menu has items). Creating one deterministic menu fixtures the structure box
- * so those rules can be written and the baseline can lock them down.
+ * A fresh install has no menus, so the `.menu-item-*` rows this SCSS styles
+ * never render. Two custom links exercise hierarchy with no post objects.
  *
- * Two custom-link items keep the row markup exercising a hierarchy with no
- * dependence on post objects existing.
- *
- * Claimed with `add_option`, not a read-then-create name check. The visual suite
- * runs Playwright workers in parallel (see playwright.config.ts), so several
- * requests can reach `admin_init` at once and a `wp_get_nav_menu_object()` guard
- * is a check-then-act race. `add_option` is a single INSERT against the
- * `option_name` UNIQUE key: exactly one caller gets `true` and seeds, every
- * other returns immediately. The claim is released again if creation fails, so a
- * later request retries instead of leaving the option set with no menu behind
- * it.
+ * Claimed with `add_option`, not a read-then-create check: parallel workers
+ * race here, and only an INSERT against the UNIQUE key is atomic — exactly
+ * one caller seeds, the rest return. Released on failure so a later request
+ * retries instead of leaving a claim with no menu behind it.
  */
 add_action(
     'admin_init',
@@ -145,21 +120,144 @@ add_action(
 );
 
 /**
- * Ensure multiple active sessions so the "Log Out Everywhere Else" button
- * on profile.php / user-edit.php is always enabled with the longer text.
+ * Seed the Media Library grid with ten fixed attachments.
  *
- * A fresh wp-env install has exactly one session token. WordPress disables
- * the button and shortens the description to "You are only logged in at
- * this location." when there is only one session. The longer variant
- * ("Did you lose your phone…") wraps to two lines, adding ~21 px of
- * height that the committed baselines expect.  Injecting a second session
- * token keeps the button enabled and the text stable across environments.
+ * A fresh install has an empty library, so the tiles, the .filename caption
+ * and the check chip had no coverage. Nine copies of one PNG fill two rows
+ * (whatever column count the viewport picks); core's pipeline generates the
+ * thumbnails from a fixed source, so they are byte-identical across runs.
  *
- * Read-modify-write, but safe under the parallel workers: the injected key is a
- * fixed string, so concurrent writers converge on the same array rather than
- * appending duplicates. No real token can be lost either — `auth.setup.ts` logs
- * in once and every worker reuses that stored session, so nothing else is
- * writing this meta during a run.
+ * The tenth is a long-filename PDF: non-image tiles are the one place 6.7
+ * renders .filename (7.1 paints image names on li::after), and the name
+ * overflows one tile width, exercising the ellipsis truncation.
+ *
+ * Two modal pins (clicking the FIRST tile opens "Attachment details"):
+ * subdirectory pinned to 2024/01 (the modal renders full File URLs) and
+ * distinct hourly dates on 2024-01-01 (the grid sorts date DESC; ties fall
+ * to MySQL's unspecified order, so fixture 1 must win by sort alone).
+ *
+ * Claimed atomically like the menu fixture (parallel workers race
+ * admin_init); released on failure so a later request retries.
+ */
+
+/**
+ * Pin fixture uploads into uploads/2024/01 (see above: the modal renders
+ * full upload paths, so a date-derived subdir would leak into baselines).
+ *
+ * @param array $uploads The upload dir configuration.
+ * @return array
+ */
+function attrium_visual_pin_upload_subdir( $uploads ) {
+    $uploads['subdir'] = '/2024/01';
+    $uploads['path']   = $uploads['basedir'] . $uploads['subdir'];
+    $uploads['url']    = $uploads['baseurl'] . $uploads['subdir'];
+
+    return $uploads;
+}
+
+add_action(
+    'admin_init',
+    static function () {
+        if ( ! current_user_can( 'upload_files' ) ) {
+            return;
+        }
+
+        if ( ! add_option( 'attrium_visual_media_seeded', '1' ) ) {
+            return;
+        }
+
+        $source = __DIR__ . '/attrium-visual-fixture.png';
+        $bytes  = is_readable( $source ) ? file_get_contents( $source ) : false;
+
+        if ( ! is_string( $bytes ) ) {
+            delete_option( 'attrium_visual_media_seeded' );
+            return;
+        }
+
+        $success = true;
+
+        add_filter( 'upload_dir', 'attrium_visual_pin_upload_subdir' );
+
+        for ( $i = 1; $success && $i <= 9; $i++ ) {
+            $upload = wp_upload_bits( "attrium-visual-fixture-{$i}.png", null, $bytes );
+
+            if ( ! is_array( $upload ) || ! empty( $upload['error'] ) ) {
+                $success = false;
+                break;
+            }
+
+            $attachment_id = wp_insert_attachment(
+                array(
+                    'post_mime_type' => 'image/png',
+                    'post_title'     => "Attrium Fixture {$i}",
+                    'post_status'    => 'inherit',
+                    'post_date'      => sprintf( '2024-01-01 %02d:00:00', 13 - $i ),
+                    'post_date_gmt'  => sprintf( '2024-01-01 %02d:00:00', 13 - $i ),
+                ),
+                $upload['file']
+            );
+
+            if ( is_wp_error( $attachment_id ) || 0 === $attachment_id ) {
+                $success = false;
+                break;
+            }
+
+            wp_update_attachment_metadata(
+                $attachment_id,
+                wp_generate_attachment_metadata( $attachment_id, $upload['file'] )
+            );
+        }
+
+        // Long-filename PDF caption fixture; oldest date, so the LAST tile.
+        if ( $success ) {
+            $upload = wp_upload_bits(
+                'attrium-visual-fixture-with-a-very-long-filename.pdf',
+                null,
+                $bytes
+            );
+
+            if ( ! is_array( $upload ) || ! empty( $upload['error'] ) ) {
+                $success = false;
+            } else {
+                $attachment_id = wp_insert_attachment(
+                    array(
+                        'post_mime_type' => 'application/pdf',
+                        'post_title'     => 'Attrium Fixture 10',
+                        'post_status'    => 'inherit',
+                        'post_date'      => '2024-01-01 03:00:00',
+                        'post_date_gmt'  => '2024-01-01 03:00:00',
+                    ),
+                    $upload['file']
+                );
+
+                if ( is_wp_error( $attachment_id ) || 0 === $attachment_id ) {
+                    $success = false;
+                } else {
+                    wp_update_attachment_metadata(
+                        $attachment_id,
+                        wp_generate_attachment_metadata( $attachment_id, $upload['file'] )
+                    );
+                }
+            }
+        }
+
+        remove_filter( 'upload_dir', 'attrium_visual_pin_upload_subdir' );
+
+        if ( ! $success ) {
+            delete_option( 'attrium_visual_media_seeded' );
+        }
+    }
+);
+
+/**
+ * Ensure multiple active sessions so profile.php's "Log Out Everywhere
+ * Else" stays enabled with its longer two-line text (~21px the baselines
+ * expect). A fresh install has one session token, which disables the button
+ * and shortens the copy.
+ *
+ * Safe under parallel workers: the injected key is fixed, so concurrent
+ * writers converge on the same array; nothing else writes this meta mid-run
+ * (auth.setup.ts logs in once, workers reuse the stored session).
  */
 add_action(
     'admin_init',
@@ -189,12 +287,8 @@ add_action(
 /**
  * Remove the "scheduled events" site-health test.
  *
- * This test checks WP-Cron health and reports "A scheduled event has failed"
- * when a cron job errors. Whether it fires depends on the wp-env startup
- * timing and is not deterministic, causing the site-health page to show
- * 3 or 4 recommended improvements between runs.  Removing it keeps the
- * screen stable while leaving every other site-health check (inactive
- * plugins/themes, debug mode, loopback, etc.) fully covered.
+ * It depends on wp-env startup timing, flipping the page between 3 and 4
+ * recommendations across runs. Everything else stays fully covered.
  */
 add_filter(
     'site_status_tests',
@@ -207,16 +301,11 @@ add_filter(
 /**
  * Render one deterministic admin notice on every screen.
  *
- * This exists to protect COVERAGE, not to add determinism. Freezing the update
- * transients above removes the `.update-nag` core banner, which on most screens
- * was the only `.notice` in the DOM. Combined with `scss/screens/_base.scss`
- * hiding `.update-nag` outright, the `notices` module (`scss/modules/_notices.scss`)
- * would have almost nothing left to style in a snapshot — and an audit that
- * deletes rules "because the test stayed green" would happily delete it.
- *
- * `.notice` is styled generically (no per-variant rules), so a single fixed,
- * dismissible notice exercises the whole module: the container, `.title`, `p`,
- * and the `.notice-dismiss` button. Text is static so it cannot drift.
+ * Protects COVERAGE, not determinism: freezing updates removes the
+ * `.update-nag` banner (often the only `.notice` in the DOM), which would
+ * leave the notices module with nothing under test. One fixed dismissible
+ * notice exercises container, title, paragraph and dismiss button; the text
+ * is static so it cannot drift.
  */
 add_action(
     'admin_notices',
@@ -229,30 +318,17 @@ add_action(
 );
 
 /**
- * Stub the WordPress.org Plugin Installation API with three fixed plugins.
+ * Stub the wp.org Plugin Installation API with three fixed plugins.
  *
- * plugin-install.php renders live wp.org results ("Featured", search, …) that
- * change on WordPress.org's schedule, so without this stub it cannot be in the
- * page suite. Short-circuiting `plugins_api` with a fixed catalog makes the
- * screen deterministic and offline while exercising every card state the SCSS
- * touches:
- *   - fixture-card-one:   fully populated (rating stars, installs, updated) →
- *                         the normal card layout,
- *   - fixture-card-two:   zero rating / zero installs → no stars, "Less Than
- *                         10" installs text,
- *   - fixture-card-three: requires WP 99.0 / PHP 9.9 → the incompatible card
- *                         with its error notice and no Install button.
+ * plugin-install.php renders live results that change on wp.org's schedule.
+ * A fixed catalog makes it deterministic and offline while covering every
+ * card state: fully populated, zero rating/installs (no stars, "Less Than
+ * 10"), and incompatible (WP 99.0 / PHP 9.9 → error notice, no button).
  *
- * The plugin icon points at a local wp-admin asset so the card renders with no
- * network round-trip and no remote-image drift. `plugins_api` runs only on
- * plugin-install.php (and the install-plugin flow), so no other screen is
- * affected.
- *
- * The Featured tab's "Popular tags" cloud is pinned too: `install_popular_tags()`
- * calls `plugins_api( 'hot_tags' )` and caches the result in a `poptags_` site
- * transient keyed by `md5( serialize( $args ) )` (empty args on the Featured
- * tab). We stub `hot_tags` here AND pre-seed that transient so a stale live
- * fetch cached by an earlier run cannot leak through before its 3-hour TTL.
+ * Icons point at a local wp-admin asset (no network, no remote drift); the
+ * hook only runs on plugin-install.php. The Featured tab's tag cloud is
+ * pinned too — `hot_tags` is stubbed AND its `poptags_` transient pre-seeded
+ * (keyed exactly like core) so a stale live fetch can't leak through.
  */
 function attrium_visual_hot_tags() {
     return array(
@@ -336,22 +412,12 @@ add_filter(
 );
 
 /**
- * Stub the WordPress.org Theme Installation API with three fixed themes.
+ * Stub the wp.org Theme Installation API with three fixed themes.
  *
- * Mirrors the plugins_api stub above: theme-install.php renders live wp.org
- * results ("Featured", search, …) that change on WordPress.org's schedule.
- * Short-circuiting `themes_api` makes the grid deterministic and offline while
- * exercising the card states the SCSS touches:
- *   - fixture-theme-one:   fully populated (rating stars, installs) → the
- *                         normal card layout,
- *   - fixture-theme-two:   zero rating / zero installs → no stars,
- *   - fixture-theme-three: low rating → a single gold star.
- *
- * The screenshot points at a local wp-admin asset so the card renders with no
- * network round-trip and no remote-image drift. Only `query_themes` runs on the
- * initial server render of theme-install.php
- * (class-wp-theme-install-list-table.php); `theme_information` is fetched by
- * the client when the Details overlay opens and is not part of the snapshot.
+ * Same shape as the plugin stub: populated, zero rating/installs, and low
+ * rating (single gold star). Screenshots point at a local asset; only
+ * `query_themes` runs on the server render (`theme_information` is
+ * client-fetched for the Details overlay, outside the snapshot).
  */
 add_filter(
     'themes_api',
@@ -401,13 +467,8 @@ add_filter(
 );
 
 /**
- * Pre-seed the `poptags_` site transient that install_popular_tags() caches.
- *
- * Keyed exactly like core (`md5( serialize( $args ) )` with empty args on the
- * Featured tab) so get_site_transient() short-circuits to the fixed tag set and
- * never reaches the wp.org network, even if a previous run cached live tags.
- * `install_dashboard()` calls `install_popular_tags()` with no args, so the
- * transient stores the full tag array (core reads `$tag['name']` per tag).
+ * Pre-seed the `poptags_` transient install_popular_tags() caches, keyed
+ * exactly like core, so the tag cloud never reaches the network.
  */
 add_filter(
     'pre_site_transient_poptags_' . md5( serialize( array() ) ),

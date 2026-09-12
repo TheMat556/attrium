@@ -1,20 +1,9 @@
-// Single source of truth for the Attrium color palette.
-//
-// Consumed by BOTH build pipelines:
-//   - scss/entries/base.scss (@use 'tokens')            → light-DOM WP pages
-//   - src/style.css          (@import '../scss/_tokens.scss') → shadow-DOM Vue app
-//
-// The light/dark palettes are two Sass maps emitted by the @each loops at the
-// bottom, so a token can only be added once — forgetting the dark counterpart
-// fails the build via the $dark-optional guard below instead of silently
-// breaking dark mode. The emitted CSS is identical to hand-written rules:
-// `:root`/`:host` carry the light palette, and `#attrium-host.dark` /
-// `:host(.dark)` / `html.attrium-dark` the dark one.
-//
-// Each carrier comment explains the context it matches: a selector that
-// matches nothing in one context (e.g. :host on a WP page, or #attrium-host
-// inside the shadow root) is simply inert there, so the combined list is safe
-// everywhere.
+// Single source of truth for the Attrium color palette, consumed by both
+// pipelines: entries/base.scss (light-DOM pages) and src/style.css
+// (shadow-DOM app). Light/dark are Sass maps; the $dark-optional guard below
+// turns a missing dark counterpart into a build error. A selector inert in
+// one context (e.g. :host on a page) simply doesn't match, so the combined
+// carrier list is safe everywhere.
 
 @use 'sass:list';
 @use 'sass:map';
@@ -24,11 +13,9 @@ $light: (
   '--attrium-primary': oklch(0.205 0 0),
   '--attrium-primary-foreground': oklch(0.985 0 0),
 
-  // Primary button fill — a solid, emphasized action surface distinct from the
-  // page card behind it. Mode-specific: in light it's a near-black button on a
-  // near-white card; in dark it's a mid-gray (clear of the oklch(0.235) card,
-  // not the near-white token) that reads as a button without being harsh.
-  // `-hover` lightens each mode's fill so the interaction is obvious.
+  // Solid action surface, distinct from the card behind it: near-black on
+  // near-white in light, mid-gray (clear of the card) in dark; -hover
+  // lightens each mode's fill.
   '--attrium-primary-button': oklch(0.26 0 0),
   '--attrium-primary-button-hover': oklch(0.36 0 0),
   '--attrium-primary-button-foreground': oklch(0.985 0 0),
@@ -43,21 +30,18 @@ $light: (
   '--attrium-scrollbar-thumb': oklch(0.7 0 0),
   '--attrium-radius-md': 0.5rem,
 
-  // Semantic status colors (info, success, warning, error) — shared by notices,
-  // site-health badges, and any future status indicators.
+  // Semantic status colors — notices, badges, status indicators.
   '--attrium-info': #3b82f6,
   '--attrium-success': #22c55e,
   '--attrium-warning': #f59e0b,
   '--attrium-error': #ef4444,
 
-  // Recessed page-canvas surface, distinct from the elevated card surfaces.
-  // Light mode: softened off-white, intentionally darker than the pure-white
-  // Vue content card and the light sidebar.
+  // Recessed page canvas — intentionally darker than the content card and
+  // sidebar in light mode.
   '--attrium-background': oklch(0.965 0 0),
 
-  // Ignored pages keep their native light content; this stays light even in
-  // dark mode so the unstyled WordPress content remains readable behind the
-  // dark chrome.
+  // Ignored pages keep native light content; stays light in dark mode so
+  // unstyled WP content stays readable behind the dark chrome.
   '--attrium-ignored-background': oklch(0.985 0 0),
 
   // Baseline text color for slotted WordPress content, matching wp-admin.
@@ -86,38 +70,24 @@ $light: (
   '--attrium-chart-5': oklch(0.769 0.188 70.08),
 );
 
-// Dark mode. `attrium-dark` on <html> is the SIGNAL, set pre-paint on every
-// Attrium page by the single resolver, Attrium\Utility\Theme's synchronous
-// inline script, which reads the `attrium-theme` localStorage key — absent or
-// `'auto'` follows prefers-color-scheme, `'light'`/`'dark'` are explicit
-// overrides.
+// Dark mode. `attrium-dark` on <html> is the SIGNAL, set pre-paint by the
+// single resolver (Attrium\Utility\Theme, reads the `attrium-theme` key:
+// absent/'auto' follows prefers-color-scheme, 'light'/'dark' override).
 //
-// The signal is deliberately NOT a token carrier by itself. A dark carrier must
-// cover exactly the surface Attrium reskins, and on a normal admin page that is
-// the host subtree — not the document. Core appends fixed-position overlays
-// directly to <body>, outside #attrium-host, and they keep core's own light
-// chrome; but the module gates are descendant selectors (`body.attrium-mod-x &`,
-// see _mixins.scss), so Attrium's recipes still match inside them. Put the dark
-// palette on <html> and those overlays render dark text and buttons on a white
-// core dialog. Measured: theme-editor.php's #file-editor-warning dialog lost
-// contrast on its paragraphs and both buttons (visible in the
-// `theme-editor-dark` baseline, which captures it because it is fixed-position
-// and lands inside the host's bounding box). upload.php's media modal is the
-// same shape with no baseline.
+// The signal is NOT a carrier by itself: a dark carrier must cover exactly
+// the reskinned surface (the host subtree, not the document). Core appends
+// fixed overlays to <body> outside the host; a document-wide palette would
+// paint dark text on their light chrome — measured on theme-editor.php's
+// #file-editor-warning (see the theme-editor-dark baseline).
 //
-// So the html-level carrier is scoped to `body.wp-customizer`, the one surface
-// where Attrium reskins the entire page and there is no host to hang the
-// palette on. `wp-customizer` is server-rendered by customize.php, so scoping
-// to body costs no cascade delay.
+// So html-level arms stay scoped: body.wp-customizer (whole-page reskin, no
+// host exists there) and the upload.php .media-modal (body-level overlay
+// reskinned with tokens in _upload.scss, gated on the module flag +
+// upload-php class so module recipes swap in lockstep with the panel).
 //
-// #attrium-host.dark / :host(.dark) are the shell's MIRROR of the signal
-// (src/composables/useTheme.ts): CSS variables do not cross the shadow-root
-// boundary, so useTheme observes the carrier with a MutationObserver and
-// copies the class onto the host — the moved WP content inherits from
-// #attrium-host.dark, and from inside the shadow root the same host is
-// :host(.dark). A bare `.dark` is deliberately NOT listed — it would apply
-// this palette to any foreign wp-admin element that happens to carry a
-// `.dark` class.
+// #attrium-host.dark / :host(.dark) mirror the signal into and inside the
+// shadow root (CSS vars don't cross it; see useTheme.ts). No bare `.dark` —
+// it would match any foreign wp-admin `.dark` element.
 //
 // See src/composables/useTheme.ts + admin/src/Utility/Theme.php
 $dark: (
@@ -167,20 +137,18 @@ $dark: (
   '--attrium-chart-5': oklch(0.269 0 0),
 );
 
-// Light-only tokens. Anything here is deliberately NOT redefined in dark mode:
-// e.g. --attrium-ignored-background / --attrium-wp-content-foreground keep
-// their light values so unstyled WP content stays readable behind the dark
-// chrome, and --attrium-radius-md is mode-independent. Adding a NEW token must
-// fail the build until it's listed here or given a dark value.
+// Light-only tokens: intentionally NOT redefined in dark mode (unstyled WP
+// content stays readable behind the dark chrome; radius is mode-independent).
+// Adding a NEW token fails the build until it's listed here or given a dark
+// value.
 $dark-optional: (
   '--attrium-radius-md',
   '--attrium-ignored-background',
   '--attrium-wp-content-foreground',
 );
 
-// Every light token must resolve in dark mode. The guard runs at compile time,
-// so forgetting the dark counterpart of a new token is a build error, not a
-// silent dark-mode regression.
+// Compile-time guard: a light token without a dark twin (or an opt-out) is
+// a build error, not a silent dark-mode regression.
 @each $key, $_ in $light {
   @if not map.has-key($dark, $key) and not list.index($dark-optional, $key) {
     @error "Token #{$key} has no dark-mode value. Add it to $dark in _tokens.scss, or add it to $dark-optional if it is intentionally light-only.";
@@ -194,15 +162,14 @@ $dark-optional: (
 }
 
 // ---- Dark-mode carriers ------------------------------------------------------
-// The selector arms that carry the dark palette. OWNED HERE: surfaces that
-// must mode-swap something Sass can't express as a custom property (a baked
-// SVG stroke — see modules/_forms.scss's select chevron) compose these arms
-// instead of re-deriving them, so the swap can't drift from the palette
-// emission below. `:host(.dark)` is the shadow-root form of the host carrier
-// (src/style.css context); it matches nothing in a light-DOM chunk.
+// OWNED HERE: anything Sass can't express as a custom property (e.g. the
+// select chevron's baked SVG stroke) composes these arms instead of
+// re-deriving them, so the swap can't drift from this palette.
+// `:host(.dark)` matches nothing in a light-DOM chunk.
 $dark-carrier-host: '#attrium-host.dark';
 $dark-carrier-customizer: 'html.attrium-dark body.wp-customizer';
-$dark-carriers: ($dark-carrier-host, ':host(.dark)', $dark-carrier-customizer);
+$dark-carrier-media: 'html.attrium-dark body.attrium-mod-screens.upload-php .media-modal';
+$dark-carriers: ($dark-carrier-host, ':host(.dark)', $dark-carrier-customizer, $dark-carrier-media);
 
 #{$dark-carriers} {
   @each $key, $value in $dark {

@@ -1,0 +1,264 @@
+@use '../icons';
+@use '../mixins';
+@use '../ui/primitives';
+
+// Edit Media (post.php?action=edit on an attachment → body.post-type-attachment):
+// the classic edit-form skeleton (.poststuff → .post-body.columns-2) with the
+// attachment fields in #post-body-content and .postbox metaboxes in the side
+// and normal containers. The forms module already covers the inputs; this file
+// owns the metabox chrome (core's #fff slabs, #c3c4c7 borders, #f6f7f7 footer
+// strip, #b32d2e delete link → tokens). Renders in the shell's slot, so no
+// body-level overlay carrier is needed (unlike _upload.scss's modal).
+@include mixins.screen-root('post-type-attachment') {
+
+  // ---- Metabox cards -------------------------------------------------------
+
+  // Card recipe instead of core's flat white slab; core keeps the geometry.
+  .postbox {
+    @include primitives.card-surface;
+    // Plain `none`: shadow-none expands to a var chain (not the pinned `none`).
+    box-shadow: none;
+  }
+
+  // Core hardcodes the header ink; the h2 weight comes from _base.scss.
+  .postbox-header {
+    @apply border-b border-[var(--attrium-border)];
+  }
+
+  .postbox-header .hndle {
+    @apply text-[var(--attrium-foreground)];
+  }
+
+  // Full foreground ink — NOT muted: muted measured ghost-faint in dark mode
+  // and the toggle chevron went fully invisible. Core paints color DIRECTLY
+  // on the span (common.css .toggle-indicator), beating inherited button
+  // color; the indicator block below carries `color: inherit` to kill it.
+  // Disabled order buttons keep the muted treatment.
+  .postbox .handle-order-higher,
+  .postbox .handle-order-lower,
+  .postbox .handlediv {
+    @apply flex items-center justify-center text-[var(--attrium-foreground)];
+
+    &:focus {
+      // Plain `none` (see .postbox above).
+      box-shadow: none;
+    }
+  }
+
+  // After the base block on purpose.
+  .postbox .handle-order-higher[aria-disabled='true'],
+  .postbox .handle-order-lower[aria-disabled='true'] {
+    @apply text-[var(--attrium-muted-foreground)];
+  }
+
+  // ---- Title field ----------------------------------------------------------
+
+  // Core's #titlediv #title ID pair beats the forms module's fill, so both
+  // IDs plus the gate win the cascade back; the rest is the module recipe.
+  #titlediv #title {
+    @apply bg-transparent;
+  }
+
+  // Core's #646970 → muted.
+  #titlediv #title-prompt-text,
+  #edit-slug-box {
+    @apply text-[var(--attrium-muted-foreground)];
+  }
+
+  // ---- Media head (preview + "Edit Image") ----------------------------------
+
+  // Frame the raw preview like the modal's .details-image.
+  .wp_attachment_image img.thumbnail {
+    @apply rounded-[var(--attrium-radius-md)]
+           border border-[var(--attrium-border)]
+           bg-[var(--attrium-secondary)];
+  }
+
+  // ---- Submit metabox (side column) ------------------------------------------
+
+  // _base.scss covers <p> but these rows are divs; same token treatment.
+  .misc-pub-section {
+    @apply text-[var(--attrium-muted-foreground)];
+
+    strong {
+      @apply text-[var(--attrium-foreground)];
+    }
+  }
+
+  // Core's #f6f7f7 band → transparent on the card, token hairline.
+  #major-publishing-actions {
+    @apply border-t border-[var(--attrium-border)] bg-transparent;
+  }
+
+  // Covers both cores' hooks (6.7 #delete-link, 7.1 #delete-action) and
+  // out-specifies core's hover re-assertions, so the color persists.
+  #delete-action .submitdelete,
+  #delete-action a,
+  #delete-link a {
+    @apply text-[var(--attrium-error)];
+  }
+
+  // ---- Classic editor (description field) -----------------------------------
+
+  // Core composes this as a well: the container draws the frame, the
+  // quicktags band sits inside it, the textarea is a flat fill. The well
+  // owns the surface; focus lands on the WELL via :focus-within — the
+  // borderless textarea gives the module's ring nothing to decorate.
+  .wp-editor-container {
+    @apply rounded-[var(--attrium-radius-md)] overflow-hidden
+           border border-[var(--attrium-border)]
+           bg-[var(--attrium-background)];
+
+    &:focus-within {
+      @apply border-[var(--attrium-ring)];
+    }
+  }
+
+  // Divider only; the well owns the surface (core's #f6f7f7 → transparent).
+  .quicktags-toolbar {
+    @apply bg-transparent border-b border-[var(--attrium-border)];
+  }
+
+  // Kill the module's vestigial radius and focus ring (the well has its own
+  // focus arm); typography and padding stay.
+  .wp-editor-container .wp-editor-area {
+    @apply rounded-none;
+
+    &:focus-visible {
+      // Plain `none` (see .postbox above).
+      box-shadow: none;
+    }
+  }
+
+  // ---- Misc-pub row icons ----------------------------------------------------
+
+  // Core paints dashicons on the section :before. mask-inline swaps each
+  // for Lucide (content:'' kills the dashicon; the mask inks currentColor).
+  // Core's negative text-indent margins survive (no margins set below); the
+  // color override beats core's :before color so glyphs follow muted ink.
+  .curtime #timestamp::before {
+    @apply text-[var(--attrium-muted-foreground)];
+    @include icons.mask-inline('calendar', 1rem);
+  }
+
+  #post-body .misc-pub-uploadedby::before {
+    @apply text-[var(--attrium-muted-foreground)];
+    @include icons.mask-inline('user', 1rem);
+  }
+
+  // ---- Postbox handle indicators ----------------------------------------------
+
+  // Dashicon glyphs on the indicator :before (arrows + a toggle chevron
+  // that flips when closed): hide :before, carry Lucide on ::after.
+  // `color: inherit` is load-bearing — core colors the span DIRECTLY, so
+  // the button's token color never inherits down (the toggle vanished on
+  // dark cards). size-5 keeps core's 20px glyph metric.
+  .postbox .handle-order-higher .order-higher-indicator,
+  .postbox .handle-order-lower .order-lower-indicator,
+  .postbox .handlediv .toggle-indicator {
+    @apply relative block size-5 text-inherit;
+
+    &::before {
+      @apply hidden;
+    }
+
+    &::after {
+      @apply content-[''] absolute inset-0;
+    }
+  }
+
+  .postbox .handle-order-higher .order-higher-indicator::after {
+    @include icons.mask('chevron-up', 1rem);
+  }
+
+  .postbox .handle-order-lower .order-lower-indicator::after {
+    @include icons.mask('chevron-down', 1rem);
+  }
+
+  // Open = up, closed = down (core's own semantics, mirrored).
+  .postbox .handlediv .toggle-indicator::after {
+    @include icons.mask('chevron-up', 1rem);
+  }
+
+  .postbox.closed .handlediv .toggle-indicator::after {
+    @include icons.mask('chevron-down', 1rem);
+  }
+
+  // ---- Image editor toolbar ---------------------------------------------------
+
+  // Dashicon tool glyphs on :before: mask-inline swaps each for Lucide
+  // while core's margins/alignment survive, and the mask inks currentColor
+  // so icons track button state (incl. :disabled dimming on undo/redo).
+  //
+  // Core also paints a white text-shadow glow on disabled tools; kill it
+  // for every imgedit button.
+  .imgedit-menu .button {
+    text-shadow: none;
+  }
+
+  .imgedit-menu .imgedit-crop::before {
+    @include icons.mask-inline('crop', 1rem);
+  }
+
+  .imgedit-menu .imgedit-scale::before {
+    @include icons.mask-inline('scaling', 1rem);
+  }
+
+  .imgedit-menu .imgedit-rotate::before {
+    @include icons.mask-inline('rotate-cw', 1rem);
+  }
+
+  .imgedit-menu .imgedit-undo::before {
+    @include icons.mask-inline('undo-2', 1rem);
+  }
+
+  .imgedit-menu .imgedit-redo::before {
+    @include icons.mask-inline('redo-2', 1rem);
+  }
+
+  // Same swap for the rotate dropdown caret (down, up while expanded).
+  .imgedit-menu .imgedit-rotate.button::after {
+    @include icons.mask-inline('chevron-down', 1rem);
+  }
+
+  .imgedit-menu .imgedit-rotate.button[aria-expanded='true']::after {
+    @include icons.mask-inline('chevron-up', 1rem);
+  }
+
+  // White panel → card recipe; core's shadow stays (functional menu depth).
+  .imgedit-popup-menu {
+    @include primitives.card-surface;
+  }
+
+  // Core's GLOBAL hr rule paints a double line; collapse to one hairline.
+  .imgedit-popup-menu hr {
+    @apply border-t border-[var(--attrium-border)] border-b-0;
+  }
+
+  // Core's #c3c4c7 checkerboard squares → token squares (the band is the
+  // wrap's own background). Wrap and img both take the radius, but the wrap
+  // must NOT clip: the imgareaselect overlay (selection border/handles) has
+  // to keep painting along the edges; the img rounds itself.
+  .imgedit-crop-wrap {
+    @apply rounded-[var(--attrium-radius-md)];
+    background-image:
+      linear-gradient(
+        45deg,
+        var(--attrium-border) 25%,
+        transparent 25%,
+        transparent 75%,
+        var(--attrium-border) 75%
+      ),
+      linear-gradient(
+        45deg,
+        var(--attrium-border) 25%,
+        transparent 25%,
+        transparent 75%,
+        var(--attrium-border) 75%
+      );
+  }
+
+  .imgedit-crop-wrap img {
+    @apply rounded-[var(--attrium-radius-md)];
+  }
+}
