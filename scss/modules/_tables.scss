@@ -260,7 +260,9 @@
 
 p.search-box {
   @include mixins.module('tables') {
-    @apply mt-2 inline-flex items-center;
+    // `gap-0` beats core's `column-gap: 0.5rem` (forms.css:809) — otherwise the
+    // joined control keeps an 8px flex gap between its squared inner corners.
+    @apply mt-2 inline-flex items-center gap-0;
 
     // shadcn <InputGroup> silhouette: the search field and its action are one
     // joined control — inner corners squared, borders merged with -1px.

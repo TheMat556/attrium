@@ -70,7 +70,10 @@
 // resting ink to `text-muted-foreground`) because the carrier ancestry can't
 // be composed from inside a primitive.
 @mixin tabs-track {
-  @apply inline-flex h-8 w-fit items-center justify-center
+  // `box-border` is load-bearing: the track's own `p-[3px]` must sit inside the
+  // `h-8` box, or the content-box height grows to 38px and the trigger's
+  // `h-[calc(100%-1px)]` resolves against 32px instead of 26px.
+  @apply box-border inline-flex h-8 w-fit items-center justify-center
          rounded-[var(--attrium-radius-lg)] p-[3px]
          bg-[var(--attrium-muted)]
          text-[var(--attrium-muted-foreground)];
