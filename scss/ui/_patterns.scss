@@ -25,16 +25,22 @@
   .filter-links {
     @apply relative m-0 flex list-none gap-1 p-0;
 
+    // Wrap the view tabs on narrow screens instead of overflowing the card.
+    @media (max-width: 782px) {
+      flex-wrap: wrap;
+    }
+
     li {
-      @apply inline-flex;
+      @apply inline-flex max-w-full;
 
       color: transparent;
       font-size: 0;
     }
 
     li > a {
-      @apply relative inline-flex items-center justify-center gap-1.5
-             whitespace-nowrap rounded-[calc(var(--attrium-radius-lg)-2px)]
+      @apply relative inline-flex max-w-full items-center justify-center
+             gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap
+             rounded-[calc(var(--attrium-radius-lg)-2px)]
              border border-transparent px-2 py-1 text-sm font-medium
              no-underline outline-none transition-all;
 
@@ -150,9 +156,11 @@
 
 @mixin transparent-react-shell {
   .boot-layout,
+  .boot-layout-container,
   .boot-layout__surfaces,
   .boot-layout__stage,
-  .admin-ui-page {
+  .admin-ui-page,
+  .admin-ui-navigable-region {
     @apply bg-transparent!;
   }
 }

@@ -7,10 +7,20 @@
 // (theme-install-php → body.theme-install-php). The markup is shared, so the
 // same reskin is applied under both screen gates via the theme-cards mixin.
 
-// Apply overflow: hidden to body for themes pages
+// Core forces a scrollbar spacer on the themes screen via `.themes-php {
+// overflow-y: scroll }` (wp-admin/css/themes.css:10), but the card is the sole
+// scroll container here (#wpwrap is display:none, #wpcontent lives in the fixed
+// host), so reset it. Must be `visible`, NOT `hidden`: `overflow: hidden` turns
+// <body> into a clipping scroll container on just these screens, and the GPU
+// compositor then blends the card's anti-aliased rounded corners against the
+// body canvas (#f0f0f1) instead of the host's --sidebar fill — a white wedge at
+// the corners that only appears on a real GPU. `visible` matches every other
+// screen and still suppresses the forced scrollbar (verified: no scrollbar, body
+// scrollHeight == clientHeight). `.theme-install-php` has no core rule to fight;
+// it is reset for symmetry.
 body.themes-php,
 body.theme-install-php {
-  @apply overflow-hidden!;
+  @apply overflow-visible!;
 }
 
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
@@ -31,11 +41,15 @@ body.theme-install-php {
   }
 
   .theme {
-    @apply rounded-[var(--attrium-radius-md)] overflow-hidden
+    // `rounded-xl` (the shell card radius) so the tiles match the rest.
+    // The fill is the page surface, NOT `--attrium-card`: the tiles sit
+    // directly on the content card, and the card's pure-white fill showed
+    // past the rounded corners against the slightly-darker page surface.
+    @apply rounded-[calc(var(--attrium-radius-lg)+4px)] overflow-hidden
            border border-[var(--attrium-border)] shadow-none
            transition-colors duration-150;
 
-    background: var(--attrium-primary-foreground);
+    background: var(--attrium-surface);
 
     &:hover,
     &:focus-within {
@@ -64,7 +78,9 @@ body.theme-install-php {
   // screenshot borderless.
   .theme-screenshot {
     @apply border-0;
-    background: var(--attrium-secondary);
+    // shadcn media placeholder is `bg-muted`; `--attrium-secondary` was a step
+    // darker and showed through the rounded tile corners around the image.
+    background: var(--attrium-muted);
   }
 
   // ---- "Details & Preview" hover overlay ----
@@ -91,8 +107,12 @@ body.theme-install-php {
 
   // ---- Footer (name + author + actions) ----
   .theme-id-container {
-    @apply p-4;
-    background: var(--attrium-primary-foreground);
+    // Core absolutely positions `.theme-actions` over the footer, so a long
+    // name slides under the buttons. Row the footer instead: truncating name
+    // beside the actions (wrapping below on narrow cards) — the shadcn
+    // card-footer pattern, and compact like core's overlaid row.
+    @apply flex flex-row flex-wrap items-center gap-x-3 gap-y-2 p-4;
+    background: var(--attrium-surface);
     border-top: 1px solid var(--attrium-border);
   }
 
@@ -108,8 +128,12 @@ body.theme-install-php {
   // stays in flow with the rest. The active card adds `box-shadow: inset 0 1px
   // 1px` (themes.css:212) which paints a dark line across the top of the name —
   // reset it here too so no faux border-top shows on the active theme.
+  // `p-0` kills core's padded name box (16px 15px, 115px right on the active
+  // card to clear the overlaid buttons) — in the in-flow row the container
+  // owns all spacing, so leftovers just inflate the footer.
   .theme-name {
-    @apply text-sm font-semibold m-0 px-4 py-3 shadow-none h-auto bg-transparent;
+    @apply m-0 min-w-0 flex-1 truncate p-0 text-sm font-semibold
+           shadow-none h-auto bg-transparent;
     color: var(--attrium-foreground);
   }
 
@@ -141,7 +165,13 @@ body.theme-install-php {
   // (themes.css:240) on non-active cards — reset both so the row blends into
   // the footer.
   .theme-actions {
-    @apply flex items-center gap-2 border-0 shadow-none bg-transparent;
+    // `static` takes the action row out of core's absolute overlay so it
+    // sits in the footer flex row beside the name — but the translate,
+    // padding and offset live in the SAME core rule as `position`, so they
+    // survive `static` unless reset here too (`translateY(-50%)` would
+    // otherwise paint the row half its height above its layout spot).
+    @apply static flex flex-none transform-none flex-wrap items-center gap-2
+           border-0 p-0 shadow-none bg-transparent;
   }
 
   .theme-browser .theme .theme-actions .button:not(.button-primary),
@@ -150,7 +180,6 @@ body.theme-install-php {
     color: var(--attrium-secondary-foreground);
 
     @apply border border-transparent;
-
     // Core draws the apparent "border" on hover/focus as a box-shadow ring
     // (buttons.css:174 `box-shadow: 0 0 0 1.5px`), not a real border — reset it
     // alongside the border so no ring appears. Hover mixes the secondary fill to
@@ -167,6 +196,15 @@ body.theme-install-php {
 
       @apply border-transparent shadow-none;
     }
+  }
+
+  // Core spaces overlay buttons with 3px side margins and paints the active
+  // card's primary with a white border (both themes.css) — in the in-flow
+  // footer the margins skew the flex gaps and the border reads as a bright
+  // ring on dark. Zero both: flex gap owns spacing now, and every action
+  // shares the buttons module's transparent border.
+  .theme-browser .theme .theme-actions .button {
+    @apply m-0 border-transparent;
   }
 
   // ---- Overlay notice ("Installed", update messages) ----

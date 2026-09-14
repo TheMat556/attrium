@@ -89,7 +89,24 @@
     }
 
     .check-column {
+      // Core pushes the checkbox with `margin: 0 0 0 8px` + `vertical-align:
+      // text-top`, which off-centres it in the column (16px left / 8px right
+      // gap). Zero the margin and align-middle so the header and row boxes are
+      // both dead-centre in the 40px column.
       @apply w-10 px-2 text-center;
+
+      input[type='checkbox'] {
+        @apply m-0 align-middle;
+      }
+    }
+
+    // Mobile: core turns rows flex and blockifies the header cell, so
+    // `vertical-align` stops centring the (now 25px) header checkbox — it hugs
+    // the top of the 40px cell. Centre it as a flex box instead.
+    @media (max-width: 782px) {
+      thead .check-column {
+        @apply flex items-center justify-center;
+      }
     }
 
     .row-title {
@@ -183,10 +200,44 @@
       @apply inline-flex items-center gap-1;
     }
 
-    // The comment-count bubble (`.post-com-count` / `-approved` / `-pending`)
-    // takes the shadcn <Badge> shape; core's status fills stay.
+    // Comment-count bubble → shadcn <Badge>. Base is the `secondary` variant;
+    // pending is the `destructive` variant. Core's comment-bubble "tail" is
+    // dropped, the inner count inherits the badge ink (core paints it link
+    // blue), and the `no-pending` arm core hides must stay hidden — our badge
+    // `display` would otherwise re-expose it.
     .post-com-count {
       @include primitives.badge;
+
+      background: var(--attrium-secondary);
+      color: var(--attrium-secondary-foreground);
+
+      &::after {
+        content: none;
+      }
+
+      // Core paints the inner count as its own 2em grey box (`border-radius:
+      // 5px`) on `.comment-count-approved` / `-no-comments` (and the bare
+      // `.comment-count` on pending); strip them back to plain text so the
+      // Badge wrapper is the only pill.
+      [class*='comment-count'] {
+        @apply m-0 inline-flex h-auto min-w-0 items-center justify-center
+               rounded-none border-0 bg-transparent p-0 text-xs;
+
+        color: inherit;
+      }
+    }
+
+    .post-com-count.post-com-count-pending {
+      background: color-mix(
+        in oklab,
+        var(--attrium-destructive) 10%,
+        transparent
+      );
+      color: var(--attrium-destructive);
+    }
+
+    .post-com-count.post-com-count-no-pending {
+      @apply hidden;
     }
 
     th.column-comments,
@@ -258,24 +309,42 @@
   }
 }
 
-p.search-box {
+// The list-table search box (posts, plugins, users, …).
+//
+// NOT the media library's list-mode filter bar (upload.php?mode=list): it
+// renders `p.search-box` inside its own `.wp-filter > .filter-items` bar, and
+// that bar is a filter toolbar, not a table search — its recipe lives in
+// scss/screens/_upload.scss. This module's `w-32` + `inline-flex` is what made
+// the media list bar look nothing like the grid toolbar (tiny input, submit
+// wrapped onto a second line). Identified by the `.filter-items` child, which
+// only the media bar has (theme-install's `.wp-filter` uses `.filter-links`
+// and keeps this recipe).
+p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
   @include mixins.module('tables') {
     // Two separate controls: a real gap between them (core's `column-gap` is
     // 0.5rem) and each keeps its own full rounding — no joined inner corners.
-    @apply mt-2 inline-flex items-center gap-2;
+    // `mt-2` matches the tabs' own top margin so the two share a line on wide
+    // screens; `mb-3` is the list-table vertical rhythm (one 12px step, not
+    // core's 11/16/20px mix).
+    @apply mt-2 mb-3 inline-flex flex-nowrap items-center gap-2;
 
+    // Core upsizes the field to a 40px touch target, adds `margin-bottom:
+    // 10px` below 783px (the box measured 42px tall) and a 10px margin to the
+    // submit — pin all of it back to the 32px row. `min-w-0` lets the field
+    // give up width instead of wrapping the submit onto a second line.
     input[type="search"] {
-      @apply h-8 w-32 text-xs;
+      @apply m-0 h-8 min-h-8 w-32 min-w-0 text-xs;
     }
 
     input[type="submit"].button {
-      @apply shrink-0;
+      @apply m-0 shrink-0;
     }
 
     // Below 1200px the tablenav runs out of room for a floated search box, so
-    // it drops onto its own full-width row above the table.
+    // it drops onto its own full-width row above the table — the tabs' own
+    // `mb-3` supplies the gap above, the box's own `mb-3` the gap below.
     @media (max-width: 1200px) {
-      @apply float-none w-full mb-2 mt-0;
+      @apply float-none mt-0 mb-3 w-full;
 
       input[type="search"] {
         @apply w-auto flex-1;
@@ -286,20 +355,34 @@ p.search-box {
 
 .tablenav.top {
   @include mixins.module('tables') {
-    @apply flex flex-wrap items-center justify-between gap-2 h-auto mb-4;
+    // One 12px rhythm for the whole header: core adds a 6px top margin here
+    // (20px below 783px, the big mobile gap) and 4px below, which fought the
+    // tabs' own spacing.
+    @apply flex flex-wrap items-center justify-between gap-2 h-auto mt-0 mb-3;
 
     .alignleft {
       float: none;
     }
 
     .actions {
-      @apply flex items-center gap-2;
+      // Wrap the bulk-action / filter controls on narrow screens so the row
+      // (selects + apply button) never pushes past the card. `max-w-full` caps
+      // the group; the selects then shrink against it.
+      @apply flex max-w-full flex-wrap items-center gap-2;
       float: none;
       padding: 0;
+
+      select {
+        @apply max-w-full;
+      }
     }
 
     .tablenav-pages {
-      @apply flex items-center gap-1 ml-auto float-none;
+      // `mb-0` matters on mobile: core sets `margin-bottom: 25px` on the
+      // pagination block, and on a single-page screen (comments with one
+      // comment, any one-page list) the block is EMPTY but still reserved that
+      // 25px — a phantom gap above the table. The flex row owns the spacing.
+      @apply flex items-center gap-1 ml-auto float-none mb-0;
     }
 
     br.clear {
@@ -310,7 +393,7 @@ p.search-box {
 
 .tablenav.bottom {
   @include mixins.module('tables') {
-    @apply mt-4;
+    @apply mt-3;
   }
 }
 

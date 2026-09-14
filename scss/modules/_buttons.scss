@@ -168,6 +168,27 @@ body.attrium-mod-buttons .page-title-action:active {
   }
 }
 
+// Core's `.button-compact` (space-constrained spots like the theme tiles)
+// sets `padding: 0 12px`, beating the module's `px-2.5` — the button renders
+// 4px wider than its shadcn twin. Re-assert parity. (Deliberately not the
+// shadcn `sm` size: core compact is default-height, and small controls like
+// `.button-small` intentionally keep core's smaller box.)
+body.attrium-mod-buttons.wp-core-ui .button-compact {
+  padding-inline: 0.625rem;
+}
+
+// Core upsizes every button to a 40px touch target on small screens
+// (buttons.css `@media (max-width:782px)`), defeating the h-8 shadcn parity
+// above — theme-tile buttons render taller than every shadcn button next
+// to them. Re-assert the module shape there with a winning selector.
+@media screen and (max-width: 782px) {
+  body.attrium-mod-buttons.wp-core-ui .button,
+  body.attrium-mod-buttons.wp-core-ui .button-primary,
+  body.attrium-mod-buttons.wp-core-ui .button-secondary {
+    @apply h-8 min-h-8 px-2.5 mb-0;
+  }
+}
+
 // wp-components primary button (e.g. the Font Library "Update" button). Scoped
 // to #font-library-wp-admin-app so we don't reskin every .components-button
 // across wp-admin (block editor, etc.), which keep their own design. Colors are

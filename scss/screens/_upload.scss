@@ -28,11 +28,12 @@
     min-height: 48px;
     overflow: auto;
 
-    &.wp-filter {
-      @include primitives.wp-filter-surface(transparent);
-    }
+    // Surface comes from the shared `.wp-filter` rule below (transparent over
+    // the content card), so list and grid toolbars are pixel-identical.
 
-    // flex:none keeps the group from squashing its controls when narrow.
+    // `flex: none` keeps the group's own controls from squashing when narrow;
+    // `min-width: 0` still lets it give up room to the search group rather
+    // than overflowing the bar. `gap` alone owns the spacing (see below).
     .media-toolbar-secondary {
       display: flex;
       flex: none;
@@ -40,6 +41,7 @@
       align-items: center;
       column-gap: 0.5rem;
       height: auto;
+      min-width: 0;
       max-width: none;
     }
 
@@ -51,7 +53,9 @@
 
     // Core (6.7 floats, 7.1 grid) scatters baseline offsets through this
     // toolbar for its own layout; the flex row centers everything itself,
-    // so normalize them to zero.
+    // so normalize them to zero. Spacing is then exactly `column-gap` — the
+    // old extra 8px margin-inline-end on the view-switch/selects double-dipped
+    // against the gap and pushed every control onto its own left edge.
     .media-toolbar-secondary label,
     .media-toolbar-secondary select,
     .media-toolbar-secondary .view-switch,
@@ -60,26 +64,24 @@
       @apply m-0;
     }
 
-    // 8px gap + 8px margin = 16px between groups, 8px within.
-    .media-toolbar-secondary .view-switch,
-    .media-toolbar-secondary .attachment-filters {
-      margin-inline-end: 0.5rem;
-    }
-
     // Core gives toolbar buttons vertical margins for its own layout.
     .media-button {
       @apply m-0;
     }
 
-    // Pinned right via margin-left: auto; nowrap guards against
-    // common.css's ≤1000px .search-form flex-wrap.
+    // Search group pinned right. `flex: 1 1 auto` + `min-width: 0` let it
+    // absorb the bar's slack (so the group hugs the right padding) and shrink
+    // when the bar is tight, instead of overflowing the right padding as
+    // core's fixed-width input did.
     .media-toolbar-primary {
       display: flex;
-      flex: none;
+      flex: 1 1 auto;
       flex-wrap: nowrap;
       align-items: center;
+      justify-content: flex-end;
       gap: 0.5rem;
       height: auto;
+      min-width: 0;
       margin: 0 0 0 auto;
       max-width: none;
     }
@@ -92,6 +94,29 @@
       left: 50%;
       margin: -10px 0 0 -10px;
     }
+
+    // Mobile: the nowrap row (543px secondary + 306px primary) can't fit, so
+    // stack the two groups full-width. The secondary wraps its many controls;
+    // the primary keeps label+input on ONE line (core's mobile `auto 1fr`
+    // intent) and lets the input take what's left.
+    @media (max-width: 782px) {
+      flex-wrap: wrap;
+      row-gap: 0.5rem;
+
+      .media-toolbar-secondary {
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        max-width: 100%;
+        margin-inline-start: 0;
+      }
+
+      .media-toolbar-primary {
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        max-width: 100%;
+        margin-inline-start: 0;
+      }
+    }
   }
 
   // Grid-mode and list-mode filter/search controls share one recipe.
@@ -102,8 +127,72 @@
     @include primitives.field-outline;
   }
 
+  // The search input is the ONE flexible control in either bar: it keeps a
+  // 280px basis on wide bars and shrinks to fit on narrow ones. `min-width: 0`
+  // is what actually permits the shrink (a flex item's automatic minimum size
+  // is its content width); every button stays `shrink-0` via the buttons
+  // module. `max-width` is a definite 280px, replacing core's `max-width: 100%`
+  // — that percentage is cyclic for a shrink-to-fit bar (resolves against a
+  // width that depends on the input) and collapsed the list bar's input.
+  .wp-filter .search-form .search,
+  .attachments-browser .media-toolbar-primary .search {
+    flex: 1 1 17.5rem;
+    min-width: 0;
+    max-width: 17.5rem;
+  }
+
+  // Both toolbars — the list-mode `.wp-filter` and the grid-mode
+  // `.media-toolbar.wp-filter` — sit directly on the content card, so both use
+  // the same transparent surface: the 1px border + radius frame the row and the
+  // card shows through. Core hardcodes a #fff fill here; a *recessed* token
+  // fill (what this used to be) made the list toolbar read as a different
+  // control from the grid one.
   .wp-filter {
-    @include primitives.wp-filter-surface(var(--attrium-background));
+    @include primitives.wp-filter-surface(transparent);
+  }
+
+  // List-mode media filter (`.wp-filter > .filter-items` + `.search-form`): a
+  // wrapping flex row — view-switch + type select + apply action on the left,
+  // search box pushed to the right. Grid mode uses `.media-toolbar` (above),
+  // hence the `:has()` scope.
+  .wp-filter:has(> .filter-items) {
+    @apply flex flex-wrap items-center gap-2;
+
+    // `min-w-0` on every level so the group can shrink below its content
+    // width; without it the row overflows the bar instead of the search
+    // input giving up width.
+    .filter-items {
+      @apply flex min-w-0 flex-wrap items-center gap-2;
+    }
+
+    .actions {
+      @apply m-0 flex items-center;
+    }
+
+    .search-form {
+      // Core adds `margin: 11px 0` (and `flex-wrap: wrap; row-gap: 10px`) to
+      // this group under 1138px (common.css), which inflated the list bar by
+      // ~22px versus the grid toolbar. The flex row owns the spacing here and
+      // the pair stays on one line.
+      @apply my-0 ml-auto flex min-w-0 flex-nowrap items-center gap-2;
+
+      // Core's `p.search-box` is `flex-wrap: wrap` (forms.css), so the submit
+      // drops onto a second line whenever the input can't take its whole
+      // 280px basis — the one thing that made the list bar two rows tall
+      // where the grid bar is one. Keep the pair on one line; the input gives
+      // up the width instead.
+      .search-box {
+        // `h-8` pins the row to the same 32px as the grid toolbar's search
+        // group; core gives the `p` a taller line box, which otherwise made the
+        // list bar 10px taller than the grid one.
+        @apply m-0 flex h-8 min-w-0 flex-nowrap items-center gap-2;
+
+        // Core's `input, select { margin: 0 1px }` would pad the gap by 2px.
+        .search {
+          @apply m-0;
+        }
+      }
+    }
   }
 
   // ---- View-switch -----------------------------------------------------------
@@ -115,7 +204,11 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0; // core pads 12px vertically to fill its 48px band
+    // Core pads 12px vertically (its own 48px band) and scatters 2/8/12px
+    // inline margins in list and grid mode; the flex rows own both now, so
+    // the toggles sit on the same 32px line as the selects and buttons.
+    padding: 0;
+    margin: 0;
   }
 
   // Mirrors the shadcn-vue <Toggle> default variant (src/components/ui/toggle):
@@ -124,7 +217,7 @@
   // focus colour can't shift layout.
   .view-switch a {
     @apply relative inline-flex items-center justify-center
-           rounded-[var(--attrium-radius-lg)] no-underline size-8
+           box-border rounded-[var(--attrium-radius-lg)] no-underline size-8
            border border-transparent text-[var(--attrium-muted-foreground)]
            outline-none transition-all;
 

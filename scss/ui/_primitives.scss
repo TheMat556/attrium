@@ -77,6 +77,14 @@
          rounded-[var(--attrium-radius-lg)] p-[3px]
          bg-[var(--attrium-muted)]
          text-[var(--attrium-muted-foreground)];
+
+  // Mobile: the track can't stay one `w-fit` line or the segments overflow the
+  // card, so let it wrap to as many rows as needed.
+  @media (max-width: 782px) {
+    height: auto;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 @mixin tabs-trigger {
@@ -87,6 +95,12 @@
          transition-all outline-none;
 
   color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+  // With the track wrapping on mobile there is no definite track height to take
+  // 100% of, so pin the trigger to its own 24px box.
+  @media (max-width: 782px) {
+    height: 1.5rem;
+  }
 
   &:hover {
     color: var(--attrium-foreground);
@@ -113,7 +127,7 @@
 // --- CodeMirror editor --------------------------------------------------------
 
 @mixin codemirror-editor {
-  @apply rounded-lg border bg-[var(--attrium-background)]
+  @apply max-w-full rounded-lg border bg-[var(--attrium-background)]
          text-[var(--attrium-foreground)];
 
   .CodeMirror-lines {
@@ -182,8 +196,10 @@
 // `h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`.
 // Variant fills are opt-in at the call site via the background/color.
 @mixin badge {
-  @apply inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1
-         overflow-hidden whitespace-nowrap rounded-full border
+  // `box-border`: the badge's own `px/py` + 1px border must sit inside the
+  // 20px box, or content-box inflates it to 26px (and the text sits high).
+  @apply box-border inline-flex h-5 w-fit shrink-0 items-center justify-center
+         gap-1 overflow-hidden whitespace-nowrap rounded-full border
          border-transparent px-2 py-0.5 text-xs font-medium
          transition-colors;
 }
@@ -226,6 +242,11 @@
 // gate; `$tab` is the trigger class and `active` toggles the bar.
 @mixin underline-tabs($tab) {
   @apply relative flex justify-center gap-1;
+
+  // Let the tab row wrap instead of overflowing the card on narrow screens.
+  @media (max-width: 782px) {
+    flex-wrap: wrap;
+  }
 
   .#{$tab} {
     @apply relative m-0 inline-flex items-center justify-center gap-1.5

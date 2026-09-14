@@ -30,11 +30,24 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
     <slot />
   </div>
 
-  <Sheet v-else-if="isMobile" :open="openMobile" v-bind="$attrs" @update:open="setOpenMobile">
+  <!--
+    Mobile drawer: non-modal with a lock-free scrim instead of SheetOverlay.
+    The stock modal overlay engages body scroll-lock by presence, which turns
+    <body> into a clipping scroll container — the GPU compositor then blends
+    the content card's anti-aliased rounded corners against the light body
+    canvas (#f0f0f1) instead of the dark host fill: a white wedge at the card
+    corners in dark mode (same artifact as body.themes-php's overflow reset in
+    scss/screens/_themes.scss, but triggered on every screen). Body scroll-lock
+    buys nothing here anyway: the body never scrolls (fixed host + card is the
+    sole scroller), so dropping it only removes the hazard. Escape-to-close and
+    trigger toggle keep working in non-modal mode.
+  -->
+  <Sheet v-else-if="isMobile" :open="openMobile" :modal="false" v-bind="$attrs" @update:open="setOpenMobile">
     <SheetContent
       data-sidebar="sidebar"
       data-slot="sidebar"
       data-mobile="true"
+      :show-overlay="false"
       :side="side"
       class="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
       :style="{
@@ -49,6 +62,12 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
         <slot />
       </div>
     </SheetContent>
+    <div
+      v-if="openMobile"
+      aria-hidden="true"
+      class="bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-40 animate-in fade-in-0 duration-100"
+      @click="setOpenMobile(false)"
+    />
   </Sheet>
 
   <div

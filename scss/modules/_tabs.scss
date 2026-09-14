@@ -16,7 +16,9 @@
 .subsubsub {
   @include mixins.module('tabs') {
     @include primitives.tabs-track;
-    @apply mb-4;
+    // The list-table header uses a single 12px rhythm (see _tables.scss); the
+    // tabs are its first row.
+    @apply mb-3;
 
     li {
       // `contents` drops the `li` box so its `<a>` is a flex item of the track

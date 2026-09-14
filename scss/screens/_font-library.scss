@@ -58,7 +58,11 @@
       @include primitives.borderless-surface(bottom);
     }
 
-    .admin-ui-page__header {
+    .admin-ui-page__header,
+    // wpds renders the page header with a CSS-module class
+    // (`_…__header`), not `.admin-ui-page__header`; the `__header` suffix is
+    // the stable part, so clear its white surface here too.
+    [class*='__header'] {
       @include primitives.borderless-surface(bottom);
     }
 
@@ -85,6 +89,23 @@
       --wp-components-font-weight-medium: 600;
       --wp-components-font-weight-semibold: 600;
       --wp-components-font-weight-body: 600;
+
+      // Neutral surfaces/ink/strokes → Attrium tokens. The app writes these as
+      // INLINE custom properties on the provider root, so `!important` is
+      // required to beat the inline declaration. Semantic status colors
+      // (info/success/warning/error/brand) are left alone — they carry meaning.
+      --wpds-color-background-surface-neutral: var(--attrium-background) !important;
+      --wpds-color-background-surface-neutral-weak: var(--attrium-card) !important;
+      --wpds-color-background-surface-neutral-strong: var(--attrium-card) !important;
+      --wpds-color-foreground-content-neutral: var(--attrium-foreground) !important;
+      --wpds-color-foreground-content-neutral-weak: var(--attrium-muted-foreground) !important;
+      --wpds-color-foreground-interactive-neutral: var(--attrium-foreground) !important;
+      --wpds-color-foreground-interactive-neutral-weak: var(--attrium-muted-foreground) !important;
+      --wpds-color-stroke-surface-neutral: var(--attrium-border) !important;
+      --wpds-color-stroke-surface-neutral-weak: var(--attrium-border) !important;
+      --wpds-color-stroke-interactive-neutral: var(--attrium-border) !important;
+      --wpds-color-background-interactive-neutral-weak: var(--attrium-muted) !important;
+      --wpds-color-background-interactive-neutral-weak-active: var(--attrium-muted) !important;
     }
 
     // wpds paints both selected text and hover with its blue accent; we map
@@ -162,6 +183,51 @@
 
       .components-text {
         color: var(--attrium-secondary-foreground);
+      }
+    }
+
+    // ---- Font list ----
+    // wpds leaves the list on its own light surface with a hardcoded dark
+    // 11px "THEME" label (invisible in dark mode). Reskin it as the Attrium
+    // card + row recipe: a ring card, one bordered row per font, muted hover.
+    .font-library__fonts-title {
+      @apply text-xs font-semibold uppercase tracking-wider;
+      color: var(--attrium-muted-foreground);
+    }
+
+    .font-library__fonts-list {
+      @apply overflow-hidden rounded-[var(--attrium-radius-lg)]
+             border border-[var(--attrium-border)]
+             bg-[var(--attrium-card)];
+    }
+
+    .font-library__fonts-list-item {
+      @apply border-b border-[var(--attrium-border)] last:border-b-0;
+    }
+
+    .font-library__font-card {
+      // wpds paints the button itself with a hardcoded light 1px border on all
+      // four sides (rgb(221,221,221)) — on this row recipe that reads as a
+      // bright white grid over the card, two nested boxes per row. The list
+      // owns the outer ring and each list item owns its separator, so the card
+      // is a borderless full-bleed row.
+      @apply w-full rounded-none border-0 px-4 py-3 transition-colors;
+
+      // The wpds Text primitive paints the name with a fixed neutral ink; pin
+      // it to the token so the font names stay legible in dark mode.
+      color: var(--attrium-foreground);
+
+      .components-text {
+        color: var(--attrium-foreground);
+      }
+
+      // "1 of 1 active" is supporting copy, not the row's label.
+      .font-library__font-card__count {
+        color: var(--attrium-muted-foreground);
+      }
+
+      &:hover {
+        background: var(--attrium-muted);
       }
     }
   }
