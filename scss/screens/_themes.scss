@@ -153,14 +153,19 @@ body.theme-install-php {
 
     // Core draws the apparent "border" on hover/focus as a box-shadow ring
     // (buttons.css:174 `box-shadow: 0 0 0 1.5px`), not a real border — reset it
-    // alongside the border so no ring appears. `opacity-100` cancels the shared
-    // buttons module's hover opacity-90 dim so the accent fill isn't translucent.
+    // alongside the border so no ring appears. Hover mixes the secondary fill to
+    // 80% (shadcn's `bg-secondary/80`) instead of a translucent opacity so the
+    // button matches the shared buttons module.
     &:hover,
     &:focus {
-      background: var(--attrium-accent);
+      background: color-mix(
+        in oklab,
+        var(--attrium-secondary) 80%,
+        transparent
+      );
       color: var(--attrium-secondary-foreground);
 
-      @apply border-transparent shadow-none opacity-100;
+      @apply border-transparent shadow-none;
     }
   }
 

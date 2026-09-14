@@ -71,7 +71,11 @@
 
       &:hover,
       &:focus {
-        @apply opacity-90;
+        background: color-mix(
+          in oklab,
+          var(--attrium-primary) 80%,
+          transparent
+        );
       }
     }
 

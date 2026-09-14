@@ -1,34 +1,46 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Shared cell recipe. The table itself is styled inline in `.widefat` below —
-// only the cell geometry is factored out, because th and td genuinely share it.
+// Table module — WordPress's `.widefat` list tables reskinned to the shadcn-vue
+// <Table> (src/components/ui/table, reka-nova): a normal-case `h-10 px-2`
+// `font-medium` header, `p-2` cells, one `border-b` per row and a `bg-muted/50`
+// row hover. `.widefat`'s own 1px border + radius stand in for the <Card> a
+// shadcn Table is normally wrapped in.
+//
+// Shared cell recipe — only the geometry is factored out, because th and td
+// genuinely share it. Cells are deliberately NOT `whitespace-nowrap` like
+// shadcn's data cells: WP list cells (plugin descriptions …) must wrap.
+
 @mixin cell-base {
-  @apply px-4 py-3 border-b border-[var(--attrium-border)];
+  @apply box-border border-b border-[var(--attrium-border)];
 }
 
+// shadcn <TableHead>: `h-10 px-2 text-left align-middle font-medium
+// text-foreground whitespace-nowrap` — no uppercase/tracking like core's.
 @mixin th-base {
   @include cell-base;
-  @apply text-left text-xs font-semibold
-         uppercase tracking-wider
-         text-[var(--attrium-secondary-foreground)];
+  @apply h-10 px-2 py-0 text-left align-middle
+         text-sm font-medium whitespace-nowrap
+         text-[var(--attrium-foreground)];
 }
 
+// shadcn <TableCell>: `p-2 align-middle`.
 @mixin td-base {
   @include cell-base;
-  @apply align-middle transition-colors duration-100;
+  @apply p-2 align-middle text-sm
+         text-[var(--attrium-foreground)]
+         transition-colors duration-100;
 }
 
 .widefat {
   @include mixins.module('tables') {
     @apply w-full;
 
+    // The frame (shadcn's <Card> stand-in) plus the surface the rows sit on.
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     overflow: hidden;
-    // The table background shows through the 1px gaps between the opaque cells
-    // below, which is what draws the grid lines.
-    background: var(--attrium-border);
+    background: var(--attrium-primary-foreground);
     box-shadow: none;
 
     // Strip core's own table chrome: per-cell backgrounds, plus the inset
@@ -42,8 +54,10 @@
       box-shadow: none;
     }
 
-    thead {
-      @apply bg-[var(--attrium-secondary)];
+    // Shadcn separates rows with the single bottom border + hover, not zebra.
+    // Core's `.striped > tbody > :nth-child(odd)` would otherwise repaint.
+    &.striped > tbody > :nth-child(odd) {
+      background: transparent;
     }
 
     thead th,
@@ -57,23 +71,16 @@
 
     tbody {
       // Row-level hover: the whole row lights up together (the row is the
-      // interactive unit), rather than each cell lighting up independently.
+      // interactive unit), matching shadcn's `hover:bg-muted/50`.
       tr:hover td,
       tr:hover th {
-        background: var(--attrium-accent);
+        background: color-mix(in oklab, var(--attrium-muted) 50%, transparent);
       }
 
       td,
       th {
         @include td-base;
-
-        color: var(--attrium-foreground);
-        background: var(--attrium-primary-foreground);
       }
-
-      // No zebra striping: cells above are opaque, and the 1px border grid is
-      // what separates rows. (Core's `.alternate` is only emitted into the
-      // find-posts modal anyway — real list tables use `.striped`.)
 
       tr:last-child td,
       tr:last-child th {
@@ -167,7 +174,7 @@
     th.sorted,
     th.sortable {
       a {
-        @apply text-[var(--attrium-primary)]
+        @apply text-[var(--attrium-foreground)]
                flex items-center;
       }
     }
@@ -198,7 +205,7 @@
 .widefat.plugins {
   @include mixins.module('tables') {
     // Row cells: drop core's inset box-shadow "border" and active-row tint;
-    // inherit the same background/border as normal tbody cells.
+    // sit transparent on the table surface like every other table.
     tbody th,
     tbody td,
     tr.active th,
@@ -207,21 +214,25 @@
     tr.inactive td {
       @apply shadow-none;
 
-      background-color: var(--attrium-primary-foreground);
+      background-color: transparent;
     }
 
     // Plugins repaint every cell (above) after the shared row-hover rule, so
     // repeat the row-hover here to keep whole-row highlighting working here.
     tbody tr:hover th,
     tbody tr:hover td {
-      background-color: var(--attrium-accent);
+      background-color: color-mix(
+        in oklab,
+        var(--attrium-muted) 50%,
+        transparent
+      );
     }
 
     // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
-    // restore the secondary header fill on the actual header cells.
+    // keep the header transparent on the actual header cells.
     thead th,
     thead td {
-      background-color: var(--attrium-secondary);
+      background-color: transparent;
     }
 
     // Core hard-codes text to #000 on `.plugins, .plugins th, .plugins td`;
@@ -293,6 +304,6 @@ p.search-box {
 
 .tablenav-pages-navspan.button.disabled {
   @include mixins.module('tables') {
-    @apply opacity-40 cursor-default border-transparent!;
+    @apply opacity-50 cursor-default border-transparent!;
   }
 }

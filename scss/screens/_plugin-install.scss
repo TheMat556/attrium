@@ -61,7 +61,7 @@
 // `div.widefat.plugin-install` wrapper. Core only sets flex layout here
 // (list-tables.css `.plugin-install-php #the-list`) — no border, no background —
 // but our own tables module styles the generic `.widefat` class with a surface
-// border + `--attrium-border` background (it expects a real `<table>`), which
+// border + surface fill (it expects a real `<table>`), which
 // paints the plugin-install wrapper as a boxed strip. Both wrapper and list must
 // stay invisible so the page surface shows through the card gaps in both modes:
 // kill any border/background regardless of which stylesheet (tables module,
@@ -124,7 +124,11 @@
 
       &:hover,
       &:focus {
-        @apply opacity-90;
+        background: color-mix(
+          in oklab,
+          var(--attrium-primary) 80%,
+          transparent
+        );
       }
     }
 
