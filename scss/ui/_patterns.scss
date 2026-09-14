@@ -18,25 +18,64 @@
     color: var(--attrium-foreground);
   }
 
+  // shadcn Tabs `line` variant (see primitives.underline-tabs): quiet text,
+  // 2px `--attrium-foreground` bar under the active link. Core emits ` | `
+  // separators as text nodes inside each `<li>`; the zero font-size collapses
+  // them while the anchors keep their own size.
   .filter-links {
-    li > a {
-      @apply border-b-4 border-transparent font-medium opacity-65;
+    @apply relative m-0 flex list-none gap-1 p-0;
 
-      color: var(--attrium-foreground);
+    li {
+      @apply inline-flex;
+
+      color: transparent;
+      font-size: 0;
+    }
+
+    li > a {
+      @apply relative inline-flex items-center justify-center gap-1.5
+             whitespace-nowrap rounded-[calc(var(--attrium-radius-lg)-2px)]
+             border border-transparent px-2 py-1 text-sm font-medium
+             no-underline outline-none transition-all;
+
+      color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+      &::after {
+        content: '';
+        @apply pointer-events-none absolute h-0.5 w-full opacity-0
+               transition-opacity;
+        inset-inline: 0;
+        bottom: -5px;
+        background-color: var(--attrium-foreground);
+      }
 
       &:hover,
       &:focus {
         color: var(--attrium-foreground);
-        @apply opacity-100;
+      }
+
+      &:focus {
+        @apply shadow-none outline-none;
+      }
+
+      &:focus-visible {
+        border-color: var(--attrium-ring);
+        outline: 1px solid var(--attrium-ring);
+        box-shadow: 0 0 0 3px
+          color-mix(in oklab, var(--attrium-ring) 50%, transparent);
       }
     }
 
     .current,
     .current:hover,
     .current:focus {
-      @apply shadow-none opacity-100;
-      border-bottom-color: var(--attrium-primary);
+      @apply shadow-none;
+
       color: var(--attrium-foreground);
+
+      &::after {
+        @apply opacity-100;
+      }
     }
   }
 }
@@ -66,7 +105,8 @@
     .apply-filters.button {
       background: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
-      border-color: var(--attrium-border);
+      // shadcn's default <Button> keeps a transparent border.
+      border-color: transparent;
       @apply shadow-none;
 
       &:hover,

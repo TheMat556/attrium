@@ -18,6 +18,25 @@ h1, h2, h3 {
   }
 }
 
+// Horizontal rules → shadcn <Separator> (`bg-border h-px w-full`).
+hr {
+  @include mixins.module('screens') {
+    @apply h-px w-full border-0 bg-[var(--attrium-border)];
+  }
+}
+
+// Avatars → shadcn <Avatar> (src/components/ui/avatar): a circular box with a
+// 1px `--attrium-border` ring over a muted fallback. The ring is a box-shadow
+// so core's fixed avatar dimensions aren't grown by a border.
+img.avatar,
+.avatar {
+  @include mixins.module('screens') {
+    @apply rounded-full bg-[var(--attrium-muted)];
+
+    box-shadow: 0 0 0 1px var(--attrium-border);
+  }
+}
+
 #attrium-host.dark {
   h1,
   h2,

@@ -1,13 +1,13 @@
 @use '../mixins';
 @use '../tokens' as tokens;
+@use '../ui/primitives';
 
 // Tabs module — the native WordPress `.subsubsub` filter strip (All /
 // Published / Draft … above every list table) reskinned to mirror the
 // shadcn-vue <TabsList>/<TabsTrigger> cva in src/components/ui/tabs/index.ts
-// and TabsTrigger.vue: a `bg-muted rounded-lg p-[3px] h-8` track holding a
-// `rounded-md` trigger that reads as a raised card when active (`bg-background
-// shadow-sm` in light, `border-input bg-input/30` in dark) and dims to
-// `text-foreground/60` (`text-muted-foreground` in dark) otherwise.
+// and TabsTrigger.vue. The shared recipe lives in primitives.tabs-* so every
+// tab bar in the admin (`.subsubsub`, nav-menus) renders identically;
+// see scss/ui/_primitives.scss.
 //
 // Core renders the strip as `li > a`, with the ` | ` separators as raw text
 // nodes inside each `<li>`. `li { display: contents }` lifts the anchors into
@@ -15,10 +15,8 @@
 // the zeroed font-size/transparent colour collapse the separators.
 .subsubsub {
   @include mixins.module('tabs') {
-    @apply mb-4 box-border inline-flex h-8 w-fit items-center justify-center
-           rounded-[var(--attrium-radius-lg)] border-0 p-[3px]
-           bg-[var(--attrium-muted)]
-           text-[var(--attrium-muted-foreground)];
+    @include primitives.tabs-track;
+    @apply mb-4;
 
     li {
       // `contents` drops the `li` box so its `<a>` is a flex item of the track
@@ -30,18 +28,7 @@
     }
 
     a {
-      // `box-border` is load-bearing: without it the anchor is content-box, so
-      // `h-[calc(100%-1px)]` sets the *content* height and the 1px border plus
-      // 4px padding inflate the trigger to the full track height. Border-box
-      // keeps it 25px (shadcn's trigger box) so the track's 3px inset holds on
-      // every side.
-      @apply relative box-border inline-flex h-[calc(100%-1px)] shrink-0
-             items-center justify-center gap-1.5 whitespace-nowrap no-underline
-             rounded-[calc(var(--attrium-radius-lg)-2px)]
-             border border-transparent px-1.5 py-0.5
-             text-sm font-medium transition-all outline-none;
-
-      color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+      @include primitives.tabs-trigger;
 
       // Core pins `.subsubsub a .count` to #50575e; inherit the trigger colour
       // so the count dims with its label instead of staying fixed grey.
@@ -50,28 +37,9 @@
         color: inherit;
       }
 
-      &:hover {
-        color: var(--attrium-foreground);
-      }
-
-      &:focus {
-        @apply shadow-none outline-none;
-      }
-
       // Active segment reads as a raised card on the muted track.
       &.current {
-        @apply shadow-sm;
-        background-color: var(--attrium-surface);
-        color: var(--attrium-foreground);
-      }
-
-      // shadcn's 3px focus ring (border + ring + outline), re-added on
-      // :focus-visible only so mouse clicks stay quiet.
-      &:focus-visible {
-        border-color: var(--attrium-ring);
-        outline: 1px solid var(--attrium-ring);
-        box-shadow: 0 0 0 3px
-          color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+        @include primitives.tabs-trigger-active;
       }
     }
   }

@@ -183,6 +183,12 @@
       @apply inline-flex items-center gap-1;
     }
 
+    // The comment-count bubble (`.post-com-count` / `-approved` / `-pending`)
+    // takes the shadcn <Badge> shape; core's status fills stay.
+    .post-com-count {
+      @include primitives.badge;
+    }
+
     th.column-comments,
     td.column-comments {
       a {
@@ -254,10 +260,16 @@
 
 p.search-box {
   @include mixins.module('tables') {
-    @apply mt-2;
+    @apply mt-2 inline-flex items-center;
 
+    // shadcn <InputGroup> silhouette: the search field and its action are one
+    // joined control — inner corners squared, borders merged with -1px.
     input[type="search"] {
-      @apply h-8 text-xs w-32;
+      @apply h-8 w-32 rounded-e-none text-xs;
+    }
+
+    input[type="submit"].button {
+      @apply -ml-px rounded-s-none;
     }
 
     // Below 1200px the tablenav runs out of room for a floated search box, so

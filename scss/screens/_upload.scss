@@ -118,11 +118,15 @@
     padding: 0; // core pads 12px vertically to fill its 48px band
   }
 
+  // Mirrors the shadcn-vue <Toggle> default variant (src/components/ui/toggle):
+  // `rounded-lg` icon box, `hover:bg-muted hover:text-foreground`, on-state
+  // `bg-muted` and the 3px focus-visible ring. Transparent border kept so the
+  // focus colour can't shift layout.
   .view-switch a {
     @apply relative inline-flex items-center justify-center
-           rounded-[var(--attrium-radius-md)] no-underline size-8
-           border border-transparent text-[var(--attrium-muted-foreground)];
-    // Transparent border kept: the focus color can't shift layout.
+           rounded-[var(--attrium-radius-lg)] no-underline size-8
+           border border-transparent text-[var(--attrium-muted-foreground)]
+           outline-none transition-all;
 
     &::before {
       @apply hidden;
@@ -134,16 +138,21 @@
 
     &:hover,
     &:focus {
-      @apply bg-[var(--attrium-accent)] text-[var(--attrium-foreground)];
+      @apply bg-[var(--attrium-muted)] text-[var(--attrium-foreground)];
     }
 
     &:focus {
-      @include primitives.focus-reset;
-      @apply border-[var(--attrium-ring)];
+      @apply shadow-none outline-none;
+    }
+
+    &:focus-visible {
+      border-color: var(--attrium-ring);
+      box-shadow: 0 0 0 3px
+        color-mix(in oklab, var(--attrium-ring) 50%, transparent);
     }
 
     &.current {
-      @apply bg-[var(--attrium-secondary)] text-[var(--attrium-foreground)];
+      @apply bg-[var(--attrium-muted)] text-[var(--attrium-foreground)];
     }
   }
 
@@ -297,16 +306,19 @@
 
   // Match the theme-overlay scrim. opacity:1 is load-bearing: the alpha is
   // in the background, otherwise the two multiply to 0.42.
+  // shadcn <DialogOverlay>: `bg-black/10 backdrop-blur-xs`.
   .media-modal-backdrop {
-    @apply bg-black/60 opacity-100;
+    @apply bg-black/10 opacity-100 backdrop-blur-xs;
   }
 
-  // Core's #fff slab + drop shadow becomes the card recipe; core keeps the
-  // geometry, and overflow:auto doubles as the small-viewport fallback scroll.
+  // shadcn <DialogContent>: `bg-popover text-popover-foreground rounded-xl
+  // ring-1 ring-foreground/10`. The ring is the 1px border here (see
+  // primitives.card-surface); core keeps the geometry and overflow:auto
+  // doubles as the small-viewport fallback scroll.
   .media-modal-content {
-    @apply rounded-[var(--attrium-radius-md)]
+    @apply rounded-[calc(var(--attrium-radius-lg)+4px)]
            border border-[var(--attrium-border)]
-           bg-[var(--attrium-primary-foreground)];
+           bg-[var(--attrium-popover)] text-[var(--attrium-popover-foreground)];
     box-shadow: none;
   }
 

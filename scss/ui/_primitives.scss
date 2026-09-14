@@ -62,35 +62,49 @@
   }
 }
 
-// --- Segmented pill control ----------------------------------------------------
-
-@mixin pill-track {
-  @apply inline-flex w-fit items-center justify-center
-         rounded-lg p-[3px] border-0
-         bg-[var(--attrium-secondary)]
-         text-[var(--attrium-secondary-foreground)];
+// --- Tabs (shadcn <TabsList>/<TabsTrigger>, default variant) ------------------
+// The track is a muted `h-8 rounded-lg p-[3px]` box; the trigger is a
+// `rounded-md` segment that reads as a raised card when active. Mirrors
+// src/components/ui/tabs/index.ts + TabsTrigger.vue. Each caller supplies its
+// own dark arm (the active face swaps to `border-input bg-input/30`, the
+// resting ink to `text-muted-foreground`) because the carrier ancestry can't
+// be composed from inside a primitive.
+@mixin tabs-track {
+  @apply inline-flex h-8 w-fit items-center justify-center
+         rounded-[var(--attrium-radius-lg)] p-[3px]
+         bg-[var(--attrium-muted)]
+         text-[var(--attrium-muted-foreground)];
 }
 
-@mixin pill-segment {
-  @apply inline-flex items-center justify-center
-         rounded-md px-3 py-1.5 text-sm font-medium
-         no-underline transition-all border-0 bg-transparent
-         text-[var(--attrium-muted-foreground)];
+@mixin tabs-trigger {
+  @apply relative box-border inline-flex h-[calc(100%-1px)] shrink-0
+         items-center justify-center gap-1.5 whitespace-nowrap no-underline
+         rounded-[calc(var(--attrium-radius-lg)-2px)]
+         border border-transparent px-1.5 py-0.5 text-sm font-medium
+         transition-all outline-none;
 
-  &:hover,
-  &:focus {
-    @apply bg-transparent text-[var(--attrium-foreground)];
+  color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+  &:hover {
+    color: var(--attrium-foreground);
   }
 
   &:focus {
     @apply shadow-none outline-none;
   }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    outline: 1px solid var(--attrium-ring);
+    box-shadow: 0 0 0 3px
+      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+  }
 }
 
-@mixin pill-segment-active {
-  @apply shadow-sm
-         bg-[var(--attrium-primary)]
-         text-[var(--attrium-primary-foreground)];
+@mixin tabs-trigger-active {
+  @apply shadow-sm;
+  background-color: var(--attrium-surface);
+  color: var(--attrium-foreground);
 }
 
 // --- CodeMirror editor --------------------------------------------------------
@@ -105,14 +119,26 @@
 }
 
 // --- Form field ---------------------------------------------------------------
-
+// Mirrors the aligned `<Input>` recipe in scss/modules/_forms.scss (h-8,
+// rounded-lg, `border-input`) so screens that still reach for this legacy
+// recipe render the same box as every other text field. Prefer
+// `input-base`/`input-outline` for new work.
 @mixin field-outline {
-  @apply rounded-[var(--attrium-radius-md)] text-sm border
-         border-[var(--attrium-border)] bg-transparent
-         text-[var(--attrium-foreground)] h-9
-         transition-colors duration-150
-         focus-visible:outline-none focus-visible:ring-2
-         focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+  @apply rounded-[var(--attrium-radius-lg)] text-sm border
+         border-[var(--attrium-input)] bg-transparent
+         text-[var(--attrium-foreground)] h-8 min-h-8
+         px-2.5 py-1 box-border outline-none
+         transition-colors duration-150;
+
+  &:focus {
+    @apply shadow-none outline-none;
+  }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    box-shadow: 0 0 0 3px
+      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+  }
 }
 
 // --- Surfaces -----------------------------------------------------------------
@@ -122,8 +148,18 @@
   @apply shadow-none;
 }
 
+// Mirrors the shadcn-vue <Card> (src/components/ui/card/Card.vue):
+// `bg-card rounded-xl ring-1 ring-foreground/10`. The ring is expressed as a
+// 1px border (a box-shadow ring would be nulled by the many `shadow-none`
+// resets the screens apply); `ring-foreground/10` is the same 10% ink as
+// `--attrium-border`, so the frame reads identically while `rounded-xl`
+// (`--radius + 4px`) owns the corner.
 @mixin card-surface {
-  @include surface(var(--attrium-primary-foreground));
+  @include surface(
+    var(--attrium-card),
+    1px solid var(--attrium-border),
+    calc(var(--attrium-radius-lg) + 4px)
+  );
 }
 
 // Elevated secondary surface — the same card recipe on the secondary token,
@@ -131,7 +167,34 @@
 // boxes, callouts, bulk-select pills). Mirrors card-surface; the caller adds
 // any per-site extras (overflow, color) after the call.
 @mixin secondary-surface {
-  @include surface(var(--attrium-secondary));
+  @include surface(
+    var(--attrium-secondary),
+    1px solid var(--attrium-border),
+    calc(var(--attrium-radius-lg) + 4px)
+  );
+}
+
+// --- Badge ---------------------------------------------------------------------
+// Mirrors the shadcn-vue <Badge> base (src/components/ui/badge/index.ts):
+// `h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`.
+// Variant fills are opt-in at the call site via the background/color.
+@mixin badge {
+  @apply inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1
+         overflow-hidden whitespace-nowrap rounded-full border
+         border-transparent px-2 py-0.5 text-xs font-medium
+         transition-colors;
+}
+
+// --- Avatar --------------------------------------------------------------------
+// Mirrors the shadcn-vue <Avatar> (src/components/ui/avatar):
+// `size-8 rounded-full` with a 1px `--attrium-border` ring. `$size` is the
+// square box; WP avatars are usually 32px/48px.
+@mixin avatar($size: 2rem) {
+  @apply relative flex shrink-0 select-none overflow-hidden rounded-full
+         border border-[var(--attrium-border)];
+
+  width: $size;
+  height: $size;
 }
 
 // --- Icon button -----------------------------------------------------------------
@@ -152,29 +215,55 @@
   }
 }
 
-// --- Underline tabs ---------------------------------------------------------------
-// Centered tab row where the active tab carries a token-primary bottom
-// underline (Site Health, Privacy Settings). Include INSIDE the tab bar
-// container under its screen gate; `$tab` is the tab link class. The bar
-// becomes a flex row and the tabs get the muted → foreground hover treatment.
+// --- Tabs, `line` variant ---------------------------------------------------------
+// shadcn's `variant="line"`: a transparent track with no active fill, and a
+// 2px `--attrium-foreground` bar under the active trigger (`after:h-0.5
+// after:bg-foreground`, offset 5px). Backs the Site Health / Privacy /
+// `wp-filter` tab rows. Include INSIDE the tab bar container under its screen
+// gate; `$tab` is the trigger class and `active` toggles the bar.
 @mixin underline-tabs($tab) {
-  @apply flex justify-center;
+  @apply relative flex justify-center gap-1;
 
   .#{$tab} {
-    @apply text-sm font-medium border-b-2 
-           border-transparent m-0 pt-2 px-4 pb-4
-           transition-colors duration-150;
-    color: var(--attrium-muted-foreground);
+    @apply relative m-0 inline-flex items-center justify-center gap-1.5
+           whitespace-nowrap rounded-[calc(var(--attrium-radius-lg)-2px)]
+           border border-transparent px-2 py-1 text-sm font-medium
+           no-underline transition-all outline-none;
+
+    color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+    &::after {
+      content: '';
+      @apply pointer-events-none absolute h-0.5 w-full opacity-0
+             transition-opacity;
+      inset-inline: 0;
+      bottom: -5px;
+      background-color: var(--attrium-foreground);
+    }
 
     &:hover,
     &:focus {
       color: var(--attrium-foreground);
     }
 
+    &:focus {
+      @apply shadow-none outline-none;
+    }
+
+    &:focus-visible {
+      border-color: var(--attrium-ring);
+      outline: 1px solid var(--attrium-ring);
+      box-shadow: 0 0 0 3px
+        color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+    }
+
     &.active {
-      @apply shadow-none font-medium;
+      @apply shadow-none;
       color: var(--attrium-foreground);
-      border-bottom-color: var(--attrium-primary);
+
+      &::after {
+        @apply opacity-100;
+      }
     }
   }
 }
