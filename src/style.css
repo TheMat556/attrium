@@ -74,6 +74,9 @@
   --color-input: var(--input);
   --color-border: var(--attrium-border);
   --color-destructive: var(--destructive);
+  --color-critical: var(--attrium-error);
+  --color-warning: var(--attrium-warning);
+  --color-success: var(--attrium-success);
   --color-accent-foreground: var(--attrium-accent-foreground);
   --color-accent: var(--attrium-accent);
   --color-muted-foreground: var(--attrium-muted-foreground);
