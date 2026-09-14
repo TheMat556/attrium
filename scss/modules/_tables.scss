@@ -350,6 +350,19 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
         @apply w-auto flex-1;
       }
     }
+
+    // On phones the submit keeps its full label text (long in some locales,
+    // e.g. German "Installierte Plugins durchsuchen"), which squeezed the
+    // field to a sliver in the nowrap row — let the submit drop onto its
+    // own line so the field keeps a usable width. 782px is core's admin
+    // mobile breakpoint.
+    @media (max-width: 782px) {
+      @apply flex-wrap;
+
+      input[type="search"] {
+        @apply grow shrink basis-full;
+      }
+    }
   }
 }
 
