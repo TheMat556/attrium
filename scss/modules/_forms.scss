@@ -91,6 +91,9 @@ $select-chevron-dark: icons.image(
 
 // Text fields reskinned by the input recipes below. Kept as one list so the
 // base rule and the dark-mode carrier arms stay in lockstep.
+// `datetime` is deliberately absent: the type is obsolete (removed from the
+// HTML spec — no valid markup can match it) and check-css-coverage kept
+// flagging every derived selector as dead.
 $text-fields: (
   'input[type="text"]',
   'input[type="password"]',
@@ -100,7 +103,6 @@ $text-fields: (
   'input[type="number"]',
   'input[type="tel"]',
   'input[type="date"]',
-  'input[type="datetime"]',
   'input[type="datetime-local"]',
   'input[type="month"]',
   'input[type="time"]',
@@ -118,10 +120,6 @@ $text-fields: (
          px-2.5 py-1
          transition-colors duration-150
          outline-none box-border;
-
-  &:not(textarea) {
-    @apply h-8! min-h-8! px-2.5! py-1!;
-  }
 
   &:disabled {
     @apply pointer-events-none cursor-not-allowed opacity-50;
@@ -173,6 +171,21 @@ $text-fields: (
         var(--attrium-input) 50%,
         transparent
       );
+    }
+  }
+}
+
+// Single-line sizing, inputs only (textarea keeps its multi-line box).
+// Iterates $text-fields so the set can't drift from the base rule above; the
+// `!=` keeps the impossible `textarea:not(textarea)` selector the old
+// `&:not(textarea)` guard used to emit out of the build. All `!important`,
+// so the lowered specificity (no :not arg) changes no winners.
+@each $field in $text-fields {
+  @if $field != 'textarea' {
+    #{$field} {
+      @include mixins.module('forms') {
+        @apply h-8! min-h-8! px-2.5! py-1!;
+      }
     }
   }
 }

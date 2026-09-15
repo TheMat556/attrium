@@ -164,14 +164,22 @@ body.theme-install-php {
   // (themes.css:96) and a faux top edge via `box-shadow: inset 0 1px 0`
   // (themes.css:240) on non-active cards — reset both so the row blends into
   // the footer.
+  // Shared by the card footer AND the Details overlay's bottom bar (both
+  // `.theme-actions` live inside `.wrap`). Keep this cosmetic only: the
+  // overlay bar must keep core's absolute positioning/padding, so never put
+  // position, transform or padding resets here.
   .theme-actions {
-    // `static` takes the action row out of core's absolute overlay so it
-    // sits in the footer flex row beside the name — but the translate,
-    // padding and offset live in the SAME core rule as `position`, so they
-    // survive `static` unless reset here too (`translateY(-50%)` would
-    // otherwise paint the row half its height above its layout spot).
-    @apply static flex flex-none transform-none flex-wrap items-center gap-2
-           border-0 p-0 shadow-none bg-transparent;
+    @apply flex items-center gap-2 border-0 shadow-none bg-transparent;
+  }
+
+  // Card only — `static` takes the action row out of core's absolute overlay
+  // so it sits in the footer flex row beside the name, but the translate,
+  // padding and offset live in the SAME core rule as `position`, so they
+  // survive `static` unless reset here too (`translateY(-50%)` would
+  // otherwise paint the row half its height above its layout spot). Scoped to
+  // `.theme` so the Details overlay bar is untouched.
+  .theme .theme-actions {
+    @apply static flex-none transform-none flex-wrap p-0;
   }
 
   .theme-browser .theme .theme-actions .button:not(.button-primary),

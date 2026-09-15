@@ -1,4 +1,5 @@
 @use 'primitives';
+@use '../tokens' as tokens;
 
 // Composite UI recipes — emit their own top-level blocks. Include these at
 // TOP LEVEL under screen-root(...), never screen(...), whose trailing `&`
@@ -18,69 +19,53 @@
     color: var(--attrium-foreground);
   }
 
-  // shadcn Tabs `line` variant (see primitives.underline-tabs): quiet text,
-  // 2px `--attrium-foreground` bar under the active link. Core emits ` | `
-  // separators as text nodes inside each `<li>`; the zero font-size collapses
-  // them while the anchors keep their own size.
+  // shadcn Tabs default variant (see primitives.tabs-*): the same muted track
+  // with a raised active "card" that `.subsubsub` uses (modules/_tabs.scss), so
+  // every tab bar in the admin reads identically. Core emits no ` | ` separators
+  // on these installers, so nothing else is needed to flatten the list.
   .filter-links {
-    @apply relative m-0 flex list-none gap-1 p-0;
+    @include primitives.tabs-track;
+    @apply m-0 list-none;
 
-    // Wrap the view tabs on narrow screens instead of overflowing the card.
-    @media (max-width: 782px) {
-      flex-wrap: wrap;
-    }
-
+    // `contents` drops the `li` box so each `<a>` is a flex item of the track
+    // and sizes to its own label, exactly like the `.subsubsub` segments.
     li {
-      @apply inline-flex max-w-full;
-
-      color: transparent;
-      font-size: 0;
+      display: contents;
     }
 
     li > a {
-      @apply relative inline-flex max-w-full items-center justify-center
-             gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap
-             rounded-[calc(var(--attrium-radius-lg)-2px)]
-             border border-transparent px-2 py-1 text-sm font-medium
-             no-underline outline-none transition-all;
+      @include primitives.tabs-trigger;
+      // Core gives these anchors a `0 10px` margin; the track owns the spacing.
+      @apply m-0;
 
-      color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
-
-      &::after {
-        content: '';
-        @apply pointer-events-none absolute h-0.5 w-full opacity-0
-               transition-opacity;
-        inset-inline: 0;
-        bottom: -5px;
-        background-color: var(--attrium-foreground);
+      // Active segment reads as a raised card on the muted track.
+      &.current {
+        @include primitives.tabs-trigger-active;
       }
+    }
+  }
 
-      &:hover,
-      &:focus {
+  // Dark: shadcn swaps the resting ink to `text-muted-foreground` and the active
+  // face from `bg-background shadow-sm` to `border-input bg-input/30`, exactly
+  // as on `.subsubsub` (see modules/_tabs.scss). `&` is the caller's
+  // `screen-root` gate, so the arm stays scoped to the installer screens without
+  // the pattern needing to know their body classes.
+  & #{tokens.$dark-carrier-host} {
+    .filter-links li > a {
+      color: var(--attrium-muted-foreground);
+
+      &:hover {
         color: var(--attrium-foreground);
       }
 
-      &:focus {
-        @apply shadow-none outline-none;
-      }
-
-      &:focus-visible {
-        border-color: var(--attrium-ring);
-        outline: 1px solid var(--attrium-ring);
-        box-shadow: 0 0 0 3px
-          color-mix(in oklab, var(--attrium-ring) 50%, transparent);
-      }
-    }
-
-    .current,
-    .current:hover,
-    .current:focus {
-      @apply shadow-none;
-
-      color: var(--attrium-foreground);
-
-      &::after {
-        @apply opacity-100;
+      &.current {
+        border-color: var(--attrium-input);
+        background-color: color-mix(
+          in oklab,
+          var(--attrium-input) 30%,
+          transparent
+        );
+        color: var(--attrium-foreground);
       }
     }
   }
@@ -103,8 +88,10 @@
       }
     }
 
-    .filter-group-feature input[type='checkbox'],
-    .filter-group-feature input[type='radio'] {
+    // Radio branch deliberately absent: core renders checkboxes only in
+    // this drawer (verified in theme-install.php) — check-css-coverage
+    // flagged `input[type='radio']` here as dead.
+    .filter-group-feature input[type='checkbox'] {
       @apply absolute;
     }
 

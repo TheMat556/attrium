@@ -195,6 +195,15 @@
     }
   }
 
+  // List-mode gap above the tablenav: core's `#posts-filter .wp-filter`
+  // zeroes the filter bar's own bottom margin, and the bar's search box
+  // carries `m-0` by design (the bar owns its own spacing) — with the
+  // tables module's `mt-0` the tablenav would sit flush under the bar in
+  // every state, not just the empty-table one. Restore the 12px rhythm.
+  form#posts-filter .tablenav.top {
+    @apply mt-3;
+  }
+
   // ---- View-switch -----------------------------------------------------------
 
   // Core paints dashicons on a::before; swap for Lucide (hide ::before,
@@ -265,8 +274,9 @@
   // mechanism (li padding, NOT ul gap — a gap would break the JS percentage
   // widths). Tiles sit flush (core's 2px top hairline stays); the
   // direct-child scope leaves the sidebar's nested .attachments on core's
-  // layout.
-  .attachments-browser > .attachments,
+  // layout. Only the wrapper carries .attachments as a direct child —
+  // `.attachments-browser > .attachments` matches nothing (verified live),
+  // so it stays out of the selector.
   .attachments-wrapper > .attachments {
     display: flex;
     flex-wrap: wrap;
@@ -485,7 +495,7 @@
   // so the grid page's own .media-frame-content (the upload baseline)
   // keeps core's chrome.
   .edit-attachment-frame .media-frame-content {
-    @apply border-t-0 bg-[var(--attrium-primary-foreground)];
+    @apply border-t-0 bg-[var(--attrium-popover)];
   }
 
   // Core's inset "scroll affordance" shadows read as a grey band on the
