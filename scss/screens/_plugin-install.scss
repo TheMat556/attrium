@@ -61,7 +61,7 @@
 // `div.widefat.plugin-install` wrapper. Core only sets flex layout here
 // (list-tables.css `.plugin-install-php #the-list`) — no border, no background —
 // but our own tables module styles the generic `.widefat` class with a surface
-// border + `--attrium-border` background (it expects a real `<table>`), which
+// border + surface fill (it expects a real `<table>`), which
 // paints the plugin-install wrapper as a boxed strip. Both wrapper and list must
 // stay invisible so the page surface shows through the card gaps in both modes:
 // kill any border/background regardless of which stylesheet (tables module,
@@ -117,6 +117,29 @@
     // to the secondary variant; this compound selector (higher specificity +
     // later in the cascade) upgrades only the install button, leaving "More
     // Details" untouched (it is a bare link, not a `.button`).
+    // Mobile: core floats the icon/name/actions into two columns, so the
+    // action block shrinks to ~116px and a 154px install button spills past the
+    // card (clipped). Stack the card top and let the actions take full width.
+    @media (max-width: 782px) {
+      .plugin-card-top {
+        @apply flex flex-col;
+      }
+
+      // Core absolutely positions the action column at desktop (and nudges it
+      // with margin-left at ≤480px); make it a normal full-width row.
+      .action-links {
+        @apply static m-0 w-auto;
+      }
+
+      .plugin-action-buttons {
+        @apply m-0 mt-4 flex w-full list-none flex-wrap gap-2 p-0;
+
+        li {
+          @apply m-0;
+        }
+      }
+    }
+
     .plugin-action-buttons .install-now.button {
       background: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
@@ -124,7 +147,11 @@
 
       &:hover,
       &:focus {
-        @apply opacity-90;
+        background: color-mix(
+          in oklab,
+          var(--attrium-primary) 80%,
+          transparent
+        );
       }
     }
 

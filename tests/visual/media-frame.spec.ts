@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from './support/theme'
 
 /**
@@ -42,8 +42,11 @@ for (const { theme } of THEMES) {
 		}) => {
 			const fonts = await page.evaluate(() => {
 				const heading = document.querySelector('#wp-media-grid > h1')
-				const action = document.querySelector('#wp-media-grid .page-title-action')
-				if (!heading || !action) throw new Error('media page title elements missing')
+				const action = document.querySelector(
+					'#wp-media-grid .page-title-action',
+				)
+				if (!heading || !action)
+					throw new Error('media page title elements missing')
 				return {
 					heading: getComputedStyle(heading).fontFamily,
 					action: getComputedStyle(action).fontFamily,
@@ -54,9 +57,7 @@ for (const { theme } of THEMES) {
 			expect(fonts.action).toContain('Inter Variable')
 		})
 
-		test('media frame: toolbar is one unwrapped flex row', async ({
-			page,
-		}) => {
+		test('media frame: toolbar is one unwrapped flex row', async ({ page }) => {
 			const layout = await page.locator(TOOLBAR).evaluate((el) => ({
 				display: getComputedStyle(el).display,
 				wrap: getComputedStyle(el).flexWrap,
@@ -82,7 +83,7 @@ for (const { theme } of THEMES) {
 				minHeight: '48px',
 				secondary: {
 					display: 'flex',
-						flex: '0 0 auto',
+					flex: '0 0 auto',
 					wrap: 'nowrap',
 					align: 'center',
 				},
@@ -129,9 +130,11 @@ for (const { theme } of THEMES) {
 					throw new Error('media frame missing')
 				}
 
-				const rects = [...document.querySelectorAll<HTMLElement>(
-					'.attachments > .attachment',
-				)].map((tile) => tile.getBoundingClientRect())
+				const rects = [
+					...document.querySelectorAll<HTMLElement>(
+						'.attachments > .attachment',
+					),
+				].map((tile) => tile.getBoundingClientRect())
 
 				// First tile of the wrapped second row.
 				const row2 = rects.find((r) => r.top > rects[0].top + 1)
@@ -213,9 +216,7 @@ for (const { theme } of THEMES) {
 		test('media frame: tiles wear the Attrium card chrome', async ({
 			page,
 		}) => {
-			const preview = page
-				.locator(`${TILES} .attachment-preview`)
-				.first()
+			const preview = page.locator(`${TILES} .attachment-preview`).first()
 
 			const chrome = await preview.evaluate((el) => {
 				const cs = getComputedStyle(el)
@@ -241,7 +242,7 @@ for (const { theme } of THEMES) {
 
 			// Card chrome: token radius + hairline border + clipped corners,
 			// with core's hardcoded inset shadow frames gone.
-			expect(chrome.radius).toBe('8px')
+			expect(chrome.radius).toBe('14.4px')
 			expect(chrome.border).toBe('1px solid')
 			expect(chrome.overflow).toBe('hidden')
 			expect(chrome.previewShadow).toBe('none')
@@ -273,9 +274,7 @@ for (const { theme } of THEMES) {
 					overflow: cs.overflow,
 					borderTop: `${cs.borderTopWidth} ${cs.borderTopStyle}`,
 					textAlign: cs.textAlign,
-					divPadding: text
-						? getComputedStyle(text).padding
-						: 'missing',
+					divPadding: text ? getComputedStyle(text).padding : 'missing',
 					// The long fixture name exceeds the bar at one tile
 					// width — the ellipsis clips rather than wraps.
 					clipped: el.scrollWidth > el.clientWidth,
@@ -287,12 +286,12 @@ for (const { theme } of THEMES) {
 			expect(bar.overflow).toBe('hidden')
 			// Hairline top border; the card's own border frames the rest.
 			expect(bar.borderTop).toBe('1px solid')
-				// Core centered .filename; the caption bar starts at the left.
-				expect(bar.textAlign).toBe('start')
-				// No padding at all — the text hugs the card's corner and
-				// the ellipsis runs to the bar's right edge.
-				expect(bar.divPadding).toBe('0px')
-				expect(bar.clipped).toBe(true)
+			// Core centered .filename; the caption bar starts at the left.
+			expect(bar.textAlign).toBe('start')
+			// No padding at all — the text hugs the card's corner and
+			// the ellipsis runs to the bar's right edge.
+			expect(bar.divPadding).toBe('0px')
+			expect(bar.clipped).toBe(true)
 		})
 
 		test('media frame: tile check chip paints the Lucide check', async ({
@@ -311,10 +310,7 @@ for (const { theme } of THEMES) {
 				page.locator(`${TOOLBAR}.media-toolbar-mode-select`),
 			).toBeAttached()
 
-			await page
-				.locator(`${TILES} .attachment-preview`)
-				.first()
-				.click()
+			await page.locator(`${TILES} .attachment-preview`).first().click()
 			await expect(chip).toBeVisible()
 
 			// Selection also repaints the card edge: the primary ring
@@ -541,7 +537,7 @@ for (const { theme } of THEMES) {
 			// separator and loses core's inset scroll-affordance shadows.
 			// The title scales down from core's 22px to the theme-overlay
 			// heading scale.
-			expect(chrome.radius).toBe('8px')
+			expect(chrome.radius).toBe('14.4px')
 			expect(chrome.border).toBe('1px solid')
 			expect(chrome.panelShadow).toBe('none')
 			expect(chrome.infoShadow).toBe('none')
@@ -571,7 +567,7 @@ for (const { theme } of THEMES) {
 			// The preview image is carded like a grid tile: token radius,
 			// hairline border — and core's checkerboard gradients replaced
 			// by the card surface.
-			expect(chrome.image.radius).toBe('8px')
+			expect(chrome.image.radius).toBe('14.4px')
 			expect(chrome.image.border).toBe('1px solid')
 			expect(chrome.image.checkerboard).toBe('none')
 		})

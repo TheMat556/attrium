@@ -18,6 +18,10 @@ interface SheetContentProps extends DialogContentProps {
   class?: HTMLAttributes["class"]
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
+  // Opt out of the scroll-locking overlay. reka-ui's DialogOverlay engages
+  // body scroll-lock by presence (not by the root's `modal` prop), so hiding
+  // it via CSS would not help — it must not render at all.
+  showOverlay?: boolean
 }
 
 defineOptions({
@@ -27,17 +31,18 @@ defineOptions({
 const props = withDefaults(defineProps<SheetContentProps>(), {
   side: "right",
   showCloseButton: true,
+  showOverlay: true,
 })
 const emits = defineEmits<DialogContentEmits>()
 
-const delegatedProps = reactiveOmit(props, "class", "side", "showCloseButton")
+const delegatedProps = reactiveOmit(props, "class", "side", "showCloseButton", "showOverlay")
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
   <DialogPortal>
-    <SheetOverlay />
+    <SheetOverlay v-if="props.showOverlay" />
     <DialogContent
       data-slot="sheet-content"
       :data-side="side"

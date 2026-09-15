@@ -98,9 +98,11 @@
 // hashes), so they are safe to target. Header title/subtitle inherit the token
 // text color from the shell.
 .boot-layout,
+.boot-layout-container,
 .boot-layout__surfaces,
 .boot-layout__stage,
-.admin-ui-page {
+.admin-ui-page,
+.admin-ui-navigable-region {
   @include mixins.module('screens') {
     background: transparent !important;
     color: var(--attrium-foreground);
@@ -110,7 +112,10 @@
 // The page header (`.admin-ui-page__header`) carries its own solid surface and
 // a bottom border from the plugin's stylesheet — reset both so the title/
 // subtitle sit directly on the transparent shell like the rest of the page.
-.admin-ui-page__header {
+.admin-ui-page__header,
+// wpds renders the header with a CSS-module class (`_…__header`); the suffix
+// is the stable part, so clear its surface here too.
+[class*='__header'] {
   @include mixins.module('screens') {
     background: transparent !important;
     @apply border-b-0!;

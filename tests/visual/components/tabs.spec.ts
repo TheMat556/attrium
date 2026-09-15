@@ -5,16 +5,18 @@ import { applyTheme, stabilize, THEMES, type Theme } from '../support/theme'
  * Tabs regression.
  *
  * The `scss/modules/_tabs.scss` module restyles WordPress's `.subsubsub`
- * filter tabs above list tables (All / Published / Trash …) as a segmented
- * pill control via the shared `pill-track` / `pill-segment` mixins. The
- * `.subsubsub` only exists on screens that render list-table views — the posts
- * list is the canonical one with counts on every tab.
+ * filter tabs above list tables (All / Published / Trash …) to mirror the
+ * shadcn-vue <TabsList>/<TabsTrigger> cva: a `bg-muted` track with an active
+ * "card" trigger (`bg-background shadow-sm` in light, `border-input
+ * bg-input/30` in dark) and a 3px `:focus-visible` ring. The `.subsubsub` only
+ * exists on screens that render list-table views — the posts list is the
+ * canonical one with counts on every tab.
  *
- * The pills are `li > a` inside a floated `ul`; core renders the ` | `
- * separators as raw text nodes in each `<li>`, which the module hides. The
- * shared pill mixins also back the Site Health / Privacy / nav-menus tab bars,
- * so those are covered elsewhere; this spec guards the `.subsubsub`-specific
- * rules (container spacing, the `li` resets, and the count margin).
+ * The triggers are `li > a` inside a floated `ul`; core renders the ` | `
+ * separators as raw text nodes in each `<li>`, which the module hides
+ * (`li { display: contents }` + zeroed font-size). This spec guards the
+ * `.subsubsub`-specific rules (container box, the `li` flattening, the count
+ * colour) alongside the hover / focus states.
  */
 
 async function open(page: Page, theme: Theme, path: string): Promise<void> {
@@ -57,11 +59,11 @@ for (const { theme } of THEMES) {
 			await expect(link).toHaveScreenshot(`tabs-posts-current-hover-${theme}.png`)
 		})
 
-		test('unselected tab focus has no ring', async ({ page }) => {
-			// Focus an *unselected* tab: the active tab's shadow-sm already hides
-			// core's `a:focus` ring at higher specificity, so only the unselected
-			// state would regress. Capture the whole track, not the link element —
-			// an element screenshot clips the 2px outer box-shadow ring.
+		test('unselected tab focus shows the shadcn ring', async ({ page }) => {
+			// Programmatic focus matches `:focus-visible` here, so the shadcn ring
+			// (border + 3px box-shadow + 1px outline) paints on the unselected
+			// tab. Capture the whole track, not the link element — an element
+			// screenshot clips the outer ring.
 			const link: Locator = tabs.locator('li:not(.all) a').first()
 			await link.focus()
 			await page.waitForTimeout(200)

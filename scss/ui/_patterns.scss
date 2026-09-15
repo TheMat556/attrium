@@ -1,4 +1,5 @@
 @use 'primitives';
+@use '../tokens' as tokens;
 
 // Composite UI recipes — emit their own top-level blocks. Include these at
 // TOP LEVEL under screen-root(...), never screen(...), whose trailing `&`
@@ -18,25 +19,54 @@
     color: var(--attrium-foreground);
   }
 
+  // shadcn Tabs default variant (see primitives.tabs-*): the same muted track
+  // with a raised active "card" that `.subsubsub` uses (modules/_tabs.scss), so
+  // every tab bar in the admin reads identically. Core emits no ` | ` separators
+  // on these installers, so nothing else is needed to flatten the list.
   .filter-links {
-    li > a {
-      @apply border-b-4 border-transparent font-medium opacity-65;
+    @include primitives.tabs-track;
+    @apply m-0 list-none;
 
-      color: var(--attrium-foreground);
-
-      &:hover,
-      &:focus {
-        color: var(--attrium-foreground);
-        @apply opacity-100;
-      }
+    // `contents` drops the `li` box so each `<a>` is a flex item of the track
+    // and sizes to its own label, exactly like the `.subsubsub` segments.
+    li {
+      display: contents;
     }
 
-    .current,
-    .current:hover,
-    .current:focus {
-      @apply shadow-none opacity-100;
-      border-bottom-color: var(--attrium-primary);
-      color: var(--attrium-foreground);
+    li > a {
+      @include primitives.tabs-trigger;
+      // Core gives these anchors a `0 10px` margin; the track owns the spacing.
+      @apply m-0;
+
+      // Active segment reads as a raised card on the muted track.
+      &.current {
+        @include primitives.tabs-trigger-active;
+      }
+    }
+  }
+
+  // Dark: shadcn swaps the resting ink to `text-muted-foreground` and the active
+  // face from `bg-background shadow-sm` to `border-input bg-input/30`, exactly
+  // as on `.subsubsub` (see modules/_tabs.scss). `&` is the caller's
+  // `screen-root` gate, so the arm stays scoped to the installer screens without
+  // the pattern needing to know their body classes.
+  & #{tokens.$dark-carrier-host} {
+    .filter-links li > a {
+      color: var(--attrium-muted-foreground);
+
+      &:hover {
+        color: var(--attrium-foreground);
+      }
+
+      &.current {
+        border-color: var(--attrium-input);
+        background-color: color-mix(
+          in oklab,
+          var(--attrium-input) 30%,
+          transparent
+        );
+        color: var(--attrium-foreground);
+      }
     }
   }
 }
@@ -58,20 +88,27 @@
       }
     }
 
-    .filter-group-feature input[type='checkbox'],
-    .filter-group-feature input[type='radio'] {
+    // Radio branch deliberately absent: core renders checkboxes only in
+    // this drawer (verified in theme-install.php) — check-css-coverage
+    // flagged `input[type='radio']` here as dead.
+    .filter-group-feature input[type='checkbox'] {
       @apply absolute;
     }
 
     .apply-filters.button {
       background: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
-      border-color: var(--attrium-border);
+      // shadcn's default <Button> keeps a transparent border.
+      border-color: transparent;
       @apply shadow-none;
 
       &:hover,
       &:focus {
-        @apply opacity-90;
+        background: color-mix(
+          in oklab,
+          var(--attrium-primary) 80%,
+          transparent
+        );
       }
     }
 
@@ -106,9 +143,11 @@
 
 @mixin transparent-react-shell {
   .boot-layout,
+  .boot-layout-container,
   .boot-layout__surfaces,
   .boot-layout__stage,
-  .admin-ui-page {
+  .admin-ui-page,
+  .admin-ui-navigable-region {
     @apply bg-transparent!;
   }
 }

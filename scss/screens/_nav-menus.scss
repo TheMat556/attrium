@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../tokens' as tokens;
 @use '../ui/primitives';
 
 // Menus screen (nav-menus.php → body.nav-menus-php). Core hardcodes #fff /
@@ -21,18 +22,19 @@
 @include mixins.screen-root('nav-menus-php') {
   // The "Edit Menus / Manage Locations" bar is a `.nav-tab-wrapper` of
   // `.nav-tab` links — core renders it as classic bottom-border folder tabs
-  // (common.css:2376). Reskin it into the same segmented-control pill group used
-  // everywhere else (primitives.pill-* — see scss/ui/_primitives.scss) so the tab styles match
-  // across the admin. Only the resets that undo core's folder chrome (the tab
-  // float, the active-tab margin nudge) stay here as call-site extras.
+  // (common.css:2376). Reskin it into the same shadcn Tabs track used by
+  // `.subsubsub` (primitives.tabs-* — see scss/ui/_primitives.scss) so the tab
+  // styles match across the admin. Only the resets that undo core's folder
+  // chrome (the tab float, the active-tab margin nudge) stay here as call-site
+  // extras.
   .nav-tab-wrapper {
-    @include primitives.pill-track;
+    @include primitives.tabs-track;
     @apply mb-4;
 
     .nav-tab {
       // Core floats the tabs and gives them margins — strip both so each sits
-      // in the pill track as a flat segment.
-      @include primitives.pill-segment;
+      // in the track as a flat segment.
+      @include primitives.tabs-trigger;
       @apply float-none m-0;
     }
 
@@ -41,7 +43,7 @@
     .nav-tab-active,
     .nav-tab-active:hover,
     .nav-tab-active:focus {
-      @include primitives.pill-segment-active;
+      @include primitives.tabs-trigger-active;
       @apply mb-0;
     }
   }
@@ -186,7 +188,7 @@
   // for the non-checklist tab-bar variant).
   .add-menu-item-tabs,
   .category-tabs {
-    @include primitives.pill-track;
+    @include primitives.tabs-track;
     // `w-fit` from the track + max-width here: the strip hugs its content but
     // can never push the accordion wider — labels truncate instead of wrapping
     // or overflowing. (`list-none` is needed because core's accordion reset
@@ -194,23 +196,23 @@
     @apply list-none max-w-full overflow-hidden;
 
     li {
-      @include primitives.pill-segment;
-      // `pill-segment` already zeroes the border, so only the extras it does
+      @include primitives.tabs-trigger;
+      // `tabs-trigger` already zeroes the border, so only the extras it does
       // not own survive here. `m-0` is needed: the admin's base `li` rule
       // (`dd, li`) adds a 6px bottom margin, and `min-w-0`/overflow let the
-      // label truncate instead of clipping the pill.
+      // label truncate instead of clipping the segment.
       @apply m-0 whitespace-nowrap min-w-0 overflow-hidden;
     }
 
     // Active segment: drop the folder-tab connection to the panel (core's
-    // `border-bottom-color: #fff`) so the pill reads as a standalone segment.
+    // `border-bottom-color: #fff`) so it reads as a standalone segment.
     li.tabs,
     li.wp-tab-active {
-      @include primitives.pill-segment-active;
+      @include primitives.tabs-trigger-active;
     }
 
     a {
-      // `pill-segment` already drops the underline; core (edit.css:228) also
+      // `tabs-trigger` already drops the underline; core (edit.css:228) also
       // sets `text-decoration: none` on these anchors.
       @apply block overflow-hidden text-ellipsis whitespace-nowrap min-w-0
              max-w-full;
@@ -227,12 +229,11 @@
 
     // Core anchors the active tab's text colour under `#post-body` (edit.css:
     // `#post-body ul.add-menu-item-tabs li.tabs a { color: #2c3338 }`), an ID
-    // compound no class-only selector can beat — so the foreground on the
-    // primary pill needs `!important` (same pattern as the tables/options
-    // connectors).
+    // compound no class-only selector can beat — so the active foreground
+    // needs `!important` (same pattern as the tables/options connectors).
     li.tabs a,
     li.wp-tab-active a {
-      color: var(--attrium-primary-foreground) !important;
+      color: var(--attrium-foreground) !important;
     }
   }
 
@@ -374,5 +375,35 @@
     &:focus {
       border-color: var(--attrium-ring);
     }
+  }
+}
+
+// Dark: shadcn swaps the tabs' resting ink to `text-muted-foreground` and the
+// active face from `bg-background shadow-sm` to `border-input bg-input/30`.
+// The track fill (`--attrium-muted`) is carrier-swapped by _tokens.scss; this
+// arm only carries the two values that differ from light.
+body.attrium-mod-screens.nav-menus-php #{tokens.$dark-carrier-host} {
+  .nav-tab-wrapper .nav-tab,
+  .add-menu-item-tabs li,
+  .category-tabs li {
+    color: var(--attrium-muted-foreground);
+
+    &:hover {
+      color: var(--attrium-foreground);
+    }
+  }
+
+  .nav-tab-wrapper .nav-tab-active,
+  .add-menu-item-tabs li.tabs,
+  .add-menu-item-tabs li.wp-tab-active,
+  .category-tabs li.tabs,
+  .category-tabs li.wp-tab-active {
+    border-color: var(--attrium-input);
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-input) 30%,
+      transparent
+    );
+    color: var(--attrium-foreground);
   }
 }
