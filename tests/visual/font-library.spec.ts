@@ -2,20 +2,9 @@ import { expect, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from './support/theme'
 
 /**
- * Font Library reskin contract, without screenshots.
- *
- * `scss/screens/_font-library.scss` remaps the wpds React app's variables
- * onto Attrium tokens. No spec captures Appearance → Fonts (the app's class
- * names are per-build CSS-module hashes, so pixel baselines would be
- * brittle), which left 17 audit verdicts permanently unverified. Instead of
- * pixels, this pins the mapping itself: a fixture with the exact selectors
- * the file gates on, hostile inline values on every remapped variable (the
- * real app writes them inline, which is why the file needs `!important`),
- * and direct reads of the computed styles.
- *
- * No baselines, so a legitimate restyle cannot break this — only a changed
- * mapping (or a dropped `!important`) fails it. Light AND dark, because the
- * tokens resolve per theme.
+ * Font Library reskin contract, without screenshots (hashed wpds class names
+ * would make pixel baselines brittle). Pins the mapping via computed styles —
+ * only a changed mapping or dropped `!important` fails it. Light AND dark.
  */
 
 /** Every `--wpds-*` remap in `_font-library.scss` with its Attrium token. */
@@ -54,22 +43,17 @@ for (const { theme } of THEMES) {
 			})
 			await stabilize(page)
 
-			// The reskin gates on body.attrium-mod-screens (module('screens'));
-			// the fixture below is meaningless without it — fail loud here,
-			// not with a green assertion set further down.
+			// Without body.attrium-mod-screens the fixture proves nothing — fail
+			// loud here, not with a green assertion set further down.
 			await expect(page.locator('body.attrium-mod-screens')).toBeAttached()
 
 			await page.evaluate(
 				({ remaps, hostile }) => {
 					const app = document.createElement('div')
 					app.id = 'font-library-wp-admin-app'
-					// Pinned above the shell overlay: the fixture lives on
-					// document.body (NOT in #wpcontent) because the real font
-					// library renders in the site editor, where there is no
-					// #attrium-host — inside the slotted content the host's
-					// dark `h2` rule would out-specify the title rule under
-					// test. Positioning is outside every selector under test,
-					// so it cannot affect the assertions.
+					// On document.body, not #wpcontent: the real app renders where no
+					// #attrium-host exists, whose dark `h2` rule would otherwise
+					// out-specify the title rule under test here.
 					app.setAttribute(
 						'style',
 						'position: fixed; top: 0; left: 0; z-index: 2147483647;',

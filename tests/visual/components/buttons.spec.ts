@@ -2,19 +2,9 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Button interaction-state regression.
- *
- * The `scss/modules/_buttons.scss` mixins restyle WordPress admin buttons and
- * define distinct hover (brightness) and active (translateY press) treatments,
- * plus focus, focus-visible, and disabled treatments. Those states never
- * appear in a static full-page screenshot, so we capture the button element
- * on its own in each state — a state with no capture here is a state the
- * audit cannot verify (see docs/scss-css-audit.md).
- *
- * Target: the "Update Profile" primary submit on profile.php — always present,
- * a real `.button.button-primary`, and reached without side effects.
- *
- * Each state is captured in light AND dark mode.
+ * Button state regression: normal, hover, active, focus, and disabled states
+ * captured per element (full-page shots never show them). Target: profile.php
+ * `#submit` — always present, side-effect-free, in light AND dark mode.
  */
 
 for (const { theme } of THEMES) {

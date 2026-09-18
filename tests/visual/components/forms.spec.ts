@@ -2,22 +2,10 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Form control regression.
- *
- * The `scss/modules/_forms.scss` mixins restyle WordPress admin form controls
- * (text inputs, textareas, selects, and file inputs) in every interaction
- * state shadcn defines: resting, hover, focus, active, disabled, and
- * `aria-invalid`. Static full-page screenshots never show those states, so
- * each control is captured element-by-element in every state — a state with
- * no capture here is a state the audit cannot verify (see
- * docs/scss-css-audit.md).
- *
- * Target: profile.php — a real, side-effect-free screen carrying every control
- * the module styles: text input (`#first_name`), textarea (`#description`),
- * and select (`#locale`). The file input is not present on any reachable core
- * screen, so it is injected into the DOM for capture (the selector
- * `input[type="file"]` is what the module gates on); the placeholder input is
- * injected for the same reason (no profile field carries a placeholder).
+ * Form control regression: every `_forms.scss` state (resting, hover, focus,
+ * disabled, `aria-invalid`) captured per element — an uncaptured state is one
+ * the audit cannot verify. Target: profile.php (`#first_name`, `#description`,
+ * `#locale`); file and placeholder inputs are injected (absent on core screens).
  */
 
 for (const { theme } of THEMES) {

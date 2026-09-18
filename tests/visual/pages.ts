@@ -60,19 +60,10 @@ export const ADMIN_PAGES: AdminPage[] = [
  *   `theme-editor-php` body class. `plugin-editor-php` stays unverified because
  *   its tree reflects the attrium plugin's source (build output, node_modules),
  *   which is not deterministic across environments.
- * - `scss/screens/_font-library.scss` (138 lines) — Appearance → Fonts. Gated
- *   with `module('screens')` rather than a body class, and driven entirely by
- *   remapped `--wpds-*` variables on a React app whose class names are
- *   per-build CSS-module hashes, so pixel baselines would be brittle. Covered
- *   behaviorally instead by `font-library.spec.ts` (computed-style
- *   assertions, no screenshots).
+ * - `scss/screens/_font-library.scss` — Appearance → Fonts. Covered
+ *   behaviorally by `font-library.spec.ts` (pixels would be brittle).
  * - `scss/screens/_options-connectors.scss` (135 lines) — also `module('screens')`
  *   rather than a known core body class, so there is no single URL to add here.
- * - Narrow viewports (≤782px): covered by `narrow.spec.ts`, which captures
- *   upload.php (media-toolbar stacking), edit.php (list-table `.toggle-row`
- *   expand caret — core hides `.wp-list-table .toggle-row` above 782px — plus
- *   tab-track wrapping) and plugin-install.php (filter-links wrapping) at
- *   390px. `scss/modules/_tables.scss` → `.column-primary .toggle-row` (~28
- *   lines, including a hand-drawn CSS triangle for the expand caret) renders
- *   only there.
+ * - Narrow viewports (≤782px): covered by `narrow.spec.ts` at 390px (upload
+ *   toolbar stacking, `.toggle-row` caret, tab wrapping).
  */

@@ -2,19 +2,9 @@ import { expect, test } from '@playwright/test'
 import { applyTheme, snapshotTarget, stabilize, THEMES } from './support/theme'
 
 /**
- * Narrow-viewport regression (≤782px).
- *
- * Every other capture runs at 1440px, so the mobile-only rules never render
- * under test: the upload media-toolbar stacking (`scss/screens/_upload.scss`),
- * the tab-track/trigger wrapping (`scss/ui/_primitives.scss` tabs-track,
- * tabs-trigger, underline-tabs), and the list-table `.toggle-row` expand
- * caret (`scss/modules/_tables.scss`, which core itself hides above 782px).
- * Those rules previously carried green audit verdicts the suite could not
- * have produced — this spec is the evidence.
- *
- * Each page is captured full-height at a 390px viewport (the shared
- * `snapshotTarget` grows height only, so the narrow width — and the media
- * queries — survive). Light AND dark, like everything else.
+ * Narrow-viewport regression (390px): the ≤782px rules no 1440px capture can
+ * exercise — upload toolbar stacking, list-table `.toggle-row`, tab wrapping.
+ * `snapshotTarget` grows height only, so the narrow width survives.
  */
 
 const NARROW_VIEWPORT = { width: 390, height: 844 }
