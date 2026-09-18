@@ -52,7 +52,6 @@
 // `border-input bg-input/30`. The track fill needs no arm — `--attrium-muted`
 // is carrier-swapped by _tokens.scss.
 body.attrium-mod-tabs #{tokens.$dark-carrier-host} .subsubsub a {
-  color: var(--attrium-muted-foreground);
 
   &:hover {
     color: var(--attrium-foreground);

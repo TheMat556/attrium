@@ -57,7 +57,6 @@
     // Shadcn separates rows with the single bottom border + hover, not zebra.
     // Core's `.striped > tbody > :nth-child(odd)` would otherwise repaint.
     &.striped > tbody > :nth-child(odd) {
-      background: transparent;
     }
 
     thead th,
@@ -74,7 +73,6 @@
       // interactive unit), matching shadcn's `hover:bg-muted/50`.
       tr:hover td,
       tr:hover th {
-        background: color-mix(in oklab, var(--attrium-muted) 50%, transparent);
       }
 
       td,
@@ -209,7 +207,6 @@
       @include primitives.badge;
 
       background: var(--attrium-secondary);
-      color: var(--attrium-secondary-foreground);
 
       &::after {
         content: none;
@@ -223,17 +220,10 @@
         @apply m-0 inline-flex h-auto min-w-0 items-center justify-center
                rounded-none border-0 bg-transparent p-0 text-xs;
 
-        color: inherit;
       }
     }
 
     .post-com-count.post-com-count-pending {
-      background: color-mix(
-        in oklab,
-        var(--attrium-destructive) 10%,
-        transparent
-      );
-      color: var(--attrium-destructive);
     }
 
     .post-com-count.post-com-count-no-pending {
@@ -271,25 +261,18 @@
     tr.inactive td {
       @apply shadow-none;
 
-      background-color: transparent;
     }
 
     // Plugins repaint every cell (above) after the shared row-hover rule, so
     // repeat the row-hover here to keep whole-row highlighting working here.
     tbody tr:hover th,
     tbody tr:hover td {
-      background-color: color-mix(
-        in oklab,
-        var(--attrium-muted) 50%,
-        transparent
-      );
     }
 
     // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
     // keep the header transparent on the actual header cells.
     thead th,
     thead td {
-      background-color: transparent;
     }
 
     // Core hard-codes text to #000 on `.plugins, .plugins th, .plugins td`;

@@ -17,6 +17,8 @@
   .wp-filter {
     @include primitives.wp-filter-surface(transparent);
     color: var(--attrium-foreground);
+    // Air between the frame and the tab/search elements.
+    padding: 0.75rem;
   }
 
   // shadcn Tabs default variant (see primitives.tabs-*): the same muted track
@@ -99,7 +101,6 @@
       background: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
       // shadcn's default <Button> keeps a transparent border.
-      border-color: transparent;
       @apply shadow-none;
 
       &:hover,

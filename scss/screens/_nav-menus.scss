@@ -386,10 +386,8 @@ body.attrium-mod-screens.nav-menus-php #{tokens.$dark-carrier-host} {
   .nav-tab-wrapper .nav-tab,
   .add-menu-item-tabs li,
   .category-tabs li {
-    color: var(--attrium-muted-foreground);
 
     &:hover {
-      color: var(--attrium-foreground);
     }
   }
 
@@ -404,6 +402,5 @@ body.attrium-mod-screens.nav-menus-php #{tokens.$dark-carrier-host} {
       var(--attrium-input) 30%,
       transparent
     );
-    color: var(--attrium-foreground);
   }
 }

@@ -66,7 +66,6 @@
   // Firefox adds an inner focus border to native buttons/inputs; drop it so
   // the rounded ring is the only focus indicator.
   &::-moz-focus-inner {
-    border: 0;
   }
 }
 
@@ -105,25 +104,13 @@
   }
 
   &:hover {
-    border-color: transparent;
-    background-color: color-mix(
-      in oklab,
-      var(--attrium-secondary) 80%,
-      transparent
-    );
-    color: var(--attrium-secondary-foreground);
   }
 }
 
 @mixin btn-outline {
-  background-color: var(--attrium-background);
-  color: var(--attrium-foreground);
-  border-color: var(--attrium-border);
 
   &:hover,
   &:focus {
-    background-color: var(--attrium-muted);
-    color: var(--attrium-foreground);
   }
 }
 
@@ -174,7 +161,6 @@ body.attrium-mod-buttons .page-title-action:active {
 // shadcn `sm` size: core compact is default-height, and small controls like
 // `.button-small` intentionally keep core's smaller box.)
 body.attrium-mod-buttons.wp-core-ui .button-compact {
-  padding-inline: 0.625rem;
 }
 
 // Core upsizes every button to a 40px touch target on small screens

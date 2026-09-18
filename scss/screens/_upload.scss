@@ -41,7 +41,6 @@
       align-items: center;
       column-gap: 0.5rem;
       height: auto;
-      min-width: 0;
       max-width: none;
     }
 
@@ -75,13 +74,11 @@
     // core's fixed-width input did.
     .media-toolbar-primary {
       display: flex;
-      flex: 1 1 auto;
       flex-wrap: nowrap;
       align-items: center;
       justify-content: flex-end;
       gap: 0.5rem;
       height: auto;
-      min-width: 0;
       margin: 0 0 0 auto;
       max-width: none;
     }
@@ -136,8 +133,6 @@
   // width that depends on the input) and collapsed the list bar's input.
   .wp-filter .search-form .search,
   .attachments-browser .media-toolbar-primary .search {
-    flex: 1 1 17.5rem;
-    min-width: 0;
     max-width: 17.5rem;
   }
 
@@ -217,7 +212,6 @@
     // inline margins in list and grid mode; the flex rows own both now, so
     // the toggles sit on the same 32px line as the selects and buttons.
     padding: 0;
-    margin: 0;
   }
 
   // Mirrors the shadcn-vue <Toggle> default variant (src/components/ui/toggle):

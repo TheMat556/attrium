@@ -29,7 +29,6 @@ $select-chevron-dark: icons.image(
   background-image: $select-chevron;
   background-position: right 0.5rem center;
   background-size: 1rem;
-  padding-left: 0.625rem;
   padding-right: 2rem;
 
   &:disabled {
@@ -45,7 +44,6 @@ $select-chevron-dark: icons.image(
   // #1e1e1e hover border so the token border holds.
   &:hover {
     color: var(--attrium-foreground);
-    border-color: var(--attrium-input);
   }
 
   &:focus {
@@ -154,8 +152,6 @@ $text-fields: (
   @apply bg-transparent border-[var(--attrium-input)] text-[var(--attrium-foreground)];
 
   &::placeholder {
-    color: var(--attrium-muted-foreground);
-    opacity: 1;
   }
 }
 
@@ -240,7 +236,6 @@ html.attrium-dark
 body.attrium-mod-screens.attrium-mod-forms.upload-php
 .media-modal select {
   background-image: $select-chevron-dark;
-  background-color: color-mix(in oklab, var(--attrium-input) 30%, transparent);
 }
 
 html.attrium-dark

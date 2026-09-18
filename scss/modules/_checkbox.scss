@@ -30,7 +30,6 @@ input[type='radio'] {
 // `rounded-[4px]`; radio stays a circle.
 input[type='checkbox'] {
   @include mixins.module('checkbox') {
-    border-radius: 4px;
   }
 }
 

@@ -272,10 +272,6 @@
 .upload-theme {
   @include mixins.screen('theme-install-php') {
     .wp-upload-form {
-      background: var(--attrium-primary-foreground);
-      border: 1px dashed var(--attrium-border);
-      border-radius: var(--attrium-radius-md);
-      padding: 1rem;
     }
 
     .install-help {
