@@ -2,21 +2,8 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES, type Theme } from '../support/theme'
 
 /**
- * Tabs regression.
- *
- * The `scss/modules/_tabs.scss` module restyles WordPress's `.subsubsub`
- * filter tabs above list tables (All / Published / Trash …) to mirror the
- * shadcn-vue <TabsList>/<TabsTrigger> cva: a `bg-muted` track with an active
- * "card" trigger (`bg-background shadow-sm` in light, `border-input
- * bg-input/30` in dark) and a 3px `:focus-visible` ring. The `.subsubsub` only
- * exists on screens that render list-table views — the posts list is the
- * canonical one with counts on every tab.
- *
- * The triggers are `li > a` inside a floated `ul`; core renders the ` | `
- * separators as raw text nodes in each `<li>`, which the module hides
- * (`li { display: contents }` + zeroed font-size). This spec guards the
- * `.subsubsub`-specific rules (container box, the `li` flattening, the count
- * colour) alongside the hover / focus states.
+ * Tabs regression: `scss/modules/_tabs.scss` restyles `.subsubsub` list-table tabs (shadcn
+ * <TabsList>/<TabsTrigger> cva) and hides core's ` | ` separators. Guards box/`li` flattening/count/hover/focus.
  */
 
 async function open(page: Page, theme: Theme, path: string): Promise<void> {
@@ -60,10 +47,8 @@ for (const { theme } of THEMES) {
 		})
 
 		test('unselected tab focus shows the shadcn ring', async ({ page }) => {
-			// Programmatic focus matches `:focus-visible` here, so the shadcn ring
-			// (border + 3px box-shadow + 1px outline) paints on the unselected
-			// tab. Capture the whole track, not the link element — an element
-			// screenshot clips the outer ring.
+			// Programmatic focus matches `:focus-visible`, painting the shadcn ring on the
+			// unselected tab; capture the whole track, since an element shot clips the outer ring.
 			const link: Locator = tabs.locator('li:not(.all) a').first()
 			await link.focus()
 			await page.waitForTimeout(200)

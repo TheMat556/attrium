@@ -51,19 +51,6 @@ export const ADMIN_PAGES: AdminPage[] = [
 ]
 
 /**
- * Known coverage gaps, recorded so they are not mistaken for "verified".
- *
- * - `scss/screens/_theme-editor.scss` — the Plugin Editor screen
- *   (plugin-editor.php) shares `_theme-editor.scss`'s markup but points at the
- *   plugin's own file tree; the theme editor itself is now a fixture
- *   (`theme-editor`), so the shared rules are covered under the
- *   `theme-editor-php` body class. `plugin-editor-php` stays unverified because
- *   its tree reflects the attrium plugin's source (build output, node_modules),
- *   which is not deterministic across environments.
- * - `scss/screens/_font-library.scss` — Appearance → Fonts. Covered
- *   behaviorally by `font-library.spec.ts` (pixels would be brittle).
- * - `scss/screens/_options-connectors.scss` (135 lines) — also `module('screens')`
- *   rather than a known core body class, so there is no single URL to add here.
- * - Narrow viewports (≤782px): covered by `narrow.spec.ts` at 390px (upload
- *   toolbar stacking, `.toggle-row` caret, tab wrapping).
+ * Known coverage gaps, recorded so they are not mistaken for "verified":
+ * `_theme-editor.scss` (plugin-editor-php undeterministic), `_font-library.scss` (behavioral spec), `_options-connectors.scss` (no URL), ≤782px (narrow.spec.ts).
  */

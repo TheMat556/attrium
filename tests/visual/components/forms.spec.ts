@@ -2,10 +2,8 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Form control regression: every `_forms.scss` state (resting, hover, focus,
- * disabled, `aria-invalid`) captured per element — an uncaptured state is one
- * the audit cannot verify. Target: profile.php (`#first_name`, `#description`,
- * `#locale`); file and placeholder inputs are injected (absent on core screens).
+ * Form control regression: every `_forms.scss` state (resting/hover/focus/disabled/
+ * `aria-invalid`) captured per element. Target: profile.php fields; file/placeholder injected.
  */
 
 for (const { theme } of THEMES) {

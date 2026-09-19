@@ -2,9 +2,8 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Button state regression: normal, hover, active, focus, and disabled states
- * captured per element (full-page shots never show them). Target: profile.php
- * `#submit` — always present, side-effect-free, in light AND dark mode.
+ * Button state regression: normal/hover/active/focus/disabled captured per element
+ * (full-page shots miss them). Target: profile.php `#submit`, in light AND dark.
  */
 
 for (const { theme } of THEMES) {

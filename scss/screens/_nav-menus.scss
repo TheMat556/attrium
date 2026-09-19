@@ -20,13 +20,8 @@
 // !important needed. The two exceptions are marked at their call sites.
 
 @include mixins.screen-root('nav-menus-php') {
-  // The "Edit Menus / Manage Locations" bar is a `.nav-tab-wrapper` of
-  // `.nav-tab` links — core renders it as classic bottom-border folder tabs
-  // (common.css:2376). Reskin it into the same shadcn Tabs track used by
-  // `.subsubsub` (primitives.tabs-* — see scss/ui/_primitives.scss) so the tab
-  // styles match across the admin. Only the resets that undo core's folder
-  // chrome (the tab float, the active-tab margin nudge) stay here as call-site
-  // extras.
+  // The "Edit Menus / Manage Locations" `.nav-tab-wrapper` renders as classic folder tabs
+  // (common.css:2376); reskin into the shadcn Tabs track (primitives.tabs-*), keeping only core resets.
   .nav-tab-wrapper {
     @include primitives.tabs-track;
     @apply mb-4;
@@ -197,10 +192,8 @@
 
     li {
       @include primitives.tabs-trigger;
-      // `tabs-trigger` already zeroes the border, so only the extras it does
-      // not own survive here. `m-0` is needed: the admin's base `li` rule
-      // (`dd, li`) adds a 6px bottom margin, and `min-w-0`/overflow let the
-      // label truncate instead of clipping the segment.
+      // `tabs-trigger` zeroes the border, so only extras survive: `m-0` over the base `li` 6px
+      // bottom margin, and `min-w-0`/overflow to truncate the label instead of clipping.
       @apply m-0 whitespace-nowrap min-w-0 overflow-hidden;
     }
 
@@ -227,10 +220,8 @@
       }
     }
 
-    // Core anchors the active tab's text colour under `#post-body` (edit.css:
-    // `#post-body ul.add-menu-item-tabs li.tabs a { color: #2c3338 }`), an ID
-    // compound no class-only selector can beat — so the active foreground
-    // needs `!important` (same pattern as the tables/options connectors).
+    // Core anchors the active tab's colour under `#post-body` (edit.css `#post-body ul.add-menu-item-tabs
+    // li.tabs a { color:#2c3338 }`), an ID compound no class-only selector beats — hence `!important`.
     li.tabs a,
     li.wp-tab-active a {
       color: var(--attrium-foreground) !important;
@@ -378,19 +369,8 @@
   }
 }
 
-// Dark: shadcn swaps the tabs' resting ink to `text-muted-foreground` and the
-// active face from `bg-background shadow-sm` to `border-input bg-input/30`.
-// The track fill (`--attrium-muted`) is carrier-swapped by _tokens.scss; this
-// arm only carries the two values that differ from light.
+// Dark: the active tab face becomes `border-input bg-input/30`; the track fill is carrier-swapped by _tokens.scss.
 body.attrium-mod-screens.nav-menus-php #{tokens.$dark-carrier-host} {
-  .nav-tab-wrapper .nav-tab,
-  .add-menu-item-tabs li,
-  .category-tabs li {
-
-    &:hover {
-    }
-  }
-
   .nav-tab-wrapper .nav-tab-active,
   .add-menu-item-tabs li.tabs,
   .add-menu-item-tabs li.wp-tab-active,

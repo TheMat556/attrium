@@ -1,4 +1,5 @@
 @use '../mixins';
+@use '../ui/primitives';
 
 // Checkbox + radio component.
 // Core paints a checkbox with a `#8c8f94` border on a hard-coded `#fff` face
@@ -26,13 +27,7 @@ input[type='radio'] {
   }
 }
 
-// Square checkbox / round radio: the shadcn-vue <Checkbox> is
-// `rounded-[4px]`; radio stays a circle.
-input[type='checkbox'] {
-  @include mixins.module('checkbox') {
-  }
-}
-
+// Radio stays a circle; core already gives the checkbox its square 4px radius.
 input[type='radio'] {
   @include mixins.module('checkbox') {
     border-radius: 9999px;
@@ -84,15 +79,13 @@ input[type='radio']:checked {
   }
 }
 
-// Focus: replace the blue ring + outline with the shadcn
-// `focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50`
-// treatment. Use :focus-visible so mouse users don't see a ring on every click.
+// Focus: swap core's blue ring + outline for shadcn
+// `focus-visible:border-ring ring-3 ring-ring/50`; :focus-visible avoids a ring on every click.
 input[type='checkbox']:focus-visible,
 input[type='radio']:focus-visible {
   @include mixins.module('checkbox') {
     outline: none;
     border-color: var(--attrium-ring);
-    box-shadow: 0 0 0 3px
-      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+    @include primitives.focus-ring;
   }
 }

@@ -21,18 +21,7 @@
 }
 
 // ---- Toolbar layout: flexbox ----
-// Core only gives the plugin-install and upload `.wp-filter` a flex layout;
-// the theme installer keeps `display:inline-block` with floats, which is why
-// core offsets the Feature Filter button with a 10px top margin (common.css
-// `.wp-filter .button.drawer-toggle`) and the search box carries its own
-// 11px vertical margin — both leave the controls misaligned. Make the
-// theme-install toolbar a flex row like its sibling installers so the toggle
-// and search center vertically; `margin-left: auto` on the search form keeps
-// it pinned to the right edge, preserving the current horizontal grouping.
-// `gap` and `p-3` own every space in here — 12px between the controls,
-// 12px from the controls to the container border, on wrapped rows too. The
-// children below carry no outer margins, so the rhythm stays even instead of
-// collapsing onto the border or doubling up.
+// Core only flexes the sibling `.wp-filter`s; theme-install (inline-block + floats) becomes a `gap`/`p-3` flex row.
 .wp-filter {
   @include mixins.screen('theme-install-php') {
     @apply flex flex-wrap items-center gap-3 p-3;
@@ -41,39 +30,26 @@
       @apply m-0;
     }
 
-    // `ml-auto` keeps the form pinned right while the toolbar fits one row;
-    // `my-0` drops the `margin: 11px 0` core adds below 1138px (common.css),
-    // which otherwise pushes the field away from the toolbar controls it sits
-    // beside on desktop. Redundant at every width now that the toolbar is a
-    // flex row.
+    // `ml-auto` pins the form right while the toolbar fits one row; `my-0` drops core's
+    // `margin: 11px 0` (common.css below 1138px), which pushed the field off the toolbar controls.
     .search-form {
       @apply ml-auto my-0;
 
-      // Below 1200px the form wraps onto its own row — the same breakpoint the
-      // tables module uses to drop its search box. Left at its content width it
-      // shrinks to a sliver with a large empty gap beside it, so let it grow to
-      // fill the rest of whatever row it lands on (sharing with the filter
-      // button when there is room) and wrap to a full row when there is not.
+      // Below 1200px (same breakpoint as the tables search box) the form wraps; left at content
+      // width it shrinks to a sliver, so let it grow to fill its row and wrap when needed.
       @media (max-width: 1200px) {
         @apply ml-0 grow shrink basis-64;
       }
     }
 
-    // The search input sits dead-center in the toolbar row. The tables
-    // module's search-box recipe (`mt-2 mb-3`) beats a plain `m-0` on
-    // specificity — its `:not()` selector carries an extra `p` — so the
-    // reset needs `!important`; the toolbar's own `gap` owns the rhythm.
+    // The tables module's search-box recipe (`mt-2 mb-3`, its `:not()` carrying an extra `p`)
+    // out-specifies a plain `m-0`, so the reset needs `!important`; the toolbar `gap` owns rhythm.
     .search-form p.search-box {
       @apply m-0!;
     }
 
-    // The feature-filter drawer and the favorites form are children of
-    // `.wp-filter`, so making the toolbar a flex row turns them into flex
-    // items that shrink to content width and sit inline. Force each onto its
-    // own full-width row below the toolbar controls (flex-basis: 100% wraps
-    // them; order keeps them last), and reset core's negative margins
-    // (common.css uses `margin: 0 -10px 0 -20px` on both) so they don't
-    // overflow the container.
+    // The drawer + favorites form are `.wp-filter` children, so the flex row would inline
+    // them; force each to a full-width row (`basis-full`) and reset core's negative margins.
     .filter-drawer,
     .favorites-form {
       @apply basis-full m-0;
@@ -264,16 +240,9 @@
 }
 
 // ---- Upload card (Upload Theme form) ----
-// Same shape as the plugin installer's upload card (see _plugin-install.scss):
-// core (themes.css `.upload-theme .wp-upload-form`) hardcodes a #f6f7f7 fill
-// with a #c3c4c7 border — a bright band in dark mode. Unlike the plugin side,
-// the theme uploader has an `.install-help` line above the form; mute it like
-// other secondary copy (core's italic + margins stay).
+// Core hardcodes the help line's color; mute it to the token foreground.
 .upload-theme {
   @include mixins.screen('theme-install-php') {
-    .wp-upload-form {
-    }
-
     .install-help {
       @include primitives.muted-text(0.75);
     }

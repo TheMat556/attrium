@@ -57,15 +57,7 @@
 }
 
 // ---- Results grid container ----
-// The cards float inside `#the-list`, which sits inside a layout-only
-// `div.widefat.plugin-install` wrapper. Core only sets flex layout here
-// (list-tables.css `.plugin-install-php #the-list`) — no border, no background —
-// but our own tables module styles the generic `.widefat` class with a surface
-// border + surface fill (it expects a real `<table>`), which
-// paints the plugin-install wrapper as a boxed strip. Both wrapper and list must
-// stay invisible so the page surface shows through the card gaps in both modes:
-// kill any border/background regardless of which stylesheet (tables module,
-// core, other plugins) targets the generic classes.
+// Cards float in a layout-only `.widefat` wrapper our tables module boxes; kill border/background on both.
 .wp-list-table.widefat.plugin-install,
 #the-list {
   @include mixins.screen('plugin-install-php') {
@@ -112,14 +104,8 @@
       @include primitives.muted-text(0.6);
     }
 
-    // Primary CTA — promote the install action to the primary variant so the
-    // main action stands out. The buttons module already reskins `.button`
-    // to the secondary variant; this compound selector (higher specificity +
-    // later in the cascade) upgrades only the install button, leaving "More
-    // Details" untouched (it is a bare link, not a `.button`).
-    // Mobile: core floats the icon/name/actions into two columns, so the
-    // action block shrinks to ~116px and a 154px install button spills past the
-    // card (clipped). Stack the card top and let the actions take full width.
+    // Primary CTA: the buttons module reskins `.button` to secondary, so this higher-specificity
+    // compound upgrades only the install button. Mobile: stack the card top so actions don't clip.
     @media (max-width: 782px) {
       .plugin-card-top {
         @apply flex flex-col;

@@ -2,9 +2,8 @@ import { expect, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from './support/theme'
 
 /**
- * Font Library reskin contract, without screenshots (hashed wpds class names
- * would make pixel baselines brittle). Pins the mapping via computed styles —
- * only a changed mapping or dropped `!important` fails it. Light AND dark.
+ * Font Library reskin contract, without screenshots (hashed wpds names make pixels brittle):
+ * pins the mapping via computed styles, so only a changed mapping or dropped `!important` fails.
  */
 
 /** Every `--wpds-*` remap in `_font-library.scss` with its Attrium token. */
@@ -51,9 +50,8 @@ for (const { theme } of THEMES) {
 				({ remaps, hostile }) => {
 					const app = document.createElement('div')
 					app.id = 'font-library-wp-admin-app'
-					// On document.body, not #wpcontent: the real app renders where no
-					// #attrium-host exists, whose dark `h2` rule would otherwise
-					// out-specify the title rule under test here.
+					// On document.body, not #wpcontent (no #attrium-host in the real app), whose
+					// dark `h2` rule would otherwise out-specify the title rule under test.
 					app.setAttribute(
 						'style',
 						'position: fixed; top: 0; left: 0; z-index: 2147483647;',

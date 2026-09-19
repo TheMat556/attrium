@@ -7,20 +7,8 @@
 @include mixins.screen-root('plugins-php') {
   @include patterns.hide-bottom-bulk-actions;
 
-  // Tabs + search share one line via core floats (tabs float left, the box
-  // floats right) but live in separate elements (`ul.subsubsub` vs
-  // `form.search-plugins > p.search-box`), so a dropped box keeps hugging
-  // the right edge — long tab labels (e.g. German) on tablet-width cards.
-  // Row them with space-between instead, like `.tablenav.top` does for its
-  // own left/right groups: identical while they fit (tabs left, box right),
-  // and a wrapped box lands left. Desktop-only: at ≤1200px the box already
-  // takes its own full-width row (modules/_tables.scss).
-  //
-  // No `order` anywhere: every other `.wrap` child takes its own full-width
-  // row, so rows form in DOM order and the table stays below tabs + search.
-  // The heading pair keeps stock inline geometry on the first row: shared
-  // baseline (core's `top: -3px` nudge still applies) and the collapsed
-  // template whitespace between `</h1>` and the action restored as margin.
+  // Tabs + search share a line only via core floats but live in separate elements (`ul.subsubsub`
+  // vs `form.search-plugins > p.search-box`); row them with space-between at ≥1201px, no `order`.
   @media (min-width: 1201px) {
     .wrap:has(> ul.subsubsub):has(> form.search-plugins) {
       @apply flex flex-wrap items-center justify-between;

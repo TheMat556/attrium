@@ -59,9 +59,8 @@
     }
 
     .admin-ui-page__header,
-    // wpds renders the page header with a CSS-module class
-    // (`_…__header`), not `.admin-ui-page__header`; the `__header` suffix is
-    // the stable part, so clear its white surface here too.
+    // wpds renders the page header with a CSS-module class (`_…__header`), not
+    // `.admin-ui-page__header`; the `__header` suffix is stable, so clear its white surface here.
     [class*='__header'] {
       @include primitives.borderless-surface(bottom);
     }
@@ -90,10 +89,8 @@
       --wp-components-font-weight-semibold: 600;
       --wp-components-font-weight-body: 600;
 
-      // Neutral surfaces/ink/strokes → Attrium tokens. The app writes these as
-      // INLINE custom properties on the provider root, so `!important` is
-      // required to beat the inline declaration. Semantic status colors
-      // (info/success/warning/error/brand) are left alone — they carry meaning.
+      // Neutral surfaces/ink/strokes → Attrium tokens; the app writes these as INLINE custom
+      // properties, so `!important` is required. Semantic status colors (info/success/…) stay.
       --wpds-color-background-surface-neutral: var(--attrium-background) !important;
       --wpds-color-background-surface-neutral-weak: var(--attrium-card) !important;
       --wpds-color-background-surface-neutral-strong: var(--attrium-card) !important;
@@ -187,9 +184,7 @@
     }
 
     // ---- Font list ----
-    // wpds leaves the list on its own light surface with a hardcoded dark
-    // 11px "THEME" label (invisible in dark mode). Reskin it as the Attrium
-    // card + row recipe: a ring card, one bordered row per font, muted hover.
+    // wpds's light surface + dark 11px "THEME" label break in dark; reskin as the Attrium card + row recipe.
     .font-library__fonts-title {
       @apply text-xs font-semibold uppercase tracking-wider;
       color: var(--attrium-muted-foreground);
@@ -206,11 +201,8 @@
     }
 
     .font-library__font-card {
-      // wpds paints the button itself with a hardcoded light 1px border on all
-      // four sides (rgb(221,221,221)) — on this row recipe that reads as a
-      // bright white grid over the card, two nested boxes per row. The list
-      // owns the outer ring and each list item owns its separator, so the card
-      // is a borderless full-bleed row.
+      // wpds paints the button with a hardcoded light 1px border (rgb(221,221,221)) — a
+      // bright white grid on this row recipe. The list owns the ring, so the card is borderless.
       @apply w-full rounded-none border-0 px-4 py-3 transition-colors;
 
       // The wpds Text primitive paints the name with a fixed neutral ink; pin

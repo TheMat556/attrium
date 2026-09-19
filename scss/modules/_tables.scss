@@ -1,15 +1,8 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Table module — WordPress's `.widefat` list tables reskinned to the shadcn-vue
-// <Table> (src/components/ui/table, reka-nova): a normal-case `h-10 px-2`
-// `font-medium` header, `p-2` cells, one `border-b` per row and a `bg-muted/50`
-// row hover. `.widefat`'s own 1px border + radius stand in for the <Card> a
-// shadcn Table is normally wrapped in.
-//
-// Shared cell recipe — only the geometry is factored out, because th and td
-// genuinely share it. Cells are deliberately NOT `whitespace-nowrap` like
-// shadcn's data cells: WP list cells (plugin descriptions …) must wrap.
+// Table module — `.widefat` list tables match the shadcn-vue <Table> (src/components/ui/table, reka-nova):
+// normal-case `h-10 px-2 font-medium` header, `p-2` cells, one `border-b` per row, `bg-muted/50` hover; `.widefat`'s border+radius stand in for the <Card>. Shared cell recipe factors only geometry; cells deliberately wrap (not `whitespace-nowrap`) for WP descriptions.
 
 @mixin cell-base {
   @apply box-border border-b border-[var(--attrium-border)];
@@ -54,11 +47,6 @@
       box-shadow: none;
     }
 
-    // Shadcn separates rows with the single bottom border + hover, not zebra.
-    // Core's `.striped > tbody > :nth-child(odd)` would otherwise repaint.
-    &.striped > tbody > :nth-child(odd) {
-    }
-
     thead th,
     thead td {
       @include th-base;
@@ -69,12 +57,6 @@
     }
 
     tbody {
-      // Row-level hover: the whole row lights up together (the row is the
-      // interactive unit), matching shadcn's `hover:bg-muted/50`.
-      tr:hover td,
-      tr:hover th {
-      }
-
       td,
       th {
         @include td-base;
@@ -87,10 +69,8 @@
     }
 
     .check-column {
-      // Core pushes the checkbox with `margin: 0 0 0 8px` + `vertical-align:
-      // text-top`, which off-centres it in the column (16px left / 8px right
-      // gap). Zero the margin and align-middle so the header and row boxes are
-      // both dead-centre in the 40px column.
+      // Core pushes the checkbox with `margin: 0 0 0 8px` + `vertical-align: text-top`,
+      // off-centring it (16px left / 8px right); zero the margin and align-middle so header and row boxes are dead-centre in the 40px column.
       @apply w-10 px-2 text-center;
 
       input[type='checkbox'] {
@@ -98,9 +78,8 @@
       }
     }
 
-    // Mobile: core turns rows flex and blockifies the header cell, so
-    // `vertical-align` stops centring the (now 25px) header checkbox — it hugs
-    // the top of the 40px cell. Centre it as a flex box instead.
+    // Mobile: core turns rows flex and blockifies the header cell, so `vertical-align`
+    // stops centring the (now 25px) checkbox at the top of the 40px cell — centre it as a flex box.
     @media (max-width: 782px) {
       thead .check-column {
         @apply flex items-center justify-center;
@@ -198,11 +177,8 @@
       @apply inline-flex items-center gap-1;
     }
 
-    // Comment-count bubble → shadcn <Badge>. Base is the `secondary` variant;
-    // pending is the `destructive` variant. Core's comment-bubble "tail" is
-    // dropped, the inner count inherits the badge ink (core paints it link
-    // blue), and the `no-pending` arm core hides must stay hidden — our badge
-    // `display` would otherwise re-expose it.
+    // Comment-count bubble → shadcn <Badge> (base `secondary`, pending `destructive`); drop core's
+    // bubble "tail", let the inner count inherit the badge ink (core paints it blue), and keep `no-pending` hidden against our badge `display`.
     .post-com-count {
       @include primitives.badge;
 
@@ -212,18 +188,12 @@
         content: none;
       }
 
-      // Core paints the inner count as its own 2em grey box (`border-radius:
-      // 5px`) on `.comment-count-approved` / `-no-comments` (and the bare
-      // `.comment-count` on pending); strip them back to plain text so the
-      // Badge wrapper is the only pill.
+      // Core paints the inner count as its own 2em grey box (`border-radius: 5px`) on
+      // `.comment-count-approved`/`-no-comments` (and bare `.comment-count` on pending); strip to plain text so the Badge is the only pill.
       [class*='comment-count'] {
         @apply m-0 inline-flex h-auto min-w-0 items-center justify-center
                rounded-none border-0 bg-transparent p-0 text-xs;
-
       }
-    }
-
-    .post-com-count.post-com-count-pending {
     }
 
     .post-com-count.post-com-count-no-pending {
@@ -263,18 +233,6 @@
 
     }
 
-    // Plugins repaint every cell (above) after the shared row-hover rule, so
-    // repeat the row-hover here to keep whole-row highlighting working here.
-    tbody tr:hover th,
-    tbody tr:hover td {
-    }
-
-    // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
-    // keep the header transparent on the actual header cells.
-    thead th,
-    thead td {
-    }
-
     // Core hard-codes text to #000 on `.plugins, .plugins th, .plugins td`;
     // restore the token so dark mode is legible.
     th,
@@ -292,29 +250,16 @@
   }
 }
 
-// The list-table search box (posts, plugins, users, …).
-//
-// NOT the media library's list-mode filter bar (upload.php?mode=list): it
-// renders `p.search-box` inside its own `.wp-filter > .filter-items` bar, and
-// that bar is a filter toolbar, not a table search — its recipe lives in
-// scss/screens/_upload.scss. This module's `w-32` + `inline-flex` is what made
-// the media list bar look nothing like the grid toolbar (tiny input, submit
-// wrapped onto a second line). Identified by the `.filter-items` child, which
-// only the media bar has (theme-install's `.wp-filter` uses `.filter-links`
-// and keeps this recipe).
+// The list-table search box (posts, plugins, users, …) — NOT the media library list-mode bar:
+// that renders inside `.wp-filter > .filter-items` (a filter toolbar, recipe in scss/screens/_upload.scss) and is excluded by the `.filter-items` child; theme-install uses `.filter-links` and keeps this recipe.
 p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
   @include mixins.module('tables') {
-    // Two separate controls: a real gap between them (core's `column-gap` is
-    // 0.5rem) and each keeps its own full rounding — no joined inner corners.
-    // `mt-2` matches the tabs' own top margin so the two share a line on wide
-    // screens; `mb-3` is the list-table vertical rhythm (one 12px step, not
-    // core's 11/16/20px mix).
+    // Two separate controls: a real `gap` (core's `column-gap` is 0.5rem) with each keeping
+    // full rounding — no joined corners. `mt-2` matches the tabs' top margin to share a line; `mb-3` is the 12px list-table rhythm.
     @apply mt-2 mb-3 inline-flex flex-nowrap items-center gap-2;
 
-    // Core upsizes the field to a 40px touch target, adds `margin-bottom:
-    // 10px` below 783px (the box measured 42px tall) and a 10px margin to the
-    // submit — pin all of it back to the 32px row. `min-w-0` lets the field
-    // give up width instead of wrapping the submit onto a second line.
+    // Core upsizes the field to 40px and adds `margin-bottom: 10px` below 783px (box measured 42px),
+    // plus a 10px submit margin — pin all back to the 32px row. `min-w-0` lets the field shrink instead of wrapping the submit.
     input[type="search"] {
       @apply m-0 h-8 min-h-8 w-32 min-w-0 text-xs;
     }
@@ -323,9 +268,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
       @apply m-0 shrink-0;
     }
 
-    // Below 1200px the tablenav runs out of room for a floated search box, so
-    // it drops onto its own full-width row above the table — the tabs' own
-    // `mb-3` supplies the gap above, the box's own `mb-3` the gap below.
+    // Below 1200px the tablenav can't fit a floated search box, so it drops onto its own
+    // full-width row above the table — the tabs' `mb-3` supplies the gap above, the box's own `mb-3` the gap below.
     @media (max-width: 1200px) {
       @apply float-none mt-0 mb-3 w-full;
 
@@ -334,11 +278,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
       }
     }
 
-    // On phones the submit keeps its full label text (long in some locales,
-    // e.g. German "Installierte Plugins durchsuchen"), which squeezed the
-    // field to a sliver in the nowrap row — let the submit drop onto its
-    // own line so the field keeps a usable width. 782px is core's admin
-    // mobile breakpoint.
+    // On phones the submit keeps its full label text (long in some locales), squeezing the field
+    // to a sliver in the nowrap row — let the submit drop onto its own line so the field stays usable. 782px is core's admin mobile breakpoint.
     @media (max-width: 782px) {
       @apply flex-wrap;
 
@@ -351,9 +292,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
 
 .tablenav.top {
   @include mixins.module('tables') {
-    // One 12px rhythm for the whole header: core adds a 6px top margin here
-    // (20px below 783px, the big mobile gap) and 4px below, which fought the
-    // tabs' own spacing.
+    // One 12px rhythm for the header: core adds a 6px top (20px below 783px) and 4px bottom
+    // margin that fought the tabs' own spacing.
     @apply flex flex-wrap items-center justify-between gap-2 h-auto mt-0 mb-3;
 
     .alignleft {
@@ -361,9 +301,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
     }
 
     .actions {
-      // Wrap the bulk-action / filter controls on narrow screens so the row
-      // (selects + apply button) never pushes past the card. `max-w-full` caps
-      // the group; the selects then shrink against it.
+      // Wrap the bulk-action / filter controls on narrow screens so the row (selects + apply)
+      // never pushes past the card; `max-w-full` caps the group and the selects shrink against it.
       @apply flex max-w-full flex-wrap items-center gap-2;
       float: none;
       padding: 0;
@@ -374,10 +313,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
     }
 
     .tablenav-pages {
-      // `mb-0` matters on mobile: core sets `margin-bottom: 25px` on the
-      // pagination block, and on a single-page screen (comments with one
-      // comment, any one-page list) the block is EMPTY but still reserved that
-      // 25px — a phantom gap above the table. The flex row owns the spacing.
+      // `mb-0` matters on mobile: core sets `margin-bottom: 25px` on pagination, and a single-page
+      // screen leaves the block EMPTY but still reserves that 25px — a phantom gap; the flex row owns spacing.
       @apply flex items-center gap-1 ml-auto float-none mb-0;
     }
 

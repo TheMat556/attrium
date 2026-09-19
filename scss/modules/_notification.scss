@@ -1,11 +1,7 @@
 @use '../mixins';
 
-// The `.notification-dialog` modal (edit.css:565) is core's file-editor warning
-// ("Heads up!") and filesystem-credentials prompt. It appears on several
-// screens (theme/plugin editor, font library), so it is gated as a module
-// rather than per-screen. Align it to the shadcn-vue <DialogContent>
-// (`rounded-xl ring-1 ring-foreground/10 bg-popover text-popover-foreground`);
-// the 10% ring is expressed as the token border (see primitives.card-surface).
+// `.notification-dialog` (edit.css:565) — core's file-editor warning and filesystem-credentials
+// prompt — appears on several screens, so it's a module not per-screen. Matches <DialogContent> (`rounded-xl ring-1 ring-foreground/10 bg-popover`); the 10% ring is the token border (primitives.card-surface).
 .notification-dialog {
   @include mixins.module('notification') {
     border: 1px solid var(--attrium-border);

@@ -33,11 +33,8 @@ async function openDetailsOverlay(page: Page, theme: Theme): Promise<void> {
 	await card.click()
 	await expect(page.locator('.theme-overlay .theme-header')).toBeVisible()
 
-	// The actions bar is core's absolutely-positioned bottom bar. `_themes.scss`
-	// resets the in-card action row to `position: static`, and because both
-	// `.theme-actions` live under `.wrap` that reset used to also hit this bar
-	// and drop it out of place. Pin its location so the card and the modal can't
-	// drift onto one selector again.
+	// Core's absolutely-positioned bottom bar: `_themes.scss`'s `position: static` reset for the
+	// in-card action row used to hit this bar too (both `.theme-actions` are under `.wrap`), so pin it.
 	const modalBox = await page
 		.locator('.theme-overlay .theme-wrap')
 		.boundingBox()

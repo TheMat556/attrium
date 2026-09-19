@@ -31,9 +31,8 @@
     // Surface comes from the shared `.wp-filter` rule below (transparent over
     // the content card), so list and grid toolbars are pixel-identical.
 
-    // `flex: none` keeps the group's own controls from squashing when narrow;
-    // `min-width: 0` still lets it give up room to the search group rather
-    // than overflowing the bar. `gap` alone owns the spacing (see below).
+    // `flex: none` keeps the group's controls from squashing when narrow;
+    // `min-width: 0` still yields room to the search group. `gap` owns spacing.
     .media-toolbar-secondary {
       display: flex;
       flex: none;
@@ -50,11 +49,8 @@
       @apply text-sm whitespace-nowrap text-[var(--attrium-muted-foreground)];
     }
 
-    // Core (6.7 floats, 7.1 grid) scatters baseline offsets through this
-    // toolbar for its own layout; the flex row centers everything itself,
-    // so normalize them to zero. Spacing is then exactly `column-gap` — the
-    // old extra 8px margin-inline-end on the view-switch/selects double-dipped
-    // against the gap and pushed every control onto its own left edge.
+    // Core (6.7 floats, 7.1 grid) scatters baseline/margin offsets through this
+    // toolbar; zero them — the flex row centers everything and `column-gap` owns spacing (the old 8px `margin-inline-end` double-dipped).
     .media-toolbar-secondary label,
     .media-toolbar-secondary select,
     .media-toolbar-secondary .view-switch,
@@ -68,10 +64,8 @@
       @apply m-0;
     }
 
-    // Search group pinned right. `flex: 1 1 auto` + `min-width: 0` let it
-    // absorb the bar's slack (so the group hugs the right padding) and shrink
-    // when the bar is tight, instead of overflowing the right padding as
-    // core's fixed-width input did.
+    // Search group pinned right: `flex: 1 1 auto` + `min-width: 0` absorb the
+    // bar's slack and shrink when tight, instead of overflowing as core's fixed-width input did.
     .media-toolbar-primary {
       display: flex;
       flex-wrap: nowrap;
@@ -92,10 +86,8 @@
       margin: -10px 0 0 -10px;
     }
 
-    // Mobile: the nowrap row (543px secondary + 306px primary) can't fit, so
-    // stack the two groups full-width. The secondary wraps its many controls;
-    // the primary keeps label+input on ONE line (core's mobile `auto 1fr`
-    // intent) and lets the input take what's left.
+    // Mobile: the nowrap row (543px + 306px) can't fit, so stack both groups
+    // full-width; the secondary wraps, the primary keeps label+input on ONE line (core's `auto 1fr`).
     @media (max-width: 782px) {
       flex-wrap: wrap;
       row-gap: 0.5rem;
@@ -124,38 +116,26 @@
     @include primitives.field-outline;
   }
 
-  // The search input is the ONE flexible control in either bar: it keeps a
-  // 280px basis on wide bars and shrinks to fit on narrow ones. `min-width: 0`
-  // is what actually permits the shrink (a flex item's automatic minimum size
-  // is its content width); every button stays `shrink-0` via the buttons
-  // module. `max-width` is a definite 280px, replacing core's `max-width: 100%`
-  // — that percentage is cyclic for a shrink-to-fit bar (resolves against a
-  // width that depends on the input) and collapsed the list bar's input.
+  // The search input is the ONE flexible control: a 280px basis on wide bars,
+  // shrinking to fit on narrow ones. `min-width: 0` permits the shrink (flex items default to content width); buttons stay `shrink-0` via the buttons module. `max-width: 280px` replaces core's cyclic `max-width: 100%`.
   .wp-filter .search-form .search,
   .attachments-browser .media-toolbar-primary .search {
     max-width: 17.5rem;
   }
 
-  // Both toolbars — the list-mode `.wp-filter` and the grid-mode
-  // `.media-toolbar.wp-filter` — sit directly on the content card, so both use
-  // the same transparent surface: the 1px border + radius frame the row and the
-  // card shows through. Core hardcodes a #fff fill here; a *recessed* token
-  // fill (what this used to be) made the list toolbar read as a different
-  // control from the grid one.
+  // Both toolbars (`.wp-filter` list and `.media-toolbar.wp-filter` grid) use
+  // the same transparent surface (1px border + radius over the card), replacing core's #fff fill that made them read differently.
   .wp-filter {
     @include primitives.wp-filter-surface(transparent);
   }
 
   // List-mode media filter (`.wp-filter > .filter-items` + `.search-form`): a
-  // wrapping flex row — view-switch + type select + apply action on the left,
-  // search box pushed to the right. Grid mode uses `.media-toolbar` (above),
-  // hence the `:has()` scope.
+  // wrapping flex row — controls left, search right; grid mode uses `.media-toolbar`, hence `:has()`.
   .wp-filter:has(> .filter-items) {
     @apply flex flex-wrap items-center gap-2;
 
-    // `min-w-0` on every level so the group can shrink below its content
-    // width; without it the row overflows the bar instead of the search
-    // input giving up width.
+    // `min-w-0` on every level so the group can shrink below its content width;
+    // without it the row overflows instead of the search input giving up width.
     .filter-items {
       @apply flex min-w-0 flex-wrap items-center gap-2;
     }
@@ -165,21 +145,15 @@
     }
 
     .search-form {
-      // Core adds `margin: 11px 0` (and `flex-wrap: wrap; row-gap: 10px`) to
-      // this group under 1138px (common.css), which inflated the list bar by
-      // ~22px versus the grid toolbar. The flex row owns the spacing here and
-      // the pair stays on one line.
+      // Core adds `margin: 11px 0` + `flex-wrap: wrap; row-gap: 10px` under 1138px
+      // (common.css), inflating the list bar ~22px; the flex row owns spacing and keeps the pair on one line.
       @apply my-0 ml-auto flex min-w-0 flex-nowrap items-center gap-2;
 
-      // Core's `p.search-box` is `flex-wrap: wrap` (forms.css), so the submit
-      // drops onto a second line whenever the input can't take its whole
-      // 280px basis — the one thing that made the list bar two rows tall
-      // where the grid bar is one. Keep the pair on one line; the input gives
-      // up the width instead.
+      // Core's `p.search-box` is `flex-wrap: wrap` (forms.css), so the submit drops
+      // to a second line when the input can't take its 280px basis (making the list bar two rows); keep the pair on one line and let the input yield width.
       .search-box {
-        // `h-8` pins the row to the same 32px as the grid toolbar's search
-        // group; core gives the `p` a taller line box, which otherwise made the
-        // list bar 10px taller than the grid one.
+        // `h-8` pins the row to the grid toolbar's 32px; core's taller `p` line
+        // box otherwise made the list bar 10px taller.
         @apply m-0 flex h-8 min-w-0 flex-nowrap items-center gap-2;
 
         // Core's `input, select { margin: 0 1px }` would pad the gap by 2px.
@@ -190,11 +164,8 @@
     }
   }
 
-  // List-mode gap above the tablenav: core's `#posts-filter .wp-filter`
-  // zeroes the filter bar's own bottom margin, and the bar's search box
-  // carries `m-0` by design (the bar owns its own spacing) — with the
-  // tables module's `mt-0` the tablenav would sit flush under the bar in
-  // every state, not just the empty-table one. Restore the 12px rhythm.
+  // List-mode gap above the tablenav: core's `#posts-filter .wp-filter` zeroes
+  // the bar's bottom margin and its search box carries `m-0`, so with the tables module's `mt-0` the tablenav would sit flush in every state; restore the 12px rhythm.
   form#posts-filter .tablenav.top {
     @apply mt-3;
   }
@@ -208,16 +179,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    // Core pads 12px vertically (its own 48px band) and scatters 2/8/12px
-    // inline margins in list and grid mode; the flex rows own both now, so
-    // the toggles sit on the same 32px line as the selects and buttons.
+    // Core pads 12px vertically (its 48px band) and scatters 2/8/12px inline
+    // margins; the flex rows own both, so toggles sit on the same 32px line as the selects and buttons.
     padding: 0;
   }
 
   // Mirrors the shadcn-vue <Toggle> default variant (src/components/ui/toggle):
-  // `rounded-lg` icon box, `hover:bg-muted hover:text-foreground`, on-state
-  // `bg-muted` and the 3px focus-visible ring. Transparent border kept so the
-  // focus colour can't shift layout.
+  // `rounded-lg` icon box, `hover:bg-muted`, on-state `bg-muted`, 3px focus-visible ring, transparent border so focus can't shift layout.
   .view-switch a {
     @apply relative inline-flex items-center justify-center
            box-border rounded-[var(--attrium-radius-lg)] no-underline size-8
@@ -243,8 +211,7 @@
 
     &:focus-visible {
       border-color: var(--attrium-ring);
-      box-shadow: 0 0 0 3px
-        color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+      @include primitives.focus-ring;
     }
 
     &.current {
@@ -265,12 +232,7 @@
   // ---- Attachments grid --------------------------------------------------------
 
   // Core floats the [data-columns]-wide tiles; flex-wrap keeps core's gutter
-  // mechanism (li padding, NOT ul gap — a gap would break the JS percentage
-  // widths). Tiles sit flush (core's 2px top hairline stays); the
-  // direct-child scope leaves the sidebar's nested .attachments on core's
-  // layout. Only the wrapper carries .attachments as a direct child —
-  // `.attachments-browser > .attachments` matches nothing (verified live),
-  // so it stays out of the selector.
+  // mechanism (li padding, NOT ul gap, which would break the JS percentage widths), and the direct-child scope leaves the sidebar's nested .attachments on core's layout (only the wrapper carries it as a direct child).
   .attachments-wrapper > .attachments {
     display: flex;
     flex-wrap: wrap;
@@ -401,17 +363,14 @@
   // reskin so the forms/buttons recipes inside the modal swap in lockstep
   // with the panel. Treatment mirrors .theme-overlay in screens/_themes.scss.
 
-  // Match the theme-overlay scrim. opacity:1 is load-bearing: the alpha is
-  // in the background, otherwise the two multiply to 0.42.
-  // shadcn <DialogOverlay>: `bg-black/10 backdrop-blur-xs`.
+  // Match the theme-overlay scrim (shadcn <DialogOverlay>: `bg-black/10
+  // backdrop-blur-xs`); `opacity:1` is load-bearing — the alpha is in the background or the two multiply to 0.42.
   .media-modal-backdrop {
     @apply bg-black/10 opacity-100 backdrop-blur-xs;
   }
 
-  // shadcn <DialogContent>: `bg-popover text-popover-foreground rounded-xl
-  // ring-1 ring-foreground/10`. The ring is the 1px border here (see
-  // primitives.card-surface); core keeps the geometry and overflow:auto
-  // doubles as the small-viewport fallback scroll.
+  // shadcn <DialogContent> (`bg-popover text-popover-foreground rounded-xl
+  // ring-1 ring-foreground/10`): the ring is the 1px border (primitives.card-surface); core keeps the geometry and overflow:auto is the small-viewport fallback scroll.
   .media-modal-content {
     @apply rounded-[calc(var(--attrium-radius-lg)+4px)]
            border border-[var(--attrium-border)]

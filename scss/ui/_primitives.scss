@@ -24,6 +24,28 @@
   @apply shadow-none outline-none;
 }
 
+// --- Focus ring --------------------------------------------------------------
+// shadcn's 3px `focus-visible` ring. `$color` is the ring token by default, or a
+// status token (e.g. destructive for invalid fields); `$percent` is its alpha.
+@mixin focus-ring($color: var(--attrium-ring), $percent: 50%) {
+  box-shadow: 0 0 0 3px
+    color-mix(in oklab, #{$color} #{$percent}, transparent);
+}
+
+// --- Invalid field -----------------------------------------------------------
+// shadcn `aria-invalid:border-destructive aria-invalid:ring-destructive/20`
+// (dark `/40` under the per-carrier arms). Shared by text fields and selects.
+@mixin field-invalid($ring: 20%) {
+  &[aria-invalid='true'] {
+    border-color: var(--attrium-destructive);
+  }
+
+  &[aria-invalid='true']:focus-visible {
+    border-color: var(--attrium-destructive);
+    @include focus-ring(var(--attrium-destructive), $ring);
+  }
+}
+
 // --- Primary link ------------------------------------------------------------
 // Token-colored link (no default blue), underline on hover/focus, and no
 // focus ring — the shared link treatment across the admin. Use wherever core
@@ -63,16 +85,10 @@
 }
 
 // --- Tabs (shadcn <TabsList>/<TabsTrigger>, default variant) ------------------
-// The track is a muted `h-8 rounded-lg p-[3px]` box; the trigger is a
-// `rounded-md` segment that reads as a raised card when active. Mirrors
-// src/components/ui/tabs/index.ts + TabsTrigger.vue. Each caller supplies its
-// own dark arm (the active face swaps to `border-input bg-input/30`, the
-// resting ink to `text-muted-foreground`) because the carrier ancestry can't
-// be composed from inside a primitive.
+// Muted `h-8 rounded-lg p-[3px]` track + `rounded-md` active card; each caller supplies its own dark arm.
 @mixin tabs-track {
-  // `box-border` is load-bearing: the track's own `p-[3px]` must sit inside the
-  // `h-8` box, or the content-box height grows to 38px and the trigger's
-  // `h-[calc(100%-1px)]` resolves against 32px instead of 26px.
+  // `box-border` is load-bearing: `p-[3px]` must sit inside `h-8`, or the box grows
+  // to 38px and `h-[calc(100%-1px)]` resolves against 32px instead of 26px.
   @apply box-border inline-flex h-8 w-fit items-center justify-center
          rounded-[var(--attrium-radius-lg)] p-[3px]
          bg-[var(--attrium-muted)]
@@ -113,8 +129,7 @@
   &:focus-visible {
     border-color: var(--attrium-ring);
     outline: 1px solid var(--attrium-ring);
-    box-shadow: 0 0 0 3px
-      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+    @include focus-ring;
   }
 }
 
@@ -136,10 +151,7 @@
 }
 
 // --- Form field ---------------------------------------------------------------
-// Mirrors the aligned `<Input>` recipe in scss/modules/_forms.scss (h-8,
-// rounded-lg, `border-input`) so screens that still reach for this legacy
-// recipe render the same box as every other text field. Prefer
-// `input-base`/`input-outline` for new work.
+// Legacy mirror of `_forms.scss` `<Input>` (h-8, rounded-lg, `border-input`); prefer `input-base`/`input-outline`.
 @mixin field-outline {
   @apply rounded-[var(--attrium-radius-lg)] text-sm border
          border-[var(--attrium-input)] bg-transparent
@@ -153,8 +165,7 @@
 
   &:focus-visible {
     border-color: var(--attrium-ring);
-    box-shadow: 0 0 0 3px
-      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+    @include focus-ring;
   }
 }
 
@@ -165,12 +176,8 @@
   @apply shadow-none;
 }
 
-// Mirrors the shadcn-vue <Card> (src/components/ui/card/Card.vue):
-// `bg-card rounded-xl ring-1 ring-foreground/10`. The ring is expressed as a
-// 1px border (a box-shadow ring would be nulled by the many `shadow-none`
-// resets the screens apply); `ring-foreground/10` is the same 10% ink as
-// `--attrium-border`, so the frame reads identically while `rounded-xl`
-// (`--radius + 4px`) owns the corner.
+// Mirrors shadcn-vue <Card> (`bg-card rounded-xl`): the `ring-foreground/10` ring is a
+// 1px border (box-shadow rings get nulled by `shadow-none`), same 10% ink as `--attrium-border`.
 @mixin card-surface {
   @include surface(
     var(--attrium-card),
@@ -192,9 +199,7 @@
 }
 
 // --- Badge ---------------------------------------------------------------------
-// Mirrors the shadcn-vue <Badge> base (src/components/ui/badge/index.ts):
-// `h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`.
-// Variant fills are opt-in at the call site via the background/color.
+// shadcn-vue <Badge> base (`h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`); variant fills opt-in at the call site.
 @mixin badge {
   // `box-border`: the badge's own `px/py` + 1px border must sit inside the
   // 20px box, or content-box inflates it to 26px (and the text sits high).
@@ -205,9 +210,7 @@
 }
 
 // --- Avatar --------------------------------------------------------------------
-// Mirrors the shadcn-vue <Avatar> (src/components/ui/avatar):
-// `size-8 rounded-full` with a 1px `--attrium-border` ring. `$size` is the
-// square box; WP avatars are usually 32px/48px.
+// shadcn-vue <Avatar> (`size-8 rounded-full`, 1px `--attrium-border` ring); `$size` is the square box (WP avatars usually 32px/48px).
 @mixin avatar($size: 2rem) {
   @apply relative flex shrink-0 select-none overflow-hidden rounded-full
          border border-[var(--attrium-border)];
@@ -233,11 +236,7 @@
 }
 
 // --- Tabs, `line` variant ---------------------------------------------------------
-// shadcn's `variant="line"`: a transparent track with no active fill, and a
-// 2px `--attrium-foreground` bar under the active trigger (`after:h-0.5
-// after:bg-foreground`, offset 5px). Backs the Site Health / Privacy /
-// `wp-filter` tab rows. Include INSIDE the tab bar container under its screen
-// gate; `$tab` is the trigger class and `active` toggles the bar.
+// shadcn `variant="line"`: transparent track + 2px `--attrium-foreground` bar; backs Site Health/Privacy/`wp-filter`.
 @mixin underline-tabs($tab) {
   @apply relative flex justify-center gap-1;
 
@@ -275,8 +274,7 @@
     &:focus-visible {
       border-color: var(--attrium-ring);
       outline: 1px solid var(--attrium-ring);
-      box-shadow: 0 0 0 3px
-        color-mix(in oklab, var(--attrium-ring) 50%, transparent);
+      @include focus-ring;
     }
 
     &.active {

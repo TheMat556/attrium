@@ -2,17 +2,8 @@
 @use '../tokens' as tokens;
 @use '../ui/primitives';
 
-// Tabs module — the native WordPress `.subsubsub` filter strip (All /
-// Published / Draft … above every list table) reskinned to mirror the
-// shadcn-vue <TabsList>/<TabsTrigger> cva in src/components/ui/tabs/index.ts
-// and TabsTrigger.vue. The shared recipe lives in primitives.tabs-* so every
-// tab bar in the admin (`.subsubsub`, nav-menus) renders identically;
-// see scss/ui/_primitives.scss.
-//
-// Core renders the strip as `li > a`, with the ` | ` separators as raw text
-// nodes inside each `<li>`. `li { display: contents }` lifts the anchors into
-// the track's own flex row so they take the shadcn trigger box directly, while
-// the zeroed font-size/transparent colour collapse the separators.
+// Tabs module — WP's `.subsubsub` filter strip reskinned to the shadcn-vue <TabsList>/<TabsTrigger> cva
+// (src/components/ui/tabs), recipe in primitives.tabs-* so every tab bar matches. Core renders `li > a` with ` | ` text nodes inside; `li { display: contents }` lifts anchors into the flex track and zeroed font-size/transparent colour collapse the separators.
 .subsubsub {
   @include mixins.module('tabs') {
     @include primitives.tabs-track;
@@ -21,9 +12,8 @@
     @apply mb-3;
 
     li {
-      // `contents` drops the `li` box so its `<a>` is a flex item of the track
-      // (percentage heights then resolve against the track, as in shadcn); the
-      // inherited 0 font-size + transparent colour hide core's ` | ` text.
+      // `contents` drops the `li` box so its `<a>` becomes a flex item of the track
+      // (percentage heights resolve against it, as in shadcn); 0 font-size + transparent colour hide core's ` | ` text.
       display: contents;
       color: transparent;
       font-size: 0;
@@ -47,10 +37,8 @@
   }
 }
 
-// Dark: shadcn swaps the resting text to `text-muted-foreground` (light uses
-// `text-foreground/60`) and the active face from `bg-background shadow-sm` to
-// `border-input bg-input/30`. The track fill needs no arm — `--attrium-muted`
-// is carrier-swapped by _tokens.scss.
+// Dark: resting ink → `text-muted-foreground` (light `text-foreground/60`) and active face
+// `bg-background shadow-sm` → `border-input bg-input/30`; the track fill needs no arm (`--attrium-muted` is carrier-swapped).
 body.attrium-mod-tabs #{tokens.$dark-carrier-host} .subsubsub a {
 
   &:hover {

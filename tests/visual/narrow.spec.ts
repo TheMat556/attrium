@@ -2,9 +2,8 @@ import { expect, test } from '@playwright/test'
 import { applyTheme, snapshotTarget, stabilize, THEMES } from './support/theme'
 
 /**
- * Narrow-viewport regression (390px): the ≤782px rules no 1440px capture can
- * exercise — upload toolbar stacking, list-table `.toggle-row`, tab wrapping.
- * `snapshotTarget` grows height only, so the narrow width survives.
+ * Narrow-viewport regression (390px): ≤782px rules a 1440px capture can't exercise —
+ * upload toolbar stacking, `.toggle-row`, tab wrapping. `snapshotTarget` grows height only.
  */
 
 const NARROW_VIEWPORT = { width: 390, height: 844 }

@@ -1,22 +1,11 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Buttons module — the native WordPress admin button reskin.
-//
-// Authored to mirror the shadcn-vue <Button> cva in
-// src/components/ui/button/index.ts so every button in wp-admin matches the
-// native Vue app's buttons: same height (h-8) and radius (rounded-lg), same
-// variant fills/hover (bg-primary/80, bg-secondary/80), the same 3px
-// focus-visible ring and the same press-down + disabled behaviour. Bodies use
-// Tailwind `@apply` (expanded by the Tailwind CLI stage of build:css) reading
-// the --attrium-* design tokens, so light/dark is handled entirely by the
-// token overrides in _tokens.scss.
+// Buttons module — WP admin reskin of the shadcn-vue <Button> cva (h-8/rounded-lg,
+// bg-*/80 fills, 3px focus-visible ring); `@apply` bodies read --attrium-* tokens (light/dark in _tokens.scss).
 
-// ---- Base: shared by every reskinned button, regardless of variant ----
-// Layout/typography shape, split out so the `.page-title-action` state override
-// below can re-assert it without duplicating the utility list. The border is
-// deliberately NOT here: the focused state's ring owns `border-color`, and a
-// shape re-assert that repainted it would clobber the ring on keyboard focus.
+// ---- Base: shared shape for every reskinned button, regardless of variant ----
+// Border is NOT here: :focus's ring owns `border-color`, so state re-asserts must not repaint it.
 @mixin btn-shape {
   @apply inline-flex shrink-0 items-center justify-center gap-1.5
          whitespace-nowrap select-none box-border
@@ -39,18 +28,15 @@
   }
 
   &:not(:disabled):not(.disabled):active {
-    // Core's `.wrap .page-title-action:hover/:focus/:active` (and the
-    // `.button` equivalents) repaint the border at a specificity that beats
-    // the base rule; re-assert the transparent shadcn border on each state.
+    // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
+    // repaint the border above the base; re-assert the transparent shadcn border on each state.
     border-color: transparent;
     transform: translateY(1px);
   }
 
   &:focus {
-    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color).
-    // Reset both here; the shadcn-style ring is re-added on :focus-visible below.
-    // `outline` is forced off so no browser default ring (square, ignores
-    // border-radius) can ever paint over the rounded shadcn ring.
+    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color):
+    // reset both (shadcn ring returns on :focus-visible) and force outline off so no square default ring paints.
     border-color: transparent;
     @include primitives.focus-reset;
     outline: none !important;
@@ -59,21 +45,12 @@
   &:focus-visible {
     border-color: var(--attrium-ring);
     outline: none !important;
-    box-shadow: 0 0 0 3px
-      color-mix(in oklab, var(--attrium-ring) 50%, transparent);
-  }
-
-  // Firefox adds an inner focus border to native buttons/inputs; drop it so
-  // the rounded ring is the only focus indicator.
-  &::-moz-focus-inner {
+    @include primitives.focus-ring;
   }
 }
 
-// ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
-// The resting fill is the token; only :hover mixes it to 80% (shadcn's
-// `bg-*/80`). :focus keeps the resting fill — shadcn buttons don't dim when
-// focused, only the ring changes — and is re-asserted to neutralize core's
-// focus background.
+// ---- Variants: shadcn's cva() variant map, as mixins ----
+// Resting fill is the token; only :hover mixes to 80% (`bg-*/80`); :focus keeps the fill (ring-only change).
 @mixin btn-primary {
   background-color: var(--attrium-primary);
   color: var(--attrium-primary-foreground);
@@ -102,32 +79,10 @@
     background-color: var(--attrium-secondary);
     color: var(--attrium-secondary-foreground);
   }
-
-  &:hover {
-  }
-}
-
-@mixin btn-outline {
-
-  &:hover,
-  &:focus {
-  }
 }
 
 // ---- Mapping: which native WP element gets which variant ----
-// Adding a new WP element to a variant later is a one-line addition here,
-// with no property duplication. There is deliberately no size modifier:
-// core's `.button-large` (the post editor's Publish/Update button) maps onto
-// the same h-8 box as every other button so the admin matches the shadcn
-// <Button> default exactly.
-// `:not()` matters: core's `submit_button()` emits `class="button button-primary"`,
-// so a bare `.button` here would also match primary buttons. Same specificity as
-// the `.button-primary` rule below means only *unset* properties leak — but
-// `btn-secondary` sets `border-color` and `btn-primary` does not, so primaries
-// would render with the secondary (light grey) border over the primary fill.
-// `.page-title-action` (the "Add New" header link on list screens) is demoted to
-// the secondary variant on purpose: every other control in that toolbar is a
-// secondary button, so a dark primary "Add New" reads as misaligned next to them.
+// `.button:not(.button-primary)` because `submit_button()` emits both (a bare `.button` would leak `btn-secondary`'s border over primaries); no size modifier — `.button-large` keeps h-8; `.page-title-action` is demoted to secondary to match the toolbar.
 .button:not(.button-primary):not(.page-title-action),
 .button-secondary,
 .page-title-action {
@@ -137,13 +92,8 @@
   }
 }
 
-// `.page-title-action` is the one native button class core fights on press:
-// `.wrap .page-title-action:active` ((0,3,0)) beats the module's base ((0,2,1))
-// and re-applies core's raw box (2px radius, `display:inline-block`, `0 12px`
-// padding, 13px/30px text), so a click-and-hold snapped the shadcn "Add New"
-// pill back to core's. Re-assert the shape from `:active` ((0,3,1)) so it holds
-// through the press. Scoped to this class: compact `.button-small` controls
-// (e.g. QuickPress' `ed_button`) intentionally stay in core's smaller box.
+// `.wrap .page-title-action:active` ((0,3,0)) beats the module base ((0,2,1)) and
+// re-applies core's raw box on press; re-assert the shape from `:active` ((0,3,1)), scoped so `.button-small` stays compact.
 body.attrium-mod-buttons .page-title-action:active {
   @include btn-shape;
 }
@@ -155,18 +105,8 @@ body.attrium-mod-buttons .page-title-action:active {
   }
 }
 
-// Core's `.button-compact` (space-constrained spots like the theme tiles)
-// sets `padding: 0 12px`, beating the module's `px-2.5` — the button renders
-// 4px wider than its shadcn twin. Re-assert parity. (Deliberately not the
-// shadcn `sm` size: core compact is default-height, and small controls like
-// `.button-small` intentionally keep core's smaller box.)
-body.attrium-mod-buttons.wp-core-ui .button-compact {
-}
-
-// Core upsizes every button to a 40px touch target on small screens
-// (buttons.css `@media (max-width:782px)`), defeating the h-8 shadcn parity
-// above — theme-tile buttons render taller than every shadcn button next
-// to them. Re-assert the module shape there with a winning selector.
+// Core upsizes buttons to a 40px touch target at `@media (max-width:782px)`
+// (buttons.css), defeating h-8 parity; re-assert the module shape with a winning selector.
 @media screen and (max-width: 782px) {
   body.attrium-mod-buttons.wp-core-ui .button,
   body.attrium-mod-buttons.wp-core-ui .button-primary,

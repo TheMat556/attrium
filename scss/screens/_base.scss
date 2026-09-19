@@ -12,6 +12,19 @@
 //   }
 // }
 
+// The mobile sidebar drawer is reka-ui's modal <Sheet>. Its overlay locks body
+// scroll by setting inline `overflow: hidden` (useBodyScrollLock), which turns
+// <body> into a clipping scroll container whose GPU compositing blends the
+// card's rounded corners against the light body canvas (#f0f0f1) instead of the
+// host fill — a white wedge at the card corners in dark mode, on every screen.
+// Identical artifact to body.themes-php's core overflow reset (see _themes.scss),
+// but drawer-triggered. The shell body never scrolls (fixed host + card is the
+// sole scroller), so force it visible; an author !important beats the inline
+// style without touching the generated shadcn components.
+@include mixins.module-root('screens') {
+  @apply overflow-visible!;
+}
+
 h1, h2, h3 {
   @include mixins.module('screens') {
     @apply font-semibold;
@@ -25,9 +38,8 @@ hr {
   }
 }
 
-// Avatars → shadcn <Avatar> (src/components/ui/avatar): a circular box with a
-// 1px `--attrium-border` ring over a muted fallback. The ring is a box-shadow
-// so core's fixed avatar dimensions aren't grown by a border.
+// Avatars → shadcn <Avatar> (src/components/ui/avatar): circular, 1px `--attrium-border` ring
+// (box-shadow, so core's fixed avatar dimensions aren't grown) over a muted fallback.
 img.avatar,
 .avatar {
   @include mixins.module('screens') {

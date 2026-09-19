@@ -21,10 +21,8 @@
     padding: 0.75rem;
   }
 
-  // shadcn Tabs default variant (see primitives.tabs-*): the same muted track
-  // with a raised active "card" that `.subsubsub` uses (modules/_tabs.scss), so
-  // every tab bar in the admin reads identically. Core emits no ` | ` separators
-  // on these installers, so nothing else is needed to flatten the list.
+  // shadcn Tabs default variant (primitives.tabs-*): the muted track with a raised
+  // active "card", matching `.subsubsub` (modules/_tabs.scss); installers emit no ` | `.
   .filter-links {
     @include primitives.tabs-track;
     @apply m-0 list-none;
@@ -47,11 +45,8 @@
     }
   }
 
-  // Dark: shadcn swaps the resting ink to `text-muted-foreground` and the active
-  // face from `bg-background shadow-sm` to `border-input bg-input/30`, exactly
-  // as on `.subsubsub` (see modules/_tabs.scss). `&` is the caller's
-  // `screen-root` gate, so the arm stays scoped to the installer screens without
-  // the pattern needing to know their body classes.
+  // Dark: resting ink to `text-muted-foreground`, active face to `border-input
+  // bg-input/30`, as on `.subsubsub`; `&` is the caller's screen-root gate.
   & #{tokens.$dark-carrier-host} {
     .filter-links li > a {
       color: var(--attrium-muted-foreground);
@@ -90,9 +85,8 @@
       }
     }
 
-    // Radio branch deliberately absent: core renders checkboxes only in
-    // this drawer (verified in theme-install.php) — check-css-coverage
-    // flagged `input[type='radio']` here as dead.
+    // Radio branch absent — core renders only checkboxes here (theme-install.php),
+    // so `input[type='radio']` would be dead.
     .filter-group-feature input[type='checkbox'] {
       @apply absolute;
     }

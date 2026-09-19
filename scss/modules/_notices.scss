@@ -12,9 +12,8 @@
 // so our `display:flex` must not re-expose it.
 .notice:not(.hidden):not(.hide-if-js) {
   @include mixins.module('notices') {
-    // shadcn <Alert> box (`grid gap-0.5 rounded-lg border px-2.5 py-2 text-sm
-    // bg-card text-card-foreground`); WP's 6px semantic left bar is kept as a
-    // native extension since Alert only ships default/destructive variants.
+    // shadcn <Alert> box (`grid gap-0.5 rounded-lg border px-2.5 py-2 text-sm bg-card`);
+    // WP's 6px semantic left bar stays as a native extension — Alert only ships default/destructive variants.
     @apply relative grid gap-0.5 rounded-lg border
            border-[var(--attrium-border)] px-2.5 py-2 pr-8
            text-left text-sm bg-[var(--attrium-card)]
