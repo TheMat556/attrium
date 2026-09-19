@@ -1,34 +1,39 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Shared cell recipe. The table itself is styled inline in `.widefat` below —
-// only the cell geometry is factored out, because th and td genuinely share it.
+// Table module — `.widefat` list tables match the shadcn-vue <Table> (src/components/ui/table, reka-nova):
+// normal-case `h-10 px-2 font-medium` header, `p-2` cells, one `border-b` per row, `bg-muted/50` hover; `.widefat`'s border+radius stand in for the <Card>. Shared cell recipe factors only geometry; cells deliberately wrap (not `whitespace-nowrap`) for WP descriptions.
+
 @mixin cell-base {
-  @apply px-4 py-3 border-b border-[var(--attrium-border)];
+  @apply box-border border-b border-[var(--attrium-border)];
 }
 
+// shadcn <TableHead>: `h-10 px-2 text-left align-middle font-medium
+// text-foreground whitespace-nowrap` — no uppercase/tracking like core's.
 @mixin th-base {
   @include cell-base;
-  @apply text-left text-xs font-semibold
-         uppercase tracking-wider
-         text-[var(--attrium-secondary-foreground)];
+  @apply h-10 px-2 py-0 text-left align-middle
+         text-sm font-medium whitespace-nowrap
+         text-[var(--attrium-foreground)];
 }
 
+// shadcn <TableCell>: `p-2 align-middle`.
 @mixin td-base {
   @include cell-base;
-  @apply align-middle transition-colors duration-100;
+  @apply p-2 align-middle text-sm
+         text-[var(--attrium-foreground)]
+         transition-colors duration-100;
 }
 
 .widefat {
   @include mixins.module('tables') {
     @apply w-full;
 
+    // The frame (shadcn's <Card> stand-in) plus the surface the rows sit on.
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     overflow: hidden;
-    // The table background shows through the 1px gaps between the opaque cells
-    // below, which is what draws the grid lines.
-    background: var(--attrium-border);
+    background: var(--attrium-primary-foreground);
     box-shadow: none;
 
     // Strip core's own table chrome: per-cell backgrounds, plus the inset
@@ -42,10 +47,6 @@
       box-shadow: none;
     }
 
-    thead {
-      @apply bg-[var(--attrium-secondary)];
-    }
-
     thead th,
     thead td {
       @include th-base;
@@ -56,24 +57,10 @@
     }
 
     tbody {
-      // Row-level hover: the whole row lights up together (the row is the
-      // interactive unit), rather than each cell lighting up independently.
-      tr:hover td,
-      tr:hover th {
-        background: var(--attrium-accent);
-      }
-
       td,
       th {
         @include td-base;
-
-        color: var(--attrium-foreground);
-        background: var(--attrium-primary-foreground);
       }
-
-      // No zebra striping: cells above are opaque, and the 1px border grid is
-      // what separates rows. (Core's `.alternate` is only emitted into the
-      // find-posts modal anyway — real list tables use `.striped`.)
 
       tr:last-child td,
       tr:last-child th {
@@ -82,7 +69,21 @@
     }
 
     .check-column {
+      // Core pushes the checkbox with `margin: 0 0 0 8px` + `vertical-align: text-top`,
+      // off-centring it (16px left / 8px right); zero the margin and align-middle so header and row boxes are dead-centre in the 40px column.
       @apply w-10 px-2 text-center;
+
+      input[type='checkbox'] {
+        @apply m-0 align-middle;
+      }
+    }
+
+    // Mobile: core turns rows flex and blockifies the header cell, so `vertical-align`
+    // stops centring the (now 25px) checkbox at the top of the 40px cell — centre it as a flex box.
+    @media (max-width: 782px) {
+      thead .check-column {
+        @apply flex items-center justify-center;
+      }
     }
 
     .row-title {
@@ -167,13 +168,36 @@
     th.sorted,
     th.sortable {
       a {
-        @apply text-[var(--attrium-primary)]
+        @apply text-[var(--attrium-foreground)]
                flex items-center;
       }
     }
 
     .post-com-count-wrapper {
       @apply inline-flex items-center gap-1;
+    }
+
+    // Comment-count bubble → shadcn <Badge> (base `secondary`, pending `destructive`); drop core's
+    // bubble "tail", let the inner count inherit the badge ink (core paints it blue), and keep `no-pending` hidden against our badge `display`.
+    .post-com-count {
+      @include primitives.badge;
+
+      background: var(--attrium-secondary);
+
+      &::after {
+        content: none;
+      }
+
+      // Core paints the inner count as its own 2em grey box (`border-radius: 5px`) on
+      // `.comment-count-approved`/`-no-comments` (and bare `.comment-count` on pending); strip to plain text so the Badge is the only pill.
+      [class*='comment-count'] {
+        @apply m-0 inline-flex h-auto min-w-0 items-center justify-center
+               rounded-none border-0 bg-transparent p-0 text-xs;
+      }
+    }
+
+    .post-com-count.post-com-count-no-pending {
+      @apply hidden;
     }
 
     th.column-comments,
@@ -198,7 +222,7 @@
 .widefat.plugins {
   @include mixins.module('tables') {
     // Row cells: drop core's inset box-shadow "border" and active-row tint;
-    // inherit the same background/border as normal tbody cells.
+    // sit transparent on the table surface like every other table.
     tbody th,
     tbody td,
     tr.active th,
@@ -207,21 +231,6 @@
     tr.inactive td {
       @apply shadow-none;
 
-      background-color: var(--attrium-primary-foreground);
-    }
-
-    // Plugins repaint every cell (above) after the shared row-hover rule, so
-    // repeat the row-hover here to keep whole-row highlighting working here.
-    tbody tr:hover th,
-    tbody tr:hover td {
-      background-color: var(--attrium-accent);
-    }
-
-    // Header: core's `.plugins tr { background:#fff }` beats thead-base, so
-    // restore the secondary header fill on the actual header cells.
-    thead th,
-    thead td {
-      background-color: var(--attrium-secondary);
     }
 
     // Core hard-codes text to #000 on `.plugins, .plugins th, .plugins td`;
@@ -241,21 +250,41 @@
   }
 }
 
-p.search-box {
+// The list-table search box (posts, plugins, users, …) — NOT the media library list-mode bar:
+// that renders inside `.wp-filter > .filter-items` (a filter toolbar, recipe in scss/screens/_upload.scss) and is excluded by the `.filter-items` child; theme-install uses `.filter-links` and keeps this recipe.
+p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
   @include mixins.module('tables') {
-    @apply mt-2;
+    // Two separate controls: a real `gap` (core's `column-gap` is 0.5rem) with each keeping
+    // full rounding — no joined corners. `mt-2` matches the tabs' top margin to share a line; `mb-3` is the 12px list-table rhythm.
+    @apply mt-2 mb-3 inline-flex flex-nowrap items-center gap-2;
 
+    // Core upsizes the field to 40px and adds `margin-bottom: 10px` below 783px (box measured 42px),
+    // plus a 10px submit margin — pin all back to the 32px row. `min-w-0` lets the field shrink instead of wrapping the submit.
     input[type="search"] {
-      @apply h-8 text-xs w-32;
+      @apply m-0 h-8 min-h-8 w-32 min-w-0 text-xs;
     }
 
-    // Below 1200px the tablenav runs out of room for a floated search box, so
-    // it drops onto its own full-width row above the table.
+    input[type="submit"].button {
+      @apply m-0 shrink-0;
+    }
+
+    // Below 1200px the tablenav can't fit a floated search box, so it drops onto its own
+    // full-width row above the table — the tabs' `mb-3` supplies the gap above, the box's own `mb-3` the gap below.
     @media (max-width: 1200px) {
-      @apply float-none w-full mb-2 mt-0;
+      @apply float-none mt-0 mb-3 w-full;
 
       input[type="search"] {
         @apply w-auto flex-1;
+      }
+    }
+
+    // On phones the submit keeps its full label text (long in some locales), squeezing the field
+    // to a sliver in the nowrap row — let the submit drop onto its own line so the field stays usable. 782px is core's admin mobile breakpoint.
+    @media (max-width: 782px) {
+      @apply flex-wrap;
+
+      input[type="search"] {
+        @apply grow shrink basis-full;
       }
     }
   }
@@ -263,20 +292,30 @@ p.search-box {
 
 .tablenav.top {
   @include mixins.module('tables') {
-    @apply flex flex-wrap items-center justify-between gap-2 h-auto mb-4;
+    // One 12px rhythm for the header: core adds a 6px top (20px below 783px) and 4px bottom
+    // margin that fought the tabs' own spacing.
+    @apply flex flex-wrap items-center justify-between gap-2 h-auto mt-0 mb-3;
 
     .alignleft {
       float: none;
     }
 
     .actions {
-      @apply flex items-center gap-2;
+      // Wrap the bulk-action / filter controls on narrow screens so the row (selects + apply)
+      // never pushes past the card; `max-w-full` caps the group and the selects shrink against it.
+      @apply flex max-w-full flex-wrap items-center gap-2;
       float: none;
       padding: 0;
+
+      select {
+        @apply max-w-full;
+      }
     }
 
     .tablenav-pages {
-      @apply flex items-center gap-1 ml-auto float-none;
+      // `mb-0` matters on mobile: core sets `margin-bottom: 25px` on pagination, and a single-page
+      // screen leaves the block EMPTY but still reserves that 25px — a phantom gap; the flex row owns spacing.
+      @apply flex items-center gap-1 ml-auto float-none mb-0;
     }
 
     br.clear {
@@ -287,12 +326,12 @@ p.search-box {
 
 .tablenav.bottom {
   @include mixins.module('tables') {
-    @apply mt-4;
+    @apply mt-3;
   }
 }
 
 .tablenav-pages-navspan.button.disabled {
   @include mixins.module('tables') {
-    @apply opacity-40 cursor-default border-transparent!;
+    @apply opacity-50 cursor-default border-transparent!;
   }
 }

@@ -7,10 +7,11 @@
 // (theme-install-php → body.theme-install-php). The markup is shared, so the
 // same reskin is applied under both screen gates via the theme-cards mixin.
 
-// Apply overflow: hidden to body for themes pages
+// Core forces a scrollbar spacer via `.themes-php { overflow-y: scroll }`
+// (themes.css:10); reset it. Must be `visible`, NOT `hidden` — `hidden` makes <body> a clipping scroll container whose GPU compositing blends the card's rounded corners against the body canvas (#f0f0f1) instead of the host's --sidebar fill (white wedge on real GPUs). `.theme-install-php` reset for symmetry.
 body.themes-php,
 body.theme-install-php {
-  @apply overflow-hidden!;
+  @apply overflow-visible!;
 }
 
 // Core (wp-admin/css/themes.css) hardcodes light chrome: a #fff card, #ccc/#eee
@@ -31,11 +32,12 @@ body.theme-install-php {
   }
 
   .theme {
-    @apply rounded-[var(--attrium-radius-md)] overflow-hidden
+    // `rounded-xl` (shell card radius) so tiles match, on the page surface, NOT
+    // `--attrium-card`: tiles sit on the content card, whose pure-white fill showed past the corners.
+    @apply rounded-[calc(var(--attrium-radius-lg)+4px)] overflow-hidden
            border border-[var(--attrium-border)] shadow-none
            transition-colors duration-150;
 
-    background: var(--attrium-primary-foreground);
 
     &:hover,
     &:focus-within {
@@ -64,7 +66,9 @@ body.theme-install-php {
   // screenshot borderless.
   .theme-screenshot {
     @apply border-0;
-    background: var(--attrium-secondary);
+    // shadcn media placeholder is `bg-muted`; `--attrium-secondary` was a step
+    // darker and showed through the rounded tile corners around the image.
+    background: var(--attrium-muted);
   }
 
   // ---- "Details & Preview" hover overlay ----
@@ -91,25 +95,17 @@ body.theme-install-php {
 
   // ---- Footer (name + author + actions) ----
   .theme-id-container {
-    @apply p-4;
-    background: var(--attrium-primary-foreground);
+    // Core absolutely positions `.theme-actions` over the footer, so a long name
+    // slides under the buttons; row the footer instead — truncating name beside the actions (wrapping on narrow cards), the shadcn card-footer pattern.
+    @apply flex flex-row flex-wrap items-center gap-x-3 gap-y-2 p-4;
     border-top: 1px solid var(--attrium-border);
   }
 
-  // Core (themes.css:77) sets background:#fff, an 18px height, and a faux
-  // top edge (box-shadow inset) directly on the `.theme-name` element itself —
-  // not on a wrapper. Left alone, that paints a white band across the card
-  // footer in dark mode and makes the light-mode footer look untouched. Reset
-  // the surface here so the name blends into the token-styled
-  // `.theme-id-container`.
-  // `m-0` is not redundant despite the base rule's `margin: 0`: the Add New
-  // Theme card's name gets `margin-top: -18px` (themes.css:353) to overlap the
-  // dashed placeholder border. Our rule normalizes that so the card footer
-  // stays in flow with the rest. The active card adds `box-shadow: inset 0 1px
-  // 1px` (themes.css:212) which paints a dark line across the top of the name —
-  // reset it here too so no faux border-top shows on the active theme.
+  // Core (themes.css:77) sets background:#fff, an 18px height and an inset
+  // box-shadow directly on `.theme-name`, so reset the surface to blend into the token `.theme-id-container`; `m-0` normalizes the Add New card's `margin-top:-18px` (themes.css:353) and the active card's `inset 0 1px 1px` (themes.css:212); `p-0` kills core's 16px 15px padding (115px right on active).
   .theme-name {
-    @apply text-sm font-semibold m-0 px-4 py-3 shadow-none h-auto bg-transparent;
+    @apply m-0 min-w-0 flex-1 truncate p-0 text-sm font-semibold
+           shadow-none h-auto bg-transparent;
     color: var(--attrium-foreground);
   }
 
@@ -129,19 +125,16 @@ body.theme-install-php {
   }
 
   // ---- Action buttons ----
-  // `.button-primary` (Live Preview) is handled by the shared buttons reskin.
-  // The `.activate` action is a bare `.button`, but core out-specifies the
-  // generic reskin: `.theme-browser .theme .theme-actions .button:not(.button-primary)`
-  // (0,5,0) forces background:#fff, and wp-core-ui gives it a grey border +
-  // non-black text. Re-style the secondary action here with a selector deep
-  // enough (nested under `.theme-browser .theme`) to win, using tokens so it
-  // reads correctly in both modes.
-  // Core gives the actions container a real `border-left: 1px`
-  // (themes.css:96) and a faux top edge via `box-shadow: inset 0 1px 0`
-  // (themes.css:240) on non-active cards — reset both so the row blends into
-  // the footer.
+  //
+  // Core's `.theme-browser .theme .theme-actions .button:not(.button-primary)` (0,5,0) forces #fff on the bare `.activate`, so re-style it deep with tokens; reset the container's `border-left`/inset shadow but keep position/transform/padding (shared by the Details overlay bar).
   .theme-actions {
     @apply flex items-center gap-2 border-0 shadow-none bg-transparent;
+  }
+
+  // Card only — `static` takes the action row out of core's absolute overlay so it
+  // sits in the footer flex row, but the translate/padding/offset live in the SAME core rule as `position`, so reset them too (`translateY(-50%)` would otherwise paint half a row high). Scoped to `.theme` so the overlay bar is untouched.
+  .theme .theme-actions {
+    @apply static flex-none transform-none flex-wrap p-0;
   }
 
   .theme-browser .theme .theme-actions .button:not(.button-primary),
@@ -150,18 +143,25 @@ body.theme-install-php {
     color: var(--attrium-secondary-foreground);
 
     @apply border border-transparent;
-
-    // Core draws the apparent "border" on hover/focus as a box-shadow ring
-    // (buttons.css:174 `box-shadow: 0 0 0 1.5px`), not a real border — reset it
-    // alongside the border so no ring appears. `opacity-100` cancels the shared
-    // buttons module's hover opacity-90 dim so the accent fill isn't translucent.
+    // Core draws the hover/focus "border" as a `box-shadow: 0 0 0 1.5px` ring
+    // (buttons.css:174) — reset it alongside the border; hover mixes secondary to 80% (shadcn `bg-secondary/80`) to match the buttons module.
     &:hover,
     &:focus {
-      background: var(--attrium-accent);
+      background: color-mix(
+        in oklab,
+        var(--attrium-secondary) 80%,
+        transparent
+      );
       color: var(--attrium-secondary-foreground);
 
-      @apply border-transparent shadow-none opacity-100;
+      @apply border-transparent shadow-none;
     }
+  }
+
+  // Core spaces overlay buttons with 3px side margins and paints the active card's
+  // primary with a white border (both themes.css); zero both — flex gap owns spacing and every action shares the buttons module's transparent border.
+  .theme-browser .theme .theme-actions .button {
+    @apply m-0 border-transparent;
   }
 
   // ---- Overlay notice ("Installed", update messages) ----

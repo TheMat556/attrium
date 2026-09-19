@@ -1,27 +1,57 @@
 @use '../mixins';
+@use '../tokens' as tokens;
 @use '../ui/primitives';
 
+// Tabs module — WP's `.subsubsub` filter strip reskinned to the shadcn-vue <TabsList>/<TabsTrigger> cva
+// (src/components/ui/tabs), recipe in primitives.tabs-* so every tab bar matches. Core renders `li > a` with ` | ` text nodes inside; `li { display: contents }` lifts anchors into the flex track and zeroed font-size/transparent colour collapse the separators.
 .subsubsub {
   @include mixins.module('tabs') {
-    @include primitives.pill-track;
-    @apply mb-4;
+    @include primitives.tabs-track;
+    // The list-table header uses a single 12px rhythm (see _tables.scss); the
+    // tabs are its first row.
+    @apply mb-3;
 
     li {
-      @apply inline-flex;
-
+      // `contents` drops the `li` box so its `<a>` becomes a flex item of the track
+      // (percentage heights resolve against it, as in shadcn); 0 font-size + transparent colour hide core's ` | ` text.
+      display: contents;
       color: transparent;
+      font-size: 0;
+    }
 
-      a {
-        @include primitives.pill-segment;
+    a {
+      @include primitives.tabs-trigger;
 
-        &.current {
-          @include primitives.pill-segment-active;
-        }
+      // Core pins `.subsubsub a .count` to #50575e; inherit the trigger colour
+      // so the count dims with its label instead of staying fixed grey.
+      .count {
+        @apply font-normal;
+        color: inherit;
+      }
 
-        .count {
-          @apply ml-1;
-        }
+      // Active segment reads as a raised card on the muted track.
+      &.current {
+        @include primitives.tabs-trigger-active;
       }
     }
+  }
+}
+
+// Dark: resting ink → `text-muted-foreground` (light `text-foreground/60`) and active face
+// `bg-background shadow-sm` → `border-input bg-input/30`; the track fill needs no arm (`--attrium-muted` is carrier-swapped).
+body.attrium-mod-tabs #{tokens.$dark-carrier-host} .subsubsub a {
+
+  &:hover {
+    color: var(--attrium-foreground);
+  }
+
+  &.current {
+    border-color: var(--attrium-input);
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-input) 30%,
+      transparent
+    );
+    color: var(--attrium-foreground);
   }
 }

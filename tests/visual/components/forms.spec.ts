@@ -2,18 +2,8 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Form control regression.
- *
- * The `scss/modules/_forms.scss` mixins restyle WordPress admin form controls
- * (text inputs, textareas, selects, and file inputs). Unlike buttons there is
- * no interaction state worth capturing, so we snapshot each control element on
- * its own in light AND dark mode.
- *
- * Target: profile.php — a real, side-effect-free screen carrying every control
- * the module styles: text input (`#first_name`), textarea (`#description`),
- * and select (`#locale`). The file input is not present on any reachable core
- * screen, so it is injected into the DOM for capture (the selector
- * `input[type="file"]` is what the module gates on).
+ * Form control regression: every `_forms.scss` state (resting/hover/focus/disabled/
+ * `aria-invalid`) captured per element. Target: profile.php fields; file/placeholder injected.
  */
 
 for (const { theme } of THEMES) {
@@ -61,6 +51,92 @@ for (const { theme } of THEMES) {
 			await select.scrollIntoViewIfNeeded()
 			await select.focus()
 			await expect(select).toHaveScreenshot(`form-select-focus-${theme}.png`)
+		})
+
+		test('text input focus', async ({ page }) => {
+			const input = page.locator('#first_name')
+			await expect(input).toBeVisible()
+			await input.scrollIntoViewIfNeeded()
+			await input.focus()
+			await expect(input).toHaveScreenshot(`form-text-input-focus-${theme}.png`)
+		})
+
+		test('text input disabled', async ({ page }) => {
+			await page.evaluate(() => {
+				document.querySelector('#first_name')?.setAttribute('disabled', '')
+			})
+			const input = page.locator('#first_name')
+			await expect(input).toBeVisible()
+			await input.scrollIntoViewIfNeeded()
+			await expect(input).toHaveScreenshot(
+				`form-text-input-disabled-${theme}.png`,
+			)
+		})
+
+		test('text input invalid', async ({ page }) => {
+			await page.evaluate(() => {
+				document
+					.querySelector('#first_name')
+					?.setAttribute('aria-invalid', 'true')
+			})
+			const input = page.locator('#first_name')
+			await expect(input).toBeVisible()
+			await input.scrollIntoViewIfNeeded()
+			await expect(input).toHaveScreenshot(
+				`form-text-input-invalid-${theme}.png`,
+			)
+		})
+
+		test('text input invalid focus', async ({ page }) => {
+			await page.evaluate(() => {
+				document
+					.querySelector('#first_name')
+					?.setAttribute('aria-invalid', 'true')
+			})
+			const input = page.locator('#first_name')
+			await expect(input).toBeVisible()
+			await input.scrollIntoViewIfNeeded()
+			await input.focus()
+			await expect(input).toHaveScreenshot(
+				`form-text-input-invalid-focus-${theme}.png`,
+			)
+		})
+
+		test('select disabled', async ({ page }) => {
+			await page.evaluate(() => {
+				document.querySelector('#locale')?.setAttribute('disabled', '')
+			})
+			const select = page.locator('#locale')
+			await expect(select).toBeVisible()
+			await select.scrollIntoViewIfNeeded()
+			await expect(select).toHaveScreenshot(`form-select-disabled-${theme}.png`)
+		})
+
+		test('select invalid', async ({ page }) => {
+			await page.evaluate(() => {
+				document.querySelector('#locale')?.setAttribute('aria-invalid', 'true')
+			})
+			const select = page.locator('#locale')
+			await expect(select).toBeVisible()
+			await select.scrollIntoViewIfNeeded()
+			await expect(select).toHaveScreenshot(`form-select-invalid-${theme}.png`)
+		})
+
+		test('placeholder', async ({ page }) => {
+			// Injected: no profile field carries a placeholder — see header.
+			await page.evaluate(() => {
+				const input = document.createElement('input')
+				input.type = 'text'
+				input.placeholder = 'Search'
+				input.setAttribute('aria-label', 'injected placeholder probe')
+				document.querySelector('#wpcontent')?.appendChild(input)
+			})
+			const input: Locator = page.locator(
+				'input[aria-label="injected placeholder probe"]',
+			)
+			await expect(input).toBeVisible()
+			await input.scrollIntoViewIfNeeded()
+			await expect(input).toHaveScreenshot(`form-placeholder-${theme}.png`)
 		})
 
 		test('file input', async ({ page }) => {

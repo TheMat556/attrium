@@ -1,103 +1,88 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Buttons module — authored shadcn/cva-style: a shared base + per-variant
-// mixins + a size modifier, then a one-line map from native WP button classes
-// to a variant. Bodies use Tailwind `@apply` (expanded by the Tailwind CLI
-// stage of build:css) reading the --attrium-* design tokens, so light/dark is
-// handled entirely by the token overrides in _tokens.scss.
+// Buttons module — WP admin reskin of the shadcn-vue <Button> cva (h-8/rounded-lg,
+// bg-*/80 fills, 3px focus-visible ring); `@apply` bodies read --attrium-* tokens (light/dark in _tokens.scss).
 
-// ---- Base: shared by every reskinned button, regardless of variant ----
+// ---- Base: shared shape for every reskinned button, regardless of variant ----
+// Border is NOT here: :focus's ring owns `border-color`, so state re-asserts must not repaint it.
+@mixin btn-shape {
+  @apply inline-flex shrink-0 items-center justify-center gap-1.5
+         whitespace-nowrap select-none box-border
+         rounded-[var(--attrium-radius-lg)]
+         h-8 min-h-8 px-2.5 text-sm font-medium
+         duration-150 transition-all outline-none;
+}
+
 @mixin btn-base {
-  @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-         text-sm font-medium h-9 min-h-9 duration-150 transition-colors border-[1px] border-solid;
+  @apply border border-solid border-transparent bg-clip-padding;
 
-  &:disabled {
+  @include btn-shape;
+
+  @apply [&_svg:not([class*=size-])]:size-4
+         [&_svg]:pointer-events-none [&_svg]:shrink-0;
+
+  &:disabled,
+  &.disabled {
     @apply opacity-50 cursor-default pointer-events-none;
-    border-color: var(--attrium-muted-foreground) !important;
   }
 
-  &:not(:disabled):active {
+  &:not(:disabled):not(.disabled):active {
+    // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
+    // repaint the border above the base; re-assert the transparent shadcn border on each state.
+    border-color: transparent;
     transform: translateY(1px);
   }
 
   &:focus {
-    // Core paints a blue focus ring (box-shadow) on every .button /
-    // .button-primary via --wp-admin-theme-color. Attrium buttons have no
-    // focus ring — remove it.
+    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color):
+    // reset both (shadcn ring returns on :focus-visible) and force outline off so no square default ring paints.
+    border-color: transparent;
     @include primitives.focus-reset;
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    outline: none !important;
+    @include primitives.focus-ring;
   }
 }
 
-// ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
+// ---- Variants: shadcn's cva() variant map, as mixins ----
+// Resting fill is the token; only :hover mixes to 80% (`bg-*/80`); :focus keeps the fill (ring-only change).
 @mixin btn-primary {
-  @apply text-[var(--attrium-primary-button-foreground)]
-         border-[var(--attrium-border)];
-  background-color: var(--attrium-primary-button);
+  background-color: var(--attrium-primary);
+  color: var(--attrium-primary-foreground);
 
-  &:hover,
   &:focus {
-    // Hover lightens the fill (dedicated -hover token, clearly visible in both
-    // modes) instead of dimming via opacity — no translucency — and keeps the
-    // border (it never vanishes).
-    @apply text-[var(--attrium-primary-button-foreground)]
-           border-[var(--attrium-border)];
-    background-color: var(--attrium-primary-button-hover);
+    background-color: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
   }
 
-  &:focus,
-  &:active {
-    @apply inline-flex items-center justify-center
-           bg-[var(--attrium-primary-button)]
-           text-[var(--attrium-primary-button-foreground)]
-           rounded-[var(--attrium-radius-md)] text-sm;
+  &:hover {
+    border-color: transparent;
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-primary) 80%,
+      transparent
+    );
+    color: var(--attrium-primary-foreground);
   }
 }
 
 @mixin btn-secondary {
-  @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
-         border-[var(--attrium-border)];
+  background-color: var(--attrium-secondary);
+  color: var(--attrium-secondary-foreground);
 
-  &:hover,
   &:focus {
-    background-color: color-mix(in oklab, var(--attrium-secondary) 90%, white);
-    @apply text-[var(--attrium-secondary-foreground)]
-           border-[var(--attrium-border)];
+    background-color: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
   }
-
-  &:focus,
-  &:active {
-    @apply inline-flex items-center justify-center
-           bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
-           rounded-[var(--attrium-radius-md)] text-sm;
-  }
-}
-
-@mixin btn-outline {
-  @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)];
-
-  &:hover,
-  &:focus {
-    @apply bg-[var(--attrium-accent)];
-  }
-}
-
-// ---- Size modifier, independent of variant ----
-@mixin btn-size-lg {
-  @apply h-11 px-6 text-base;
 }
 
 // ---- Mapping: which native WP element gets which variant ----
-// Adding a new WP element to a variant later is a one-line addition here,
-// with no property duplication.
-// `:not()` matters: core's `submit_button()` emits `class="button button-primary"`,
-// so a bare `.button` here would also match primary buttons. Same specificity as
-// the `.button-primary` rule below means only *unset* properties leak — but
-// `btn-secondary` sets `border-color` and `btn-primary` does not, so primaries
-// would render with the secondary (light grey) border over the primary fill.
-// `.page-title-action` (the "Add New" header link on list screens) is demoted to
-// the secondary variant on purpose: every other control in that toolbar is a
-// secondary button, so a dark primary "Add New" reads as misaligned next to them.
+// `.button:not(.button-primary)` because `submit_button()` emits both (a bare `.button` would leak `btn-secondary`'s border over primaries); no size modifier — `.button-large` keeps h-8; `.page-title-action` is demoted to secondary to match the toolbar.
 .button:not(.button-primary):not(.page-title-action),
 .button-secondary,
 .page-title-action {
@@ -107,10 +92,26 @@
   }
 }
 
+// `.wrap .page-title-action:active` ((0,3,0)) beats the module base ((0,2,1)) and
+// re-applies core's raw box on press; re-assert the shape from `:active` ((0,3,1)), scoped so `.button-small` stays compact.
+body.attrium-mod-buttons .page-title-action:active {
+  @include btn-shape;
+}
+
 .button-primary {
   @include mixins.module('buttons') {
     @include btn-base;
     @include btn-primary;
+  }
+}
+
+// Core upsizes buttons to a 40px touch target at `@media (max-width:782px)`
+// (buttons.css), defeating h-8 parity; re-assert the module shape with a winning selector.
+@media screen and (max-width: 782px) {
+  body.attrium-mod-buttons.wp-core-ui .button,
+  body.attrium-mod-buttons.wp-core-ui .button-primary,
+  body.attrium-mod-buttons.wp-core-ui .button-secondary {
+    @apply h-8 min-h-8 px-2.5 mb-0;
   }
 }
 
@@ -123,12 +124,6 @@
   @include mixins.module('buttons') {
     @include btn-base;
     @include btn-secondary;
-  }
-}
-
-.button.button-large {
-  @include mixins.module('buttons') {
-    @include btn-size-lg;
   }
 }
 

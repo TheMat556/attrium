@@ -3,73 +3,150 @@
 @use '../tokens';
 @use '../ui/primitives';
 
-// Native <select> chevron from the Lucide map. It can't be a mask (that
-// would erase the select's text, and <select> grows no ::before) — so it's
-// a real background-image. A baked stroke can't inherit currentColor, so the
-// glyph swaps per mode (light default, dark under the carriers below), inked
-// with each mode's --attrium-foreground via icons.image().
-$select-chevron: icons.image('chevron-down', '--attrium-foreground');
-$select-chevron-dark: icons.image('chevron-down', '--attrium-foreground', dark);
+// Native <select> chevron from the Lucide map: a real background-image (a mask would
+// erase the text; <select> has no ::before), per-mode via icons.image('chevron-down', --attrium-muted-foreground) to match <SelectTrigger>.
+$select-chevron: icons.image('chevron-down', '--attrium-muted-foreground');
+$select-chevron-dark: icons.image(
+  'chevron-down',
+  '--attrium-muted-foreground',
+  dark
+);
 
+// Mirrors the shadcn-vue <SelectTrigger> cva (src/components/ui/select/SelectTrigger.vue):
+// h-8/rounded-lg, `border-input`, muted chevron, 3px focus-visible ring; dark swaps to `input/30` (hover `input/50`) under the carrier arms.
 @mixin select-base {
-  @apply rounded-[var(--attrium-radius-md)]
-         text-sm font-medium transition-colors duration-150
-         appearance-none h-9 min-h-9;
+  @apply rounded-[var(--attrium-radius-lg)]
+         text-sm transition-colors duration-150
+         appearance-none box-border h-8 min-h-8;
 
   background-image: $select-chevron;
   background-position: right 0.5rem center;
   background-size: 1rem;
   padding-right: 2rem;
+
+  &:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
 }
 
 @mixin select-outline {
-  @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)];
+  @apply bg-transparent border-[var(--attrium-input)]
+         text-[var(--attrium-foreground)];
 
-  &:hover,
-  &:focus {
-    // Core tints select text dark blue — unreadable on the dark accent.
-    // Re-pin foreground (ours (0,2,2) beats core's (0,2,1)).
-    background-color: var(--attrium-accent);
+  // shadcn SelectTrigger has no light-mode hover change; reset core's
+  // #1e1e1e hover border so the token border holds.
+  &:hover {
     color: var(--attrium-foreground);
   }
 
-  &:hover {
-    // The token border vanishes over the accent fill, so bump to the ring
-    // token (same hover treatment as nav-menus' bulk-select button).
+  &:focus {
+    // Core's blue focus border + box-shadow ring: reset both here; the
+    // shadcn-style ring is re-added on :focus-visible below.
+    border-color: var(--attrium-input);
+    @include primitives.focus-reset;
+  }
+
+  &:focus-visible {
     border-color: var(--attrium-ring);
+    @include primitives.focus-ring;
+  }
+
+  // Core darkens the active border; shadcn has no active style.
+  &:active {
+    border-color: var(--attrium-input);
+    @apply shadow-none;
+  }
+
+  // shadcn only dims a disabled trigger; keep the rest face instead of core's
+  // #f0f0f0 disabled box.
+  &:disabled {
+    color: var(--attrium-foreground);
+    border-color: var(--attrium-input);
+    background-color: transparent;
+    @apply shadow-none;
+  }
+
+  // shadcn `aria-invalid:border-destructive aria-invalid:ring-destructive/20`
+  // (dark `/40` under the carrier arms below).
+  @include primitives.field-invalid;
+}
+
+// Text fields reskinned by the input recipes below; one list keeps the base rule and
+// dark-carrier arms in lockstep. `datetime` is absent (obsolete type, no valid markup) — dead, verified against wp-env.
+$text-fields: (
+  'input[type="text"]',
+  'input[type="password"]',
+  'input[type="search"]',
+  'input[type="email"]',
+  'input[type="url"]',
+  'input[type="number"]',
+  'input[type="tel"]',
+  'input[type="date"]',
+  'input[type="datetime-local"]',
+  'input[type="month"]',
+  'input[type="time"]',
+  'input[type="week"]',
+  'textarea'
+);
+
+// Mirrors the shadcn-vue <Input> (src/components/ui/input/Input.vue): h-8/rounded-lg,
+// `border-input`, `px-2.5 py-1`, `text-base md:text-sm`, muted placeholder, 3px focus ring; textareas keep their multi-line box.
+@mixin input-base {
+  @apply rounded-[var(--attrium-radius-lg)]
+         text-base md:text-sm
+         px-2.5 py-1
+         transition-colors duration-150
+         outline-none box-border;
+
+  &:disabled {
+    @apply pointer-events-none cursor-not-allowed opacity-50;
   }
 
   &:focus {
-    // Core's blue focus border + box-shadow ring: Attrium keeps the token
-    // border and no ring — remove both.
-    border-color: var(--attrium-border);
+    // Core's blue focus border + box-shadow ring: reset it here; the
+    // shadcn-style ring is re-added on :focus-visible below.
     @include primitives.focus-reset;
   }
-}
 
-// Text inputs — shared base; no hover dimming (inputs aren't clickable).
-@mixin input-base {
-  @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
-         px-3 py-1.5
-         focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2
-         focus-visible:ring-[var(--attrium-ring)];
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    @include primitives.focus-ring;
+  }
+
+  // shadcn `aria-invalid:border-destructive aria-invalid:ring-destructive/20`
+  // (dark `/40` under the carrier arms below).
+  @include primitives.field-invalid;
 }
 
 @mixin input-outline {
-  @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)]
-         placeholder:text-[var(--attrium-foreground)] placeholder:opacity-40;
+  @apply bg-transparent border-[var(--attrium-input)] text-[var(--attrium-foreground)];
 }
 
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="url"],
-input[type="password"],
-input[type="number"],
-textarea {
+#{$text-fields} {
   @include mixins.module('forms') {
     @include input-base;
     @include input-outline;
+
+    // shadcn `disabled:bg-input/50` (dark `input/80` under the arms below).
+    &:disabled {
+      background-color: color-mix(
+        in oklab,
+        var(--attrium-input) 50%,
+        transparent
+      );
+    }
+  }
+}
+
+// Single-line sizing, inputs only: iterates $text-fields (can't drift from the base rule);
+// the `!=` keeps the impossible `textarea:not(textarea)` out of the build; all `!important`, so lower specificity changes no winners.
+@each $field in $text-fields {
+  @if $field != 'textarea' {
+    #{$field} {
+      @include mixins.module('forms') {
+        @apply h-8! min-h-8! px-2.5! py-1!;
+      }
+    }
   }
 }
 
@@ -77,6 +154,12 @@ select {
   @include mixins.module('forms') {
     @include select-base;
     @include select-outline;
+
+    // Core's `.wp-core-ui .tablenav select` / `.wp-admin .form-table select` out-specify the
+    // module base (and its ≤782px touch bump pins 40px/16px); force the shadcn h-8 box on `:not([multiple])` only.
+    &:not([multiple]) {
+      @apply h-8! min-h-8! pl-2.5! pr-8! text-sm!;
+    }
 
     // The opened dropdown paints from the options' own colors (core/UA white
     // bg + black text — unreadable on dark); tokenize so open matches closed.
@@ -88,15 +171,17 @@ select {
   }
 }
 
-// Dark chevron swap, one arm per light-DOM carrier. Carriers compose from
-// _tokens.scss ($dark-carrier-*) so the swap can't drift from the palette.
-// The module flag composes differently per carrier — ancestor of the host
-// arm (body > host > #wpcontent > select) but part of the customizer body's
-// own compound — which module() can't express, so both arms are written out.
-// A carrier added in _tokens.scss needs a matching arm here.
+// Dark select rest face + chevron swap, one arm per light-DOM carrier, composed from
+// _tokens.scss ($dark-carrier-*); module() can't express the two flag positions, so both arms are written out. `input/30` rest / `input/50` hover match `<SelectTrigger>`'s dark values; a new carrier needs a matching arm.
 body.attrium-mod-forms #{tokens.$dark-carrier-host} select,
 #{tokens.$dark-carrier-customizer}.attrium-mod-forms select {
   background-image: $select-chevron-dark;
+  background-color: color-mix(in oklab, var(--attrium-input) 30%, transparent);
+}
+
+body.attrium-mod-forms #{tokens.$dark-carrier-host} select:hover:not(:disabled),
+#{tokens.$dark-carrier-customizer}.attrium-mod-forms select:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--attrium-input) 50%, transparent);
 }
 
 // The media-modal carrier nests the body compound INSIDE, so its gate can't
@@ -106,6 +191,53 @@ html.attrium-dark
 body.attrium-mod-screens.attrium-mod-forms.upload-php
 .media-modal select {
   background-image: $select-chevron-dark;
+}
+
+html.attrium-dark
+body.attrium-mod-screens.attrium-mod-forms.upload-php
+.media-modal select:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--attrium-input) 50%, transparent);
+}
+
+// Dark text-field fill, per carrier (same set as the select arms above):
+// shadcn <Input>'s `dark:bg-input/30` rest and `dark:disabled:bg-input/80`.
+@each $field in $text-fields {
+  body.attrium-mod-forms #{tokens.$dark-carrier-host} #{$field},
+  #{tokens.$dark-carrier-customizer}.attrium-mod-forms #{$field},
+  html.attrium-dark
+    body.attrium-mod-screens.attrium-mod-forms.upload-php
+    .media-modal #{$field} {
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-input) 30%,
+      transparent
+    );
+  }
+
+  body.attrium-mod-forms #{tokens.$dark-carrier-host} #{$field}:disabled,
+  #{tokens.$dark-carrier-customizer}.attrium-mod-forms #{$field}:disabled,
+  html.attrium-dark
+    body.attrium-mod-screens.attrium-mod-forms.upload-php
+    .media-modal #{$field}:disabled {
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-input) 80%,
+      transparent
+    );
+  }
+}
+
+// Dark invalid ring (shadcn `aria-invalid:ring-destructive/40`), text fields
+// and selects together.
+body.attrium-mod-forms #{tokens.$dark-carrier-host}
+  :is(#{$text-fields}, select)[aria-invalid='true']:focus-visible,
+#{tokens.$dark-carrier-customizer}.attrium-mod-forms
+  :is(#{$text-fields}, select)[aria-invalid='true']:focus-visible,
+html.attrium-dark
+  body.attrium-mod-screens.attrium-mod-forms.upload-php
+  .media-modal
+  :is(#{$text-fields}, select)[aria-invalid='true']:focus-visible {
+  @include primitives.focus-ring(var(--attrium-destructive), 40%);
 }
 
 input[type="file"] {
