@@ -46,6 +46,34 @@
       box-shadow: none;
     }
 
+    // Hover belongs to the ROW. Core has no row hover at all — its only
+    // affordance is `list-tables.css`'s
+    // `.check-column label:hover { background: rgba(0,0,0,.05) }`, painted by
+    // the <label> core absolutely stretches over the whole check cell (and,
+    // on the plugins table, a core-blue `box-shadow` ring on the input). That
+    // is a one-cell patch, and rgba(0,0,0,.05) is invisible on the dark
+    // surface — so neutralize it and highlight the row instead, following
+    // shadcn's `hover:bg-*` on <TableRow> and primitives.accent-hover's token.
+    tr:hover > th,
+    tr:hover > td {
+      background-color: var(--attrium-accent);
+    }
+
+    .check-column label:hover,
+    .check-column input:hover + label {
+      background: none;
+    }
+
+    .check-column .label-covers-full-cell:hover + input:not(:disabled) {
+      box-shadow: none;
+    }
+
+    // Keep shadcn's focus ring visible while hovering: this block otherwise
+    // outranks modules/_checkbox.scss's :focus-visible rule.
+    .check-column .label-covers-full-cell:hover + input:not(:disabled):focus-visible {
+      @include primitives.focus-ring;
+    }
+
     thead th,
     thead td {
       @include th-base;
