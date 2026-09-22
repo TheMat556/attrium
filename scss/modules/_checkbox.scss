@@ -18,7 +18,17 @@ input[type='radio'] {
   }
 }
 
-// Radio stays a circle; core already gives the checkbox its square 4px radius.
+// Pin shadcn's corner rather than inherit core's: shadcn-vue's reka-nova
+// Checkbox (its root is a <button>) is `rounded-[4px]`, and core matches that
+// through WP 6.7 but tightened it to 2px in WP 7.1
+// (wp-admin/css/forms.css: `input[type=checkbox] { border-radius: 2px }`).
+input[type='checkbox'] {
+  @include mixins.module('checkbox') {
+    border-radius: 4px;
+  }
+}
+
+// Radio stays a circle; shadcn uses rounded-full.
 input[type='radio'] {
   @include mixins.module('checkbox') {
     border-radius: 9999px;
