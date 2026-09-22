@@ -184,9 +184,8 @@ body.attrium-mod-forms #{tokens.$dark-carrier-host} select:hover:not(:disabled),
   background-color: color-mix(in oklab, var(--attrium-input) 50%, transparent);
 }
 
-// The media-modal carrier nests the body compound INSIDE, so its gate can't
-// append to the variable — spelled out with both module flags. No <select>
-// lives in that modal today; the arm keeps future ones from drifting.
+// Media-modal carrier nests the body compound INSIDE, so both flags are
+// spelled out. No <select> there today; arm prevents future drift.
 html.attrium-dark
 body.attrium-mod-screens.attrium-mod-forms.upload-php
 .media-modal select {
@@ -242,15 +241,16 @@ html.attrium-dark
 
 input[type="file"] {
   @include mixins.module('forms') {
-    @apply rounded-[var(--attrium-radius-md)] text-sm font-medium
+    @apply rounded-[var(--attrium-radius-lg)] text-sm font-medium
            bg-transparent text-[var(--attrium-foreground)]
            py-1.5 px-1;
 
+    // The native "Choose file" button is a shadcn <Button> primary, not a
+    // one-off: reuse the shared recipe (primitives.btn-base/btn-primary).
     &::file-selector-button {
-      @apply rounded-[var(--attrium-radius-md)]
-             border border-transparent
-             bg-[var(--attrium-primary)] text-[var(--attrium-primary-foreground)]
-             h-9 min-h-9 px-3 cursor-pointer;
+      @include primitives.btn-base;
+      @include primitives.btn-primary;
+      @apply cursor-pointer;
       margin-inline-end: 0.75rem;
     }
   }

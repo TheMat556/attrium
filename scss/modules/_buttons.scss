@@ -1,107 +1,32 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Buttons module — WP admin reskin of the shadcn-vue <Button> cva (h-8/rounded-lg,
-// bg-*/80 fills, 3px focus-visible ring); `@apply` bodies read --attrium-* tokens (light/dark in _tokens.scss).
-
-// ---- Base: shared shape for every reskinned button, regardless of variant ----
-// Border is NOT here: :focus's ring owns `border-color`, so state re-asserts must not repaint it.
-@mixin btn-shape {
-  @apply inline-flex shrink-0 items-center justify-center gap-1.5
-         whitespace-nowrap select-none box-border
-         rounded-[var(--attrium-radius-lg)]
-         h-8 min-h-8 px-2.5 text-sm font-medium
-         duration-150 transition-all outline-none;
-}
-
-@mixin btn-base {
-  @apply border border-solid border-transparent bg-clip-padding;
-
-  @include btn-shape;
-
-  @apply [&_svg:not([class*=size-])]:size-4
-         [&_svg]:pointer-events-none [&_svg]:shrink-0;
-
-  &:disabled,
-  &.disabled {
-    @apply opacity-50 cursor-default pointer-events-none;
-  }
-
-  &:not(:disabled):not(.disabled):active {
-    // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
-    // repaint the border above the base; re-assert the transparent shadcn border on each state.
-    border-color: transparent;
-    transform: translateY(1px);
-  }
-
-  &:focus {
-    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color):
-    // reset both (shadcn ring returns on :focus-visible) and force outline off so no square default ring paints.
-    border-color: transparent;
-    @include primitives.focus-reset;
-    outline: none !important;
-  }
-
-  &:focus-visible {
-    border-color: var(--attrium-ring);
-    outline: none !important;
-    @include primitives.focus-ring;
-  }
-}
-
-// ---- Variants: shadcn's cva() variant map, as mixins ----
-// Resting fill is the token; only :hover mixes to 80% (`bg-*/80`); :focus keeps the fill (ring-only change).
-@mixin btn-primary {
-  background-color: var(--attrium-primary);
-  color: var(--attrium-primary-foreground);
-
-  &:focus {
-    background-color: var(--attrium-primary);
-    color: var(--attrium-primary-foreground);
-  }
-
-  &:hover {
-    border-color: transparent;
-    background-color: color-mix(
-      in oklab,
-      var(--attrium-primary) 80%,
-      transparent
-    );
-    color: var(--attrium-primary-foreground);
-  }
-}
-
-@mixin btn-secondary {
-  background-color: var(--attrium-secondary);
-  color: var(--attrium-secondary-foreground);
-
-  &:focus {
-    background-color: var(--attrium-secondary);
-    color: var(--attrium-secondary-foreground);
-  }
-}
+// Buttons module — maps native WP elements onto the shadcn <Button> recipe;
+// the shape/variant mixins live in ui/primitives.
 
 // ---- Mapping: which native WP element gets which variant ----
-// `.button:not(.button-primary)` because `submit_button()` emits both (a bare `.button` would leak `btn-secondary`'s border over primaries); no size modifier — `.button-large` keeps h-8; `.page-title-action` is demoted to secondary to match the toolbar.
+// `:not(.button-primary)` since `submit_button()` emits both (bare `.button`
+// would leak the secondary border onto primaries); `.page-title-action` →
+// secondary to match the toolbar.
 .button:not(.button-primary):not(.page-title-action),
 .button-secondary,
 .page-title-action {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-secondary;
+    @include primitives.btn-base;
+    @include primitives.btn-secondary;
   }
 }
 
 // `.wrap .page-title-action:active` ((0,3,0)) beats the module base ((0,2,1)) and
 // re-applies core's raw box on press; re-assert the shape from `:active` ((0,3,1)), scoped so `.button-small` stays compact.
 body.attrium-mod-buttons .page-title-action:active {
-  @include btn-shape;
+  @include primitives.btn-shape;
 }
 
 .button-primary {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-primary;
+    @include primitives.btn-base;
+    @include primitives.btn-primary;
   }
 }
 
@@ -115,38 +40,26 @@ body.attrium-mod-buttons .page-title-action:active {
   }
 }
 
-// wp-components primary button (e.g. the Font Library "Update" button). Scoped
-// to #font-library-wp-admin-app so we don't reskin every .components-button
-// across wp-admin (block editor, etc.), which keep their own design. Colors are
-// already remapped via scss/screens/_font-library.scss; this adds the Attrium
-// button shape (radius, height, focus ring) to match native WP buttons.
+// Font Library "Update" button: scoped to #font-library-wp-admin-app so we
+// don't reskin every .components-button (block editor etc.) which keep their own design.
 #font-library-wp-admin-app .components-button.is-primary {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-secondary;
+    @include primitives.btn-base;
+    @include primitives.btn-secondary;
   }
 }
 
-// Media-library grid "Menu" toggle (`.button.button-link.media-frame-menu-toggle`).
-// The buttons module matches it via `.button:not(.button-primary)...` (the rule
-// above, specificity (0,4,1)) and would force `display:inline-flex` at every
-// width — which overrides core's desktop hiding and un-hides a toggle core only
-// intends to show at ≤900px. Re-assert `display:none` with equal specificity,
-// later in the cascade, so it stays hidden on desktop. On mobile this still
-// loses to core's `@media (max-width:900px)` rule (`.wp-core-ui .media-frame:
-// not(.hide-menu) .button.media-frame-menu-toggle`, (0,5,0) > ours), so the
-// toggle is preserved where core actually uses it.
+// Media-library "Menu" toggle: our `.button:not(...)` rule ((0,4,1)) forces
+// display:inline-flex, un-hiding a toggle core only shows ≤900px. Re-assert
+// display:none at equal specificity, later in cascade; core's ≤900px rule
+// ((0,5,0)) still wins on mobile, preserving it where core uses it.
 body.attrium-mod-buttons.wp-core-ui .button.media-frame-menu-toggle {
   @apply hidden;
 }
 
-// Buttons WordPress has stowed with its `.hidden` utility (`common.css`:
-// `.hidden, … { display:none }`) must stay hidden. `btn-base` forces
-// `display:inline-flex`, whose higher specificity re-exposes them — e.g. the
-// media grid's `.button.load-more-jump.hidden` renders as a full visible button
-// on an empty library. `!important` beats the module rule and any inline style,
-// and we only match while the `.hidden` class is present, so removing it (the
-// way WP shows a control again) restores the button unchanged.
+// Buttons stowed with core's `.hidden` must stay hidden: `btn-base`'s
+// `display:inline-flex` re-exposes them (e.g. `.button.load-more-jump.hidden`).
+// `!important` beats the module rule; only matches while `.hidden` is present.
 body.attrium-mod-buttons .button.hidden,
 body.attrium-mod-buttons .button-primary.hidden,
 body.attrium-mod-buttons .button-secondary.hidden,

@@ -1,15 +1,7 @@
 @use '../mixins';
 
-// `:not(.hidden)` so we don't fight WordPress's global `.hidden { display:none }`
-// (wp-admin/css/common.css). Our `@apply flex` forces display:flex at higher
-// specificity and loads later, which would otherwise force empty placeholder
-// notices (e.g. plugins.php's `.notice.hidden`) visible.
-//
-// We also exclude `.hide-if-js`: WordPress uses that marker for elements that
-// should only show when JavaScript is OFF (core sets `.hide-if-js` to
-// `display:none` — and the `.js .wp-core-ui .hide-if-js` rule — once JS runs).
-// The media-library grid uses it for its noscript "requires JavaScript" banner,
-// so our `display:flex` must not re-expose it.
+// Exclude `.hidden` (common.css) + `.hide-if-js` noscript markers: our later,
+// higher-specificity `@apply flex` would otherwise re-expose core-hidden notices.
 .notice:not(.hidden):not(.hide-if-js) {
   @include mixins.module('notices') {
     // shadcn <Alert> box (`grid gap-0.5 rounded-lg border px-2.5 py-2 text-sm bg-card`);
@@ -75,10 +67,8 @@
   }
 }
 
-// Core zeroes the horizontal margin of notices below 782px (responsive.css:
-// `.notice, .wrap div.error, .wrap div.updated { margin: 20px 0 10px }`, plus
-// `.wrap { margin-right: 0 }`), so the card presses flush against the right
-// rail on small screens. Restore core's own desktop right margin here.
+// Core zeroes notices' horizontal margin below 782px (responsive.css), pressing
+// the card flush against the right rail — restore a margin here.
 @media (max-width: 782px) {
   .notice:not(.hidden):not(.hide-if-js) {
     @include mixins.module('notices') {

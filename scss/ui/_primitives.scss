@@ -1,10 +1,6 @@
-// Element-level UI recipes — pure style, included INSIDE a rule that already
-// carries its screen()/module() gate. These are safe to use anywhere.
-//
-// The two-tier convention (see _patterns.scss for the other tier):
-//   - primitives.* — element recipes: include inside a gated rule.
-//   - patterns.*   — composite recipes that emit their own top-level blocks:
-//     include at TOP LEVEL under screen-root(...), never screen(...).
+// Element-level UI recipes — pure style, included INSIDE a gated rule.
+// Two-tier: primitives.* = element recipes (include inside a gated rule);
+// patterns.* = composite recipes emitting own blocks (see _patterns.scss).
 
 // --- Private helpers ---------------------------------------------------------
 
@@ -46,11 +42,117 @@
   }
 }
 
+// --- Buttons -----------------------------------------------------------------
+// Owner of the shadcn <Button> cva recipe: consumed by modules/_buttons
+// (`.button`) and modules/_forms (`::file-selector-button`).
+
+// Border is NOT here: :focus's ring owns `border-color`; state re-asserts must not repaint it.
+@mixin btn-shape {
+  @apply inline-flex shrink-0 items-center justify-center gap-1.5
+         whitespace-nowrap select-none box-border
+         rounded-[var(--attrium-radius-lg)]
+         h-8 min-h-8 px-2.5 text-sm font-medium
+         duration-150 transition-all outline-none;
+}
+
+@mixin btn-base {
+  @apply border border-solid border-transparent bg-clip-padding;
+
+  @include btn-shape;
+
+  @apply [&_svg:not([class*=size-])]:size-4
+         [&_svg]:pointer-events-none [&_svg]:shrink-0;
+
+  // Core's state rules (`.button:hover/:focus/:active`) use the `background`
+  // SHORTHAND, which resets `background-clip` to `border-box`. The fill then
+  // paints under the 1px transparent border, so the button's fill grows ~2px
+  // and reads as a "border box". Re-assert padding-box in every state.
+  &:hover,
+  &:focus,
+  &:focus-visible,
+  &:active {
+    background-clip: padding-box;
+  }
+
+  &:disabled,
+  &.disabled {
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  &:not(:disabled):not(.disabled):active {
+    // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
+    // repaint the border above the base; re-assert the transparent shadcn border on each state.
+    border-color: transparent;
+    transform: translateY(1px);
+  }
+
+  &:focus {
+    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color):
+    // reset both (shadcn ring returns on :focus-visible) and force outline off so no square default ring paints.
+    border-color: transparent;
+    @include focus-reset;
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    outline: none !important;
+    @include focus-ring;
+  }
+}
+
+// ---- Variants: shadcn's cva() variant map, as mixins ----
+// Resting fill is the token; only :hover mixes to 80% (`bg-*/80`); :focus keeps the fill (ring-only change).
+@mixin btn-primary {
+  background-color: var(--attrium-primary);
+  color: var(--attrium-primary-foreground);
+
+  // shadcn's default variant is `bg-primary text-primary-foreground`: no fill
+  // change on hover. The cva scopes its `hover:bg-primary/80` to anchors, but
+  // the theme-card primaries ARE anchors (Customize, Live Preview, Install), so
+  // this keeps every primary solid. Re-assert the resting fill so core's blue
+  // hover can't repaint it either.
+  // `:focus` must NOT set border-color — that would beat btn-base's
+  // `:focus-visible` ring border at equal specificity and later source order.
+  &:focus {
+    background-color: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
+  }
+
+  &:hover {
+    border-color: transparent;
+    background-color: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
+  }
+}
+
+@mixin btn-secondary {
+  background-color: var(--attrium-secondary);
+  color: var(--attrium-secondary-foreground);
+
+  &:focus {
+    background-color: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
+  }
+
+  // Hover shifts the fill away from the page background so it is visible on a
+  // light card: darker in light mode, lighter in dark. The cva's
+  // `hover:bg-secondary/80` mixes with transparent, which only lightens — on a
+  // near-white card that is invisible.
+  &:hover {
+    border-color: transparent;
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-secondary) 92%,
+      var(--attrium-foreground)
+    );
+    color: var(--attrium-secondary-foreground);
+  }
+}
+
 // --- Primary link ------------------------------------------------------------
-// Token-colored link (no default blue), underline on hover/focus, and no
-// focus ring — the shared link treatment across the admin. Use wherever core
-// leaves an anchor its default blue; include at the top level of the element
-// rule (it emits its own `&:hover, &:focus` block).
+// Token-colored link (no blue), underline on hover/focus. Include at the top
+// level of the element rule — it emits its own `&:hover, &:focus` block.
 @mixin link-primary {
   @apply no-underline;
   color: var(--attrium-primary);
@@ -62,19 +164,16 @@
 }
 
 // --- Muted foreground text ----------------------------------------------------
-// Foreground token dimmed by opacity rather than a separate muted color
-// token. Parameterized because different contexts want slightly different
-// dimming (e.g. a card byline is lighter than an overlay's).
+// Foreground token dimmed by opacity (not a separate muted token); $opacity
+// varies per context.
 @mixin muted-text($opacity: 0.6) {
   color: var(--attrium-foreground);
   opacity: $opacity;
 }
 
 // --- Accent hover ---------------------------------------------------------------
-// Hover/focus wash for interactive icon surfaces (customizer back buttons,
-// theme source titles): token accent fill, token foreground, no focus shadow.
-// Include at the top level of the element rule — it emits its own
-// `&:hover, &:focus` block, so don't nest it inside another hover block.
+// Hover/focus accent wash for icon surfaces. Include at the top level of the
+// element rule (emits its own `&:hover, &:focus`) — don't nest inside a hover.
 @mixin accent-hover {
   &:hover,
   &:focus {
@@ -85,10 +184,10 @@
 }
 
 // --- Tabs (shadcn <TabsList>/<TabsTrigger>, default variant) ------------------
-// Muted `h-8 rounded-lg p-[3px]` track + `rounded-md` active card; each caller supplies its own dark arm.
+// Muted `h-8 rounded-lg p-[3px]` track + `rounded-md` active card; caller adds dark arm.
 @mixin tabs-track {
-  // `box-border` is load-bearing: `p-[3px]` must sit inside `h-8`, or the box grows
-  // to 38px and `h-[calc(100%-1px)]` resolves against 32px instead of 26px.
+  // `box-border` load-bearing: `p-[3px]` must sit inside `h-8`, else the box
+  // grows to 38px and `h-[calc(100%-1px)]` resolves against 32px not 26px.
   @apply box-border inline-flex h-8 w-fit items-center justify-center
          rounded-[var(--attrium-radius-lg)] p-[3px]
          bg-[var(--attrium-muted)]
@@ -112,8 +211,7 @@
 
   color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
 
-  // With the track wrapping on mobile there is no definite track height to take
-  // 100% of, so pin the trigger to its own 24px box.
+  // Track wraps on mobile → no definite height for 100%; pin to a 24px box.
   @media (max-width: 782px) {
     height: 1.5rem;
   }
@@ -151,7 +249,7 @@
 }
 
 // --- Form field ---------------------------------------------------------------
-// Legacy mirror of `_forms.scss` `<Input>` (h-8, rounded-lg, `border-input`); prefer `input-base`/`input-outline`.
+// Legacy mirror of `_forms.scss` `<Input>`; prefer `input-base`/`input-outline`.
 @mixin field-outline {
   @apply rounded-[var(--attrium-radius-lg)] text-sm border
          border-[var(--attrium-input)] bg-transparent
@@ -186,10 +284,8 @@
   );
 }
 
-// Elevated secondary surface — the same card recipe on the secondary token,
-// used for panels/rows that sit one step above the page card (filter-group
-// boxes, callouts, bulk-select pills). Mirrors card-surface; the caller adds
-// any per-site extras (overflow, color) after the call.
+// Card recipe on the secondary token — panels/rows one step above the page
+// card (filter-group boxes, callouts, bulk-select pills).
 @mixin secondary-surface {
   @include surface(
     var(--attrium-secondary),
@@ -201,8 +297,8 @@
 // --- Badge ---------------------------------------------------------------------
 // shadcn-vue <Badge> base (`h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`); variant fills opt-in at the call site.
 @mixin badge {
-  // `box-border`: the badge's own `px/py` + 1px border must sit inside the
-  // 20px box, or content-box inflates it to 26px (and the text sits high).
+  // `box-border`: px/py + 1px border must sit inside the 20px box, else
+  // content-box inflates it to 26px and the text sits high.
   @apply box-border inline-flex h-5 w-fit shrink-0 items-center justify-center
          gap-1 overflow-hidden whitespace-nowrap rounded-full border
          border-transparent px-2 py-0.5 text-xs font-medium
@@ -218,11 +314,8 @@
 }
 
 // --- Icon button -----------------------------------------------------------------
-// Compact 2rem square icon control (overlay nav strips, header close buttons):
-// token foreground, token hover fill, no border or focus ring. The caller
-// adds the glyph (mask on a pseudo-element) and any per-site extras
-// (positioning, disabled states). `$surface` is the resting fill — pass
-// `transparent` to blend into the strip until hovered.
+// Compact 2rem square icon control; caller adds the glyph. `$surface` is the
+// resting fill — pass `transparent` to blend into the strip until hovered.
 @mixin icon-button($surface: var(--attrium-primary-foreground)) {
   @apply inline-flex items-center justify-center size-8 border-0 rounded-lg;
   background: $surface;
@@ -289,8 +382,7 @@
 }
 
 // --- Borderless surface ----------------------------------------------------------
-// Transparent, borderless reset for React-hosted surfaces (boot-layout) that
-// carry their own card chrome. Element recipe — include inside a gated rule.
+// Transparent/borderless reset for React-hosted surfaces that carry their own chrome.
 @mixin borderless-surface($border-side: all) {
   @apply bg-transparent!;
 

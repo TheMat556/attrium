@@ -45,6 +45,13 @@
     }
   }
 
+  // Feature Filter gear: core paints the dashicon `:before` grey at rest, the
+  // WP blue on hover/focus, and white while the drawer is open. shadcn icons
+  // inherit the button's color, so pin it to currentColor in every state.
+  .wp-filter .drawer-toggle:before {
+    color: currentColor;
+  }
+
   // Dark: resting ink to `text-muted-foreground`, active face to `border-input
   // bg-input/30`, as on `.subsubsub`; `&` is the caller's screen-root gate.
   & #{tokens.$dark-carrier-host} {
@@ -92,27 +99,23 @@
     }
 
     .apply-filters.button {
-      background: var(--attrium-primary);
+      background-color: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
-      // shadcn's default <Button> keeps a transparent border.
-      @apply shadow-none;
+      // shadcn's default <Button> keeps a transparent border and clips its fill
+      // to the padding box (the `background` shorthand would reset that).
+      @apply shadow-none bg-clip-padding;
 
       &:hover,
       &:focus {
-        background: color-mix(
-          in oklab,
-          var(--attrium-primary) 80%,
-          transparent
-        );
+        // shadcn's default variant has no fill change on hover; keep the resting
+        // fill so the screen upgrade can't reintroduce the 80% wash.
+        background-color: var(--attrium-primary);
       }
     }
 
-    // The selected-filter count badge lives inside the primary Apply Filters
-    // button (theme.js writes tags.length into `.apply-filters span`), so it
-    // must use the button's own foreground token — `--attrium-foreground`
-    // is dark-on-dark in light mode / light-on-light in dark mode and reads
-    // as invisible on the primary fill. `--attrium-primary-foreground` is
-    // themed to contrast with `--attrium-primary` in both modes.
+    // The count badge lives inside the primary Apply Filters button, so it needs
+    // the button's own foreground token — `--attrium-foreground` is invisible on
+    // the primary fill in both modes.
     .apply-filters.button span {
       @apply opacity-85;
       color: var(--attrium-primary-foreground);

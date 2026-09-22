@@ -1,7 +1,7 @@
 @use '../mixins';
 
-// `.notification-dialog` (edit.css:565) — core's file-editor warning and filesystem-credentials
-// prompt — appears on several screens, so it's a module not per-screen. Matches <DialogContent> (`rounded-xl ring-1 ring-foreground/10 bg-popover`); the 10% ring is the token border (primitives.card-surface).
+// `.notification-dialog` (edit.css:565) appears on several screens, so it's a module
+// not per-screen. Matches <DialogContent>; the 10% ring is the token border.
 .notification-dialog {
   @include mixins.module('notification') {
     border: 1px solid var(--attrium-border);

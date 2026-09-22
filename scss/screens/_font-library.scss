@@ -2,30 +2,11 @@
 @use '../ui/primitives';
 @use '../ui/patterns';
 
-// Font Library (Appearance → Fonts, font-library.php). It is NOT in the native
-// override registry (src/views/overrides.ts), so it is embedded wp-admin content
-// slotted into the Attrium shell — the `screens` reskin module applies.
-// The app is a React/wpds (WordPress Design System) bundle. Its ENTIRE look is
-// driven by CSS variables (--wpds-color-*, --wp-components-color-*) injected as
-// runtime <style> on every [data-wpds-theme-provider-id] root. The component
-// class names themselves (dba930ea7a9438fd__root, _19ce0419607e1896__stack,
-// css-tni0ab, …) are CSS-module hashes that change per WP build, so targeting
-// them directly would be fragile.
-//
-// Instead we reskin by REMAPPING those variables onto Attrium's --attrium-*
-// tokens. Because every override below is a var() reference, light/dark parity
-// is automatic: the slotted content lives inside #attrium-host, so the token
-// redefinitions under #attrium-host.dark (in _tokens.scss) resolve here with no
-// separate dark block.
-//
-// Specificity: the app declares its variables on
-// `.dba930ea7a9438fd__root.dba930ea7a9438fd__root[data-wpds-theme-provider-id]`
-// = (0,3,0). Our `#font-library-wp-admin-app [data-wpds-theme-provider-id]`
-// = (1,1,0) — the id wins, so the override beats the app's own declarations
-// with no !important. Gated by the broad `screens` module flag so the whole
-// per-screen axis toggles together (ModuleRegistry.php).
-// Semantic colors (info/success/caution/warning/error) are intentionally left
-// to wpds defaults — they carry meaning we must not flatten to greyscale.
+// Font Library (font-library.php): embedded React/wpds bundle whose look is
+// driven by runtime CSS variables (class names are per-build hashes). Reskin by
+// REMAPPING those vars onto --attrium-* tokens (light/dark parity automatic via
+// the host). The `#font-library-wp-admin-app` id (1,1,0) beats the app's own
+// (0,3,0) declarations without !important. Semantic status colors stay wpds.
 
 #font-library-wp-admin-app {
   @include mixins.module('screens') {
@@ -105,13 +86,8 @@
       --wpds-color-background-interactive-neutral-weak-active: var(--attrium-muted) !important;
     }
 
-    // wpds paints both selected text and hover with its blue accent; we map
-    // inactive to muted grey, then selected/hover/focus to the theme-aware
-    // foreground (the id-based compound selector out-specifies wpds's
-    // `:hover`/`[data-focus-visible]` rules in the bundled CSS-module classes).
-    // wpds renders the label at font-weight 400 (the selected tab's span gets
-    // an inline 500); normalize all tabs to the medium 500 weight — inherited
-    // by the label span, matching the selected tab's inline style.
+    // Map wpds's blue tabs: inactive → muted grey, selected/hover/focus →
+    // foreground token; normalize all tabs to the medium weight.
     .font-library-page__tablist button[role="tab"] {
       color: var(--attrium-muted-foreground);
       @apply text-sm font-medium;
@@ -127,22 +103,16 @@
     }
 
     // ---- Body text size ----
-    // wpds defaults its Text component to 13px (--wpds-font-size-md); bump the
-    // tab-panel copy (font cards, the empty state, helper text) to the shell's
-    // 14px body size. `.components-navigator-screen` is the stable panel
-    // wrapper; `.components-text` is the stable Text BEM class (the other
-    // classes on the element are per-build Emotion hashes).
+    // wpds defaults Text to 13px; bump tab-panel copy to the shell's 14px.
+    // `.components-navigator-screen`/`.components-text` are the stable classes.
     p,
     .components-navigator-screen .components-text {
       @apply text-sm;
     }
 
     // ---- Active tab underline ----
-    // wpds draws the sliding underline as a `::before` on the aria TabList,
-    // positioned via the `--selected-*` CSS vars it sets at runtime and
-    // painted with the blue theme accent. Recolor it with the theme-aware
-    // primary token (near-black in light, near-white in dark) so the active
-    // tab never reads as blue in either mode.
+    // wpds draws the sliding underline as a `::before` in its blue accent;
+    // recolor to the primary token so the active tab never reads as blue.
     [role="tablist"]::before {
       border-bottom-color: var(--attrium-primary);
     }

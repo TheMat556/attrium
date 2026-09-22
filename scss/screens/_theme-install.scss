@@ -3,25 +3,20 @@
 @use '../ui/patterns';
 @use '../icons';
 
-// Theme installer (theme-install.php → body.theme-install-php): reskin the
-// `.wp-filter` toolbar (the Popular/Latest tabs, theme count, Feature Filter
-// button, and search field). Same idea as the media toolbar in _upload.scss —
-// core (wp-admin/css/common.css `.wp-filter`) hardcodes a #fff bg, #c3c4c7
-// border, and a drop shadow, all of which read as a bright band in dark mode.
-// Everything below is token-driven so light/dark parity is automatic.
+// Theme installer (theme-install.php): reskin the `.wp-filter` toolbar (tabs,
+// theme count, Feature Filter, search). Same idea as the media toolbar in
+// _upload.scss; core's #fff/#c3c4c7/shadow is a bright band in dark. Token-driven.
 
 
 // ---- Toolbar container + filter tabs ----
 // Shared verbatim with the plugin installer (see _plugin-install.scss).
-// screen-root (not screen): the ui mixins emit top-level blocks, and a
-// top-level `&` from screen() would compile to a `:scope` that matches
-// nothing.
+// screen-root (not screen): the ui mixins emit top-level blocks.
 @include mixins.screen-root('theme-install-php') {
   @include patterns.filter-toolbar;
 }
 
 // ---- Toolbar layout: flexbox ----
-// Core only flexes the sibling `.wp-filter`s; theme-install (inline-block + floats) becomes a `gap`/`p-3` flex row.
+// Core only flexes sibling `.wp-filter`s; theme-install becomes a gap/p-3 row.
 .wp-filter {
   @include mixins.screen('theme-install-php') {
     @apply flex flex-wrap items-center gap-3 p-3;
@@ -30,26 +25,26 @@
       @apply m-0;
     }
 
-    // `ml-auto` pins the form right while the toolbar fits one row; `my-0` drops core's
-    // `margin: 11px 0` (common.css below 1138px), which pushed the field off the toolbar controls.
+    // `ml-auto` pins the form right on one row; `my-0` drops core's margin that
+    // pushed the field off the toolbar controls below 1138px.
     .search-form {
       @apply ml-auto my-0;
 
-      // Below 1200px (same breakpoint as the tables search box) the form wraps; left at content
-      // width it shrinks to a sliver, so let it grow to fill its row and wrap when needed.
+      // Below 1200px (tables search-box breakpoint) let it grow and wrap instead
+      // of shrinking to a sliver at content width.
       @media (max-width: 1200px) {
         @apply ml-0 grow shrink basis-64;
       }
     }
 
-    // The tables module's search-box recipe (`mt-2 mb-3`, its `:not()` carrying an extra `p`)
-    // out-specifies a plain `m-0`, so the reset needs `!important`; the toolbar `gap` owns rhythm.
+    // The tables search-box recipe out-specifies a plain `m-0`, so `!important`;
+    // the toolbar `gap` owns rhythm.
     .search-form p.search-box {
       @apply m-0!;
     }
 
-    // The drawer + favorites form are `.wp-filter` children, so the flex row would inline
-    // them; force each to a full-width row (`basis-full`) and reset core's negative margins.
+    // Drawer + favorites form are `.wp-filter` children — force each to a
+    // full-width row and reset core's negative margins.
     .filter-drawer,
     .favorites-form {
       @apply basis-full m-0;
@@ -84,24 +79,11 @@
 }
 
 // ---- Theme Details full-screen overlay (`.wp-full-overlay`) ----
-// The installer's Details/Preview view is a full-screen overlay
-// (theme-install.php → `.theme-install-overlay.wp-full-overlay`), distinct from
-// the older `.theme-overlay` modal styled in _themes.scss. Core hardcodes a
-// #1d2327 backdrop, #f0f0f1 sidebar, and #fff content panel — all of which
-// read as bright/dark bands. Tokenize the whole surface so light/dark parity
-// is automatic. The overlay is theme-install-specific (themes.php uses the
-// `.theme-overlay` modal), hence the `theme-install-php` gate.
-
-// Covered by tests/visual/theme-install-overlay.spec.ts (opens the overlay via
-// a card click; the live-preview iframe is masked). KILLED there: the header
-// flex + nav icon-buttons + action-button margin, sidebar + sidebar-content
-// surfaces, install-info + theme-details text, footer + collapse chrome.
-// SURVIVED (removed): the backdrop background (sidebar + preview tile it, so
-// it never shows), header gap/margin-left/background, the sidebar's
-// border-right, and the `.wp-full-overlay-main` background (masked behind the
-// iframe). The nav-glyph masks were dead selectors — `.theme-install-overlay`
-// is the overlay container's class, so `.theme-install-overlay.close-full-overlay`
-// never matched the buttons.
+// The installer's Details/Preview view, distinct from the `.theme-overlay`
+// modal in _themes.scss (themes.php uses that one, hence the gate). Tokenize
+// core's #1d2327/#f0f0f1/#fff surface for light/dark parity.
+// Covered by tests/visual/theme-install-overlay.spec.ts (card click opens it,
+// live-preview iframe masked).
 .wp-full-overlay {
   @include mixins.screen('theme-install-php') {
     .wp-full-overlay-sidebar {
@@ -113,13 +95,8 @@
     .wp-full-overlay-header {
     @apply flex items-center gap-0.5 ml-4;
 
-      // Close / previous / next nav buttons. Core floats these left at full
-      // 45px height; reset that so they sit flush in the flex header.
-      // icon-button also drops core's 1px divider between the nav buttons
-      // (themes.css `.theme-install-overlay .close-full-overlay …
-      // border-right`) and shrinks core's 45px-wide boxes: the buttons are
-      // icon-only now, so the dead space read as a large gap between the
-      // icons.
+      // Close / prev / next nav. Reset core's floated 45px boxes so they sit
+      // flush; icon-button also drops the 1px divider and the dead-space gap.
       .close-full-overlay,
       .previous-theme,
       .next-theme {
@@ -145,8 +122,7 @@
         @apply block;
       }
 
-      // The action button (Install / Activate) — reset core's float, push it
-      // to the right edge of the header with a little breathing room from it.
+      // Action button (Install / Activate) — reset core's float, push it right.
       .button {
         @apply mt-0 mr-2 mb-0 ml-auto;
       }
@@ -166,17 +142,10 @@
         color: var(--attrium-muted-foreground);
       }
 
-      // The overlay's screenshot is a distinct element from the card's
-      // `.theme` screenshot (styled in _themes.scss). Core's 1px #c3c4c7
-      // border is already killed by the shared theme-cards `.theme-screenshot
-      // { border-0 }` rule, and no radius is needed: the preview image is
-      // letterboxed, so the corners are the sidebar surface either way. Only
-      // the background needs overriding here — see below.
+      // The theme-cards `.theme-screenshot { border-0 }` already kills core's
+      // border and also applies here; only the background needs overriding — the
+      // overlay screenshot is the image surface, so a fill paints a band behind it.
       .theme-screenshot {
-        // Override the theme-cards mixin in _themes.scss which sets
-        // `background: var(--attrium-secondary)` and also applies on
-        // theme-install-php — the overlay screenshot is the image surface, a
-        // fill paints an unwanted band behind it.
         @apply bg-transparent;
       }
     }
@@ -211,17 +180,13 @@
         }
       }
 
-      // Core gives the arrow span a 20px circle (border-radius: 50% + hidden
-      // overflow) and paints a #f0f0f1 dashicons glyph on its `:before`. The
-      // Lucide chevron is painted on an ::after overlay (same pattern as the
-      // checkbox checkmark in modules/_checkbox.scss): core's `:before` glyph
-      // is explicitly hidden, and the helper's `background` shorthand strips
-      // the HiDPI arrow sprite core paints on the span itself.
+      // Paint the Lucide chevron on an ::after overlay (same pattern as the
+      // checkbox checkmark): hide core's dashicons `:before` glyph and strip its
+      // HiDPI arrow sprite.
       button.collapse-sidebar > span.collapse-sidebar-arrow {
         @apply relative size-4 m-0 rounded-none overflow-visible;
 
-        // Strip core's HiDPI arrows sprite (themes.css paints
-        // `background-image: url(arrows-2x.png)` on this span at 120dpi).
+        // Strip core's HiDPI arrows sprite (painted on this span at 120dpi).
         background: none;
 
         &::before {

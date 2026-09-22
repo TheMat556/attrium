@@ -2,8 +2,8 @@
 @use '../tokens' as tokens;
 @use '../ui/primitives';
 
-// Tabs module — WP's `.subsubsub` filter strip reskinned to the shadcn-vue <TabsList>/<TabsTrigger> cva
-// (src/components/ui/tabs), recipe in primitives.tabs-* so every tab bar matches. Core renders `li > a` with ` | ` text nodes inside; `li { display: contents }` lifts anchors into the flex track and zeroed font-size/transparent colour collapse the separators.
+// WP's `.subsubsub` filter strip reskinned to shadcn <TabsList>/<TabsTrigger> (recipe in
+// primitives.tabs-*); `li { display: contents }` + zeroed font/transparent hide core's ` | `.
 .subsubsub {
   @include mixins.module('tabs') {
     @include primitives.tabs-track;
@@ -12,8 +12,8 @@
     @apply mb-3;
 
     li {
-      // `contents` drops the `li` box so its `<a>` becomes a flex item of the track
-      // (percentage heights resolve against it, as in shadcn); 0 font-size + transparent colour hide core's ` | ` text.
+      // `contents` drops the `li` box so its `<a>` is a flex item of the track;
+      // 0 font-size + transparent hide core's ` | ` text.
       display: contents;
       color: transparent;
       font-size: 0;
@@ -37,8 +37,8 @@
   }
 }
 
-// Dark: resting ink → `text-muted-foreground` (light `text-foreground/60`) and active face
-// `bg-background shadow-sm` → `border-input bg-input/30`; the track fill needs no arm (`--attrium-muted` is carrier-swapped).
+// Dark: resting ink → `text-muted-foreground`, active face → `border-input bg-input/30`;
+// the track fill needs no arm (`--attrium-muted` is carrier-swapped).
 body.attrium-mod-tabs #{tokens.$dark-carrier-host} .subsubsub a {
 
   &:hover {

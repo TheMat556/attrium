@@ -1,8 +1,8 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Table module — `.widefat` list tables match the shadcn-vue <Table> (src/components/ui/table, reka-nova):
-// normal-case `h-10 px-2 font-medium` header, `p-2` cells, one `border-b` per row, `bg-muted/50` hover; `.widefat`'s border+radius stand in for the <Card>. Shared cell recipe factors only geometry; cells deliberately wrap (not `whitespace-nowrap`) for WP descriptions.
+// `.widefat` list tables match shadcn-vue <Table>; `.widefat` border+radius stand
+// in for the <Card>. Cells deliberately wrap (not `whitespace-nowrap`) for WP descriptions.
 
 @mixin cell-base {
   @apply box-border border-b border-[var(--attrium-border)];
@@ -17,7 +17,6 @@
          text-[var(--attrium-foreground)];
 }
 
-// shadcn <TableCell>: `p-2 align-middle`.
 @mixin td-base {
   @include cell-base;
   @apply p-2 align-middle text-sm
@@ -69,8 +68,8 @@
     }
 
     .check-column {
-      // Core pushes the checkbox with `margin: 0 0 0 8px` + `vertical-align: text-top`,
-      // off-centring it (16px left / 8px right); zero the margin and align-middle so header and row boxes are dead-centre in the 40px column.
+      // Core off-centres the checkbox (`margin: 0 0 0 8px` + `vertical-align: text-top`);
+      // zero the margin + align-middle to centre it in the 40px column.
       @apply w-10 px-2 text-center;
 
       input[type='checkbox'] {
@@ -78,8 +77,8 @@
       }
     }
 
-    // Mobile: core turns rows flex and blockifies the header cell, so `vertical-align`
-    // stops centring the (now 25px) checkbox at the top of the 40px cell — centre it as a flex box.
+    // Mobile: core flexes rows + blockifies the header cell, breaking `vertical-align`
+    // centring — centre the checkbox as a flex box.
     @media (max-width: 782px) {
       thead .check-column {
         @apply flex items-center justify-center;
@@ -140,9 +139,8 @@
     .sorting-indicators {
       @apply inline-flex flex-col ml-1;
 
-      // Core draws the arrows as dashicons glyphs via `::before` content
-      // (list-tables.css). Drop the glyph and redraw each arrow as a CSS
-      // triangle so it picks up the foreground token in both modes.
+      // Core draws sort arrows as dashicons glyphs (list-tables.css); drop the glyph
+      // and redraw as a CSS triangle so it picks up the foreground token in both modes.
       .sorting-indicator::before {
         content: none !important;
       }
@@ -177,8 +175,8 @@
       @apply inline-flex items-center gap-1;
     }
 
-    // Comment-count bubble → shadcn <Badge> (base `secondary`, pending `destructive`); drop core's
-    // bubble "tail", let the inner count inherit the badge ink (core paints it blue), and keep `no-pending` hidden against our badge `display`.
+    // Comment-count bubble → shadcn <Badge>; drop core's bubble "tail" and let the inner
+    // count inherit the badge ink (core paints it blue).
     .post-com-count {
       @include primitives.badge;
 
@@ -188,8 +186,8 @@
         content: none;
       }
 
-      // Core paints the inner count as its own 2em grey box (`border-radius: 5px`) on
-      // `.comment-count-approved`/`-no-comments` (and bare `.comment-count` on pending); strip to plain text so the Badge is the only pill.
+      // Core paints the inner count as its own 2em grey box; strip to plain text
+      // so the Badge is the only pill.
       [class*='comment-count'] {
         @apply m-0 inline-flex h-auto min-w-0 items-center justify-center
                rounded-none border-0 bg-transparent p-0 text-xs;
@@ -213,12 +211,8 @@
   }
 }
 
-// The plugins list (.widefat.plugins) ships a dedicated core style block
-// (wp-admin/css/list-tables.css) that overrides the generic .widefat rules
-// with higher specificity: `.plugins tr { background:#fff }` repaints the
-// header, and `.plugins .active/.inactive td/th { box-shadow: inset 0 -1px 0 }`
-// draws a second faux bottom-border over our clean border-b. Neutralize those
-// here so the plugins table matches every other table.
+// `.widefat.plugins` has a dedicated higher-specificity core block (list-tables.css):
+// repaints the header bg and draws a faux inset bottom-border. Neutralize both here.
 .widefat.plugins {
   @include mixins.module('tables') {
     // Row cells: drop core's inset box-shadow "border" and active-row tint;
@@ -240,9 +234,8 @@
       color: var(--attrium-foreground);
     }
 
-    // When a plugin row is followed by an update notification row
-    // (.plugin-update-tr), remove the bottom border from the plugin row's cells
-    // so the two rows blend together without a horizontal divider.
+    // Plugin row followed by an update-notification row (.plugin-update-tr): drop its
+    // bottom border so the two rows blend without a divider.
     tr:has(+ tr.plugin-update-tr) th,
     tr:has(+ tr.plugin-update-tr) td {
       @apply border-b-0;
@@ -250,16 +243,16 @@
   }
 }
 
-// The list-table search box (posts, plugins, users, …) — NOT the media library list-mode bar:
-// that renders inside `.wp-filter > .filter-items` (a filter toolbar, recipe in scss/screens/_upload.scss) and is excluded by the `.filter-items` child; theme-install uses `.filter-links` and keeps this recipe.
+// List-table search box — NOT the media list-mode bar (`.wp-filter > .filter-items`,
+// recipe in scss/screens/_upload.scss), excluded here by the `.filter-items` child.
 p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
   @include mixins.module('tables') {
-    // Two separate controls: a real `gap` (core's `column-gap` is 0.5rem) with each keeping
-    // full rounding — no joined corners. `mt-2` matches the tabs' top margin to share a line; `mb-3` is the 12px list-table rhythm.
+    // Two separate controls with a real `gap` (full rounding, no joined corners).
+    // `mt-2` shares the tabs' line; `mb-3` is the 12px list-table rhythm.
     @apply mt-2 mb-3 inline-flex flex-nowrap items-center gap-2;
 
-    // Core upsizes the field to 40px and adds `margin-bottom: 10px` below 783px (box measured 42px),
-    // plus a 10px submit margin — pin all back to the 32px row. `min-w-0` lets the field shrink instead of wrapping the submit.
+    // Core upsizes the field (40px + margins below 783px); pin back to the 32px row.
+    // `min-w-0` lets the field shrink instead of wrapping the submit.
     input[type="search"] {
       @apply m-0 h-8 min-h-8 w-32 min-w-0 text-xs;
     }
@@ -268,8 +261,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
       @apply m-0 shrink-0;
     }
 
-    // Below 1200px the tablenav can't fit a floated search box, so it drops onto its own
-    // full-width row above the table — the tabs' `mb-3` supplies the gap above, the box's own `mb-3` the gap below.
+    // Below 1200px the search box drops to its own full-width row above the table;
+    // tabs' `mb-3` gaps above, the box's `mb-3` below.
     @media (max-width: 1200px) {
       @apply float-none mt-0 mb-3 w-full;
 
@@ -278,8 +271,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
       }
     }
 
-    // On phones the submit keeps its full label text (long in some locales), squeezing the field
-    // to a sliver in the nowrap row — let the submit drop onto its own line so the field stays usable. 782px is core's admin mobile breakpoint.
+    // On phones the submit label squeezes the field to a sliver; let it wrap so the
+    // field stays usable. 782px is core's admin mobile breakpoint.
     @media (max-width: 782px) {
       @apply flex-wrap;
 
@@ -292,8 +285,7 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
 
 .tablenav.top {
   @include mixins.module('tables') {
-    // One 12px rhythm for the header: core adds a 6px top (20px below 783px) and 4px bottom
-    // margin that fought the tabs' own spacing.
+    // One 12px header rhythm; core's own 6px/4px margins fought the tabs' spacing.
     @apply flex flex-wrap items-center justify-between gap-2 h-auto mt-0 mb-3;
 
     .alignleft {
@@ -301,8 +293,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
     }
 
     .actions {
-      // Wrap the bulk-action / filter controls on narrow screens so the row (selects + apply)
-      // never pushes past the card; `max-w-full` caps the group and the selects shrink against it.
+      // Wrap bulk-action/filter controls on narrow screens so the row never pushes past
+      // the card; `max-w-full` caps the group and the selects shrink against it.
       @apply flex max-w-full flex-wrap items-center gap-2;
       float: none;
       padding: 0;
@@ -313,8 +305,8 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
     }
 
     .tablenav-pages {
-      // `mb-0` matters on mobile: core sets `margin-bottom: 25px` on pagination, and a single-page
-      // screen leaves the block EMPTY but still reserves that 25px — a phantom gap; the flex row owns spacing.
+      // `mb-0` matters on mobile: core's 25px pagination margin leaves a phantom gap on
+      // single-page screens (empty block); the flex row owns spacing.
       @apply flex items-center gap-1 ml-auto float-none mb-0;
     }
 
