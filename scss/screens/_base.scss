@@ -1,20 +1,37 @@
 @use '../mixins';
 
-// General base for the per-screen axis: styling shared by EVERY admin screen,
-// independent of post type or hook. Gated by the broad `attrium-mod-screens`
-// flag via module('screens') — no specific WP body class. Per-screen overrides
-// live in their own files (e.g. _pages.scss) and use the screen('<class>')
-// mixin, which also requires this same flag so the whole axis toggles together.
-// Example (uncomment / extend as shared screen rules are added):
-// .tablenav {
-//   @include mixins.module('screens') {
-//     @apply ...;
-//   }
-// }
+// Per-screen base: rules shared by EVERY admin screen, gated by the broad
+// `attrium-mod-screens` flag. Per-screen overrides use the screen('<class>') mixin.
+
+// Mobile sidebar drawer (<Sheet>) sets inline `overflow:hidden` on <body>,
+// making it a clipping scroll container that blends the card's rounded corners
+// against the light body canvas (white wedge in dark mode). Shell body never
+// scrolls, so force it visible; author !important beats the inline style.
+@include mixins.module-root('screens') {
+  @apply overflow-visible!;
+}
 
 h1, h2, h3 {
   @include mixins.module('screens') {
     @apply font-semibold;
+  }
+}
+
+// Horizontal rules → shadcn <Separator> (`bg-border h-px w-full`).
+hr {
+  @include mixins.module('screens') {
+    @apply h-px w-full border-0 bg-[var(--attrium-border)];
+  }
+}
+
+// Avatars → shadcn <Avatar> (src/components/ui/avatar): circular, 1px `--attrium-border` ring
+// (box-shadow, so core's fixed avatar dimensions aren't grown) over a muted fallback.
+img.avatar,
+.avatar {
+  @include mixins.module('screens') {
+    @apply rounded-full bg-[var(--attrium-muted)];
+
+    box-shadow: 0 0 0 1px var(--attrium-border);
   }
 }
 
@@ -36,9 +53,7 @@ p {
   }
 }
 
-// Screen Options + Help panel (`#screen-meta`, incl. `#screen-meta-links`
-// hiding) lives in scss/modules/_screen-meta.scss under its own 'screen-meta'
-// module gate — not here, this file is the broad per-screen base only.
+// Screen Options + Help panel lives in modules/_screen-meta.scss (own gate).
 
 @media screen and (max-width: 600px) {
   #wpbody {

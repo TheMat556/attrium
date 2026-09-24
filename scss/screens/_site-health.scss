@@ -60,8 +60,10 @@
         background: var(--attrium-primary-foreground);
       }
 
+      // shadcn <Badge> shape; the tint variants below are the Site Health
+      // status palette laid over the shared base.
       .badge {
-        @apply text-xs font-medium px-2 py-0.5 rounded-full;
+        @include primitives.badge;
       }
 
       .badge.blue {

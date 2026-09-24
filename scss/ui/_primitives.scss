@@ -1,10 +1,6 @@
-// Element-level UI recipes — pure style, included INSIDE a rule that already
-// carries its screen()/module() gate. These are safe to use anywhere.
-//
-// The two-tier convention (see _patterns.scss for the other tier):
-//   - primitives.* — element recipes: include inside a gated rule.
-//   - patterns.*   — composite recipes that emit their own top-level blocks:
-//     include at TOP LEVEL under screen-root(...), never screen(...).
+// Element-level UI recipes — pure style, included INSIDE a gated rule.
+// Two-tier: primitives.* = element recipes (include inside a gated rule);
+// patterns.* = composite recipes emitting own blocks (see _patterns.scss).
 
 // --- Private helpers ---------------------------------------------------------
 
@@ -24,11 +20,139 @@
   @apply shadow-none outline-none;
 }
 
+// --- Focus ring --------------------------------------------------------------
+// shadcn's 3px `focus-visible` ring. `$color` is the ring token by default, or a
+// status token (e.g. destructive for invalid fields); `$percent` is its alpha.
+@mixin focus-ring($color: var(--attrium-ring), $percent: 50%) {
+  box-shadow: 0 0 0 3px
+    color-mix(in oklab, #{$color} #{$percent}, transparent);
+}
+
+// --- Invalid field -----------------------------------------------------------
+// shadcn `aria-invalid:border-destructive aria-invalid:ring-destructive/20`
+// (dark `/40` under the per-carrier arms). Shared by text fields and selects.
+@mixin field-invalid($ring: 20%) {
+  &[aria-invalid='true'] {
+    border-color: var(--attrium-destructive);
+  }
+
+  &[aria-invalid='true']:focus-visible {
+    border-color: var(--attrium-destructive);
+    @include focus-ring(var(--attrium-destructive), $ring);
+  }
+}
+
+// --- Buttons -----------------------------------------------------------------
+// Owner of the shadcn <Button> cva recipe: consumed by modules/_buttons
+// (`.button`) and modules/_forms (`::file-selector-button`).
+
+// Border is NOT here: :focus's ring owns `border-color`; state re-asserts must not repaint it.
+@mixin btn-shape {
+  @apply inline-flex shrink-0 items-center justify-center gap-1.5
+         whitespace-nowrap select-none box-border
+         rounded-[var(--attrium-radius-lg)]
+         h-8 min-h-8 px-2.5 text-sm font-medium
+         duration-150 transition-all outline-none;
+}
+
+@mixin btn-base {
+  @apply border border-solid border-transparent bg-clip-padding;
+
+  @include btn-shape;
+
+  @apply [&_svg:not([class*=size-])]:size-4
+         [&_svg]:pointer-events-none [&_svg]:shrink-0;
+
+  // Core's state rules (`.button:hover/:focus/:active`) use the `background`
+  // SHORTHAND, which resets `background-clip` to `border-box`. The fill then
+  // paints under the 1px transparent border, so the button's fill grows ~2px
+  // and reads as a "border box". Re-assert padding-box in every state.
+  &:hover,
+  &:focus,
+  &:focus-visible,
+  &:active {
+    background-clip: padding-box;
+  }
+
+  &:disabled,
+  &.disabled {
+    @apply opacity-50 cursor-default pointer-events-none;
+  }
+
+  &:not(:disabled):not(.disabled):active {
+    // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
+    // repaint the border above the base; re-assert the transparent shadcn border on each state.
+    border-color: transparent;
+    transform: translateY(1px);
+  }
+
+  &:focus {
+    // Core paints a blue focus ring + border (box-shadow / --wp-admin-theme-color):
+    // reset both (shadcn ring returns on :focus-visible) and force outline off so no square default ring paints.
+    border-color: transparent;
+    @include focus-reset;
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    outline: none !important;
+    @include focus-ring;
+  }
+}
+
+// ---- Variants: shadcn's cva() variant map, as mixins ----
+// Resting fill is the token; only :hover mixes to 80% (`bg-*/80`); :focus keeps the fill (ring-only change).
+@mixin btn-primary {
+  background-color: var(--attrium-primary);
+  color: var(--attrium-primary-foreground);
+
+  // shadcn's default variant is `bg-primary text-primary-foreground`: no fill
+  // change on hover. The cva scopes its `hover:bg-primary/80` to anchors, but
+  // the theme-card primaries ARE anchors (Customize, Live Preview, Install), so
+  // this keeps every primary solid. Re-assert the resting fill so core's blue
+  // hover can't repaint it either.
+  // `:focus` must NOT set border-color — that would beat btn-base's
+  // `:focus-visible` ring border at equal specificity and later source order.
+  &:focus {
+    background-color: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
+  }
+
+  &:hover {
+    border-color: transparent;
+    background-color: var(--attrium-primary);
+    color: var(--attrium-primary-foreground);
+  }
+}
+
+@mixin btn-secondary {
+  background-color: var(--attrium-secondary);
+  color: var(--attrium-secondary-foreground);
+
+  &:focus {
+    background-color: var(--attrium-secondary);
+    color: var(--attrium-secondary-foreground);
+  }
+
+  // Hover shifts the fill away from the page background so it is visible on a
+  // light card: darker in light mode, lighter in dark. The cva's
+  // `hover:bg-secondary/80` mixes with transparent, which only lightens — on a
+  // near-white card that is invisible.
+  &:hover {
+    border-color: transparent;
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-secondary) 92%,
+      var(--attrium-foreground)
+    );
+    color: var(--attrium-secondary-foreground);
+  }
+}
+
 // --- Primary link ------------------------------------------------------------
-// Token-colored link (no default blue), underline on hover/focus, and no
-// focus ring — the shared link treatment across the admin. Use wherever core
-// leaves an anchor its default blue; include at the top level of the element
-// rule (it emits its own `&:hover, &:focus` block).
+// Token-colored link (no blue), underline on hover/focus. Include at the top
+// level of the element rule — it emits its own `&:hover, &:focus` block.
 @mixin link-primary {
   @apply no-underline;
   color: var(--attrium-primary);
@@ -40,19 +164,16 @@
 }
 
 // --- Muted foreground text ----------------------------------------------------
-// Foreground token dimmed by opacity rather than a separate muted color
-// token. Parameterized because different contexts want slightly different
-// dimming (e.g. a card byline is lighter than an overlay's).
+// Foreground token dimmed by opacity (not a separate muted token); $opacity
+// varies per context.
 @mixin muted-text($opacity: 0.6) {
   color: var(--attrium-foreground);
   opacity: $opacity;
 }
 
 // --- Accent hover ---------------------------------------------------------------
-// Hover/focus wash for interactive icon surfaces (customizer back buttons,
-// theme source titles): token accent fill, token foreground, no focus shadow.
-// Include at the top level of the element rule — it emits its own
-// `&:hover, &:focus` block, so don't nest it inside another hover block.
+// Hover/focus accent wash for icon surfaces. Include at the top level of the
+// element rule (emits its own `&:hover, &:focus`) — don't nest inside a hover.
 @mixin accent-hover {
   &:hover,
   &:focus {
@@ -62,41 +183,64 @@
   }
 }
 
-// --- Segmented pill control ----------------------------------------------------
-
-@mixin pill-track {
-  @apply inline-flex w-fit items-center justify-center
-         rounded-lg p-[3px] border-0
-         bg-[var(--attrium-secondary)]
-         text-[var(--attrium-secondary-foreground)];
-}
-
-@mixin pill-segment {
-  @apply inline-flex items-center justify-center
-         rounded-md px-3 py-1.5 text-sm font-medium
-         no-underline transition-all border-0 bg-transparent
+// --- Tabs (shadcn <TabsList>/<TabsTrigger>, default variant) ------------------
+// Muted `h-8 rounded-lg p-[3px]` track + `rounded-md` active card; caller adds dark arm.
+@mixin tabs-track {
+  // `box-border` load-bearing: `p-[3px]` must sit inside `h-8`, else the box
+  // grows to 38px and `h-[calc(100%-1px)]` resolves against 32px not 26px.
+  @apply box-border inline-flex h-8 w-fit items-center justify-center
+         rounded-[var(--attrium-radius-lg)] p-[3px]
+         bg-[var(--attrium-muted)]
          text-[var(--attrium-muted-foreground)];
 
-  &:hover,
-  &:focus {
-    @apply bg-transparent text-[var(--attrium-foreground)];
+  // Mobile: the track can't stay one `w-fit` line or the segments overflow the
+  // card, so let it wrap to as many rows as needed.
+  @media (max-width: 782px) {
+    height: auto;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@mixin tabs-trigger {
+  @apply relative box-border inline-flex h-[calc(100%-1px)] shrink-0
+         items-center justify-center gap-1.5 whitespace-nowrap no-underline
+         rounded-[calc(var(--attrium-radius-lg)-2px)]
+         border border-transparent px-1.5 py-0.5 text-sm font-medium
+         transition-all outline-none;
+
+  color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+  // Track wraps on mobile → no definite height for 100%; pin to a 24px box.
+  @media (max-width: 782px) {
+    height: 1.5rem;
+  }
+
+  &:hover {
+    color: var(--attrium-foreground);
   }
 
   &:focus {
     @apply shadow-none outline-none;
   }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    outline: 1px solid var(--attrium-ring);
+    @include focus-ring;
+  }
 }
 
-@mixin pill-segment-active {
-  @apply shadow-sm
-         bg-[var(--attrium-primary)]
-         text-[var(--attrium-primary-foreground)];
+@mixin tabs-trigger-active {
+  @apply shadow-sm;
+  background-color: var(--attrium-surface);
+  color: var(--attrium-foreground);
 }
 
 // --- CodeMirror editor --------------------------------------------------------
 
 @mixin codemirror-editor {
-  @apply rounded-lg border bg-[var(--attrium-background)]
+  @apply max-w-full rounded-lg border bg-[var(--attrium-background)]
          text-[var(--attrium-foreground)];
 
   .CodeMirror-lines {
@@ -105,14 +249,22 @@
 }
 
 // --- Form field ---------------------------------------------------------------
-
+// Legacy mirror of `_forms.scss` `<Input>`; prefer `input-base`/`input-outline`.
 @mixin field-outline {
-  @apply rounded-[var(--attrium-radius-md)] text-sm border
-         border-[var(--attrium-border)] bg-transparent
-         text-[var(--attrium-foreground)] h-9
-         transition-colors duration-150
-         focus-visible:outline-none focus-visible:ring-2
-         focus-visible:ring-offset-2 focus-visible:ring-[var(--attrium-ring)];
+  @apply rounded-[var(--attrium-radius-lg)] text-sm border
+         border-[var(--attrium-input)] bg-transparent
+         text-[var(--attrium-foreground)] h-8 min-h-8
+         px-2.5 py-1 box-border outline-none
+         transition-colors duration-150;
+
+  &:focus {
+    @apply shadow-none outline-none;
+  }
+
+  &:focus-visible {
+    border-color: var(--attrium-ring);
+    @include focus-ring;
+  }
 }
 
 // --- Surfaces -----------------------------------------------------------------
@@ -122,24 +274,48 @@
   @apply shadow-none;
 }
 
+// Mirrors shadcn-vue <Card> (`bg-card rounded-xl`): the `ring-foreground/10` ring is a
+// 1px border (box-shadow rings get nulled by `shadow-none`), same 10% ink as `--attrium-border`.
 @mixin card-surface {
-  @include surface(var(--attrium-primary-foreground));
+  @include surface(
+    var(--attrium-card),
+    1px solid var(--attrium-border),
+    calc(var(--attrium-radius-lg) + 4px)
+  );
 }
 
-// Elevated secondary surface — the same card recipe on the secondary token,
-// used for panels/rows that sit one step above the page card (filter-group
-// boxes, callouts, bulk-select pills). Mirrors card-surface; the caller adds
-// any per-site extras (overflow, color) after the call.
+// Card recipe on the secondary token — panels/rows one step above the page
+// card (filter-group boxes, callouts, bulk-select pills).
 @mixin secondary-surface {
-  @include surface(var(--attrium-secondary));
+  @include surface(
+    var(--attrium-secondary),
+    1px solid var(--attrium-border),
+    calc(var(--attrium-radius-lg) + 4px)
+  );
+}
+
+// --- Badge ---------------------------------------------------------------------
+// shadcn-vue <Badge> base (`h-5 rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium`); variant fills opt-in at the call site.
+@mixin badge {
+  // `box-border`: px/py + 1px border must sit inside the 20px box, else
+  // content-box inflates it to 26px and the text sits high.
+  @apply box-border inline-flex h-5 w-fit shrink-0 items-center justify-center
+         gap-1 overflow-hidden whitespace-nowrap rounded-full border
+         border-transparent px-2 py-0.5 text-xs font-medium
+         transition-colors;
+}
+
+// --- Avatar --------------------------------------------------------------------
+// shadcn-vue <Avatar> (`size-8 rounded-full`, 1px `--attrium-border` ring); `$size` is the square box (WP avatars usually 32px/48px).
+@mixin avatar($size: 2rem) {
+  @apply relative flex shrink-0 select-none overflow-hidden rounded-full
+         border border-[var(--attrium-border)];
+
 }
 
 // --- Icon button -----------------------------------------------------------------
-// Compact 2rem square icon control (overlay nav strips, header close buttons):
-// token foreground, token hover fill, no border or focus ring. The caller
-// adds the glyph (mask on a pseudo-element) and any per-site extras
-// (positioning, disabled states). `$surface` is the resting fill — pass
-// `transparent` to blend into the strip until hovered.
+// Compact 2rem square icon control; caller adds the glyph. `$surface` is the
+// resting fill — pass `transparent` to blend into the strip until hovered.
 @mixin icon-button($surface: var(--attrium-primary-foreground)) {
   @apply inline-flex items-center justify-center size-8 border-0 rounded-lg;
   background: $surface;
@@ -152,36 +328,61 @@
   }
 }
 
-// --- Underline tabs ---------------------------------------------------------------
-// Centered tab row where the active tab carries a token-primary bottom
-// underline (Site Health, Privacy Settings). Include INSIDE the tab bar
-// container under its screen gate; `$tab` is the tab link class. The bar
-// becomes a flex row and the tabs get the muted → foreground hover treatment.
+// --- Tabs, `line` variant ---------------------------------------------------------
+// shadcn `variant="line"`: transparent track + 2px `--attrium-foreground` bar; backs Site Health/Privacy/`wp-filter`.
 @mixin underline-tabs($tab) {
-  @apply flex justify-center;
+  @apply relative flex justify-center gap-1;
+
+  // Let the tab row wrap instead of overflowing the card on narrow screens.
+  @media (max-width: 782px) {
+    flex-wrap: wrap;
+  }
 
   .#{$tab} {
-    @apply text-sm font-medium border-b-2 
-           border-transparent m-0 pt-2 px-4 pb-4
-           transition-colors duration-150;
-    color: var(--attrium-muted-foreground);
+    @apply relative m-0 inline-flex items-center justify-center gap-1.5
+           whitespace-nowrap rounded-[calc(var(--attrium-radius-lg)-2px)]
+           border border-transparent px-2 py-1 text-sm font-medium
+           no-underline transition-all outline-none;
+
+    color: color-mix(in oklab, var(--attrium-foreground) 60%, transparent);
+
+    &::after {
+      content: '';
+      @apply pointer-events-none absolute h-0.5 w-full opacity-0
+             transition-opacity;
+      inset-inline: 0;
+      bottom: -5px;
+      background-color: var(--attrium-foreground);
+    }
 
     &:hover,
     &:focus {
       color: var(--attrium-foreground);
     }
 
+    &:focus {
+      @apply shadow-none outline-none;
+    }
+
+    &:focus-visible {
+      border-color: var(--attrium-ring);
+      outline: 1px solid var(--attrium-ring);
+      @include focus-ring;
+    }
+
     &.active {
-      @apply shadow-none font-medium;
+      @apply shadow-none;
       color: var(--attrium-foreground);
-      border-bottom-color: var(--attrium-primary);
+
+      &::after {
+        @apply opacity-100;
+      }
     }
   }
 }
 
 // --- Borderless surface ----------------------------------------------------------
-// Transparent, borderless reset for React-hosted surfaces (boot-layout) that
-// carry their own card chrome. Element recipe — include inside a gated rule.
+// Transparent/borderless reset for React-hosted surfaces that carry their own chrome.
 @mixin borderless-surface($border-side: all) {
   @apply bg-transparent!;
 

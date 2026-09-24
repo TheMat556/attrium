@@ -2,12 +2,9 @@ import { computed, ref } from 'vue'
 import { wpFetch } from '@/lib/api'
 
 /**
- * Data model and fetching for the client health dashboard.
- *
- * PHP normalizes every section into one of three severities; this file only
- * aggregates them. Keeping the ranking here as well as server-side is
- * deliberate: the hero verdict is derived from the very same values the
- * sections render, so it cannot drift from them.
+ * Data model + fetching for the client health dashboard. Ranking is duplicated
+ * client-side on purpose: the hero verdict derives from the same values the
+ * sections render, so it can't drift from them.
  */
 
 export type Severity = 'critical' | 'warning' | 'healthy'
@@ -239,9 +236,8 @@ export function useDashboard() {
 }
 
 /**
- * The single flat list of things needing attention, built from the same
- * section data the page renders. The hero count and the highlighted cards all
- * read from this, which is what keeps them consistent.
+ * The single flat list of things needing attention, built from the same section
+ * data the page renders — the hero count and highlighted cards all read from it.
  */
 export function collectIssues(
 	summary: SummaryResponse | null,

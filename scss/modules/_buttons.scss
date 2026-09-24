@@ -1,157 +1,65 @@
 @use '../mixins';
 @use '../ui/primitives';
 
-// Buttons module — authored shadcn/cva-style: a shared base + per-variant
-// mixins + a size modifier, then a one-line map from native WP button classes
-// to a variant. Bodies use Tailwind `@apply` (expanded by the Tailwind CLI
-// stage of build:css) reading the --attrium-* design tokens, so light/dark is
-// handled entirely by the token overrides in _tokens.scss.
-
-// ---- Base: shared by every reskinned button, regardless of variant ----
-@mixin btn-base {
-  @apply inline-flex items-center justify-center rounded-[var(--attrium-radius-md)]
-         text-sm font-medium h-9 min-h-9 duration-150 transition-colors border-[1px] border-solid;
-
-  &:disabled {
-    @apply opacity-50 cursor-default pointer-events-none;
-    border-color: var(--attrium-muted-foreground) !important;
-  }
-
-  &:not(:disabled):active {
-    transform: translateY(1px);
-  }
-
-  &:focus {
-    // Core paints a blue focus ring (box-shadow) on every .button /
-    // .button-primary via --wp-admin-theme-color. Attrium buttons have no
-    // focus ring — remove it.
-    @include primitives.focus-reset;
-  }
-}
-
-// ---- Variants: same idea as shadcn's cva() variant map, just as mixins ----
-@mixin btn-primary {
-  @apply text-[var(--attrium-primary-button-foreground)]
-         border-[var(--attrium-border)];
-  background-color: var(--attrium-primary-button);
-
-  &:hover,
-  &:focus {
-    // Hover lightens the fill (dedicated -hover token, clearly visible in both
-    // modes) instead of dimming via opacity — no translucency — and keeps the
-    // border (it never vanishes).
-    @apply text-[var(--attrium-primary-button-foreground)]
-           border-[var(--attrium-border)];
-    background-color: var(--attrium-primary-button-hover);
-  }
-
-  &:focus,
-  &:active {
-    @apply inline-flex items-center justify-center
-           bg-[var(--attrium-primary-button)]
-           text-[var(--attrium-primary-button-foreground)]
-           rounded-[var(--attrium-radius-md)] text-sm;
-  }
-}
-
-@mixin btn-secondary {
-  @apply bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
-         border-[var(--attrium-border)];
-
-  &:hover,
-  &:focus {
-    background-color: color-mix(in oklab, var(--attrium-secondary) 90%, white);
-    @apply text-[var(--attrium-secondary-foreground)]
-           border-[var(--attrium-border)];
-  }
-
-  &:focus,
-  &:active {
-    @apply inline-flex items-center justify-center
-           bg-[var(--attrium-secondary)] text-[var(--attrium-secondary-foreground)]
-           rounded-[var(--attrium-radius-md)] text-sm;
-  }
-}
-
-@mixin btn-outline {
-  @apply bg-transparent border-[var(--attrium-border)] text-[var(--attrium-foreground)];
-
-  &:hover,
-  &:focus {
-    @apply bg-[var(--attrium-accent)];
-  }
-}
-
-// ---- Size modifier, independent of variant ----
-@mixin btn-size-lg {
-  @apply h-11 px-6 text-base;
-}
+// Buttons module — maps native WP elements onto the shadcn <Button> recipe;
+// the shape/variant mixins live in ui/primitives.
 
 // ---- Mapping: which native WP element gets which variant ----
-// Adding a new WP element to a variant later is a one-line addition here,
-// with no property duplication.
-// `:not()` matters: core's `submit_button()` emits `class="button button-primary"`,
-// so a bare `.button` here would also match primary buttons. Same specificity as
-// the `.button-primary` rule below means only *unset* properties leak — but
-// `btn-secondary` sets `border-color` and `btn-primary` does not, so primaries
-// would render with the secondary (light grey) border over the primary fill.
-// `.page-title-action` (the "Add New" header link on list screens) is demoted to
-// the secondary variant on purpose: every other control in that toolbar is a
-// secondary button, so a dark primary "Add New" reads as misaligned next to them.
+// `:not(.button-primary)` since `submit_button()` emits both (bare `.button`
+// would leak the secondary border onto primaries); `.page-title-action` →
+// secondary to match the toolbar.
 .button:not(.button-primary):not(.page-title-action),
 .button-secondary,
 .page-title-action {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-secondary;
+    @include primitives.btn-base;
+    @include primitives.btn-secondary;
   }
+}
+
+// `.wrap .page-title-action:active` ((0,3,0)) beats the module base ((0,2,1)) and
+// re-applies core's raw box on press; re-assert the shape from `:active` ((0,3,1)), scoped so `.button-small` stays compact.
+body.attrium-mod-buttons .page-title-action:active {
+  @include primitives.btn-shape;
 }
 
 .button-primary {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-primary;
+    @include primitives.btn-base;
+    @include primitives.btn-primary;
   }
 }
 
-// wp-components primary button (e.g. the Font Library "Update" button). Scoped
-// to #font-library-wp-admin-app so we don't reskin every .components-button
-// across wp-admin (block editor, etc.), which keep their own design. Colors are
-// already remapped via scss/screens/_font-library.scss; this adds the Attrium
-// button shape (radius, height, focus ring) to match native WP buttons.
+// Core upsizes buttons to a 40px touch target at `@media (max-width:782px)`
+// (buttons.css), defeating h-8 parity; re-assert the module shape with a winning selector.
+@media screen and (max-width: 782px) {
+  body.attrium-mod-buttons.wp-core-ui .button,
+  body.attrium-mod-buttons.wp-core-ui .button-primary,
+  body.attrium-mod-buttons.wp-core-ui .button-secondary {
+    @apply h-8 min-h-8 px-2.5 mb-0;
+  }
+}
+
+// Font Library "Update" button: scoped to #font-library-wp-admin-app so we
+// don't reskin every .components-button (block editor etc.) which keep their own design.
 #font-library-wp-admin-app .components-button.is-primary {
   @include mixins.module('buttons') {
-    @include btn-base;
-    @include btn-secondary;
+    @include primitives.btn-base;
+    @include primitives.btn-secondary;
   }
 }
 
-.button.button-large {
-  @include mixins.module('buttons') {
-    @include btn-size-lg;
-  }
-}
-
-// Media-library grid "Menu" toggle (`.button.button-link.media-frame-menu-toggle`).
-// The buttons module matches it via `.button:not(.button-primary)...` (the rule
-// above, specificity (0,4,1)) and would force `display:inline-flex` at every
-// width — which overrides core's desktop hiding and un-hides a toggle core only
-// intends to show at ≤900px. Re-assert `display:none` with equal specificity,
-// later in the cascade, so it stays hidden on desktop. On mobile this still
-// loses to core's `@media (max-width:900px)` rule (`.wp-core-ui .media-frame:
-// not(.hide-menu) .button.media-frame-menu-toggle`, (0,5,0) > ours), so the
-// toggle is preserved where core actually uses it.
+// Media-library "Menu" toggle: our `.button:not(...)` rule ((0,4,1)) forces
+// display:inline-flex, un-hiding a toggle core only shows ≤900px. Re-assert
+// display:none at equal specificity, later in cascade; core's ≤900px rule
+// ((0,5,0)) still wins on mobile, preserving it where core uses it.
 body.attrium-mod-buttons.wp-core-ui .button.media-frame-menu-toggle {
   @apply hidden;
 }
 
-// Buttons WordPress has stowed with its `.hidden` utility (`common.css`:
-// `.hidden, … { display:none }`) must stay hidden. `btn-base` forces
-// `display:inline-flex`, whose higher specificity re-exposes them — e.g. the
-// media grid's `.button.load-more-jump.hidden` renders as a full visible button
-// on an empty library. `!important` beats the module rule and any inline style,
-// and we only match while the `.hidden` class is present, so removing it (the
-// way WP shows a control again) restores the button unchanged.
+// Buttons stowed with core's `.hidden` must stay hidden: `btn-base`'s
+// `display:inline-flex` re-exposes them (e.g. `.button.load-more-jump.hidden`).
+// `!important` beats the module rule; only matches while `.hidden` is present.
 body.attrium-mod-buttons .button.hidden,
 body.attrium-mod-buttons .button-primary.hidden,
 body.attrium-mod-buttons .button-secondary.hidden,

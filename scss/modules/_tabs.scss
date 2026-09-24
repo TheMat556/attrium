@@ -1,27 +1,57 @@
 @use '../mixins';
+@use '../tokens' as tokens;
 @use '../ui/primitives';
 
+// WP's `.subsubsub` filter strip reskinned to shadcn <TabsList>/<TabsTrigger> (recipe in
+// primitives.tabs-*); `li { display: contents }` + zeroed font/transparent hide core's ` | `.
 .subsubsub {
   @include mixins.module('tabs') {
-    @include primitives.pill-track;
-    @apply mb-4;
+    @include primitives.tabs-track;
+    // The list-table header uses a single 12px rhythm (see _tables.scss); the
+    // tabs are its first row.
+    @apply mb-3;
 
     li {
-      @apply inline-flex;
-
+      // `contents` drops the `li` box so its `<a>` is a flex item of the track;
+      // 0 font-size + transparent hide core's ` | ` text.
+      display: contents;
       color: transparent;
+      font-size: 0;
+    }
 
-      a {
-        @include primitives.pill-segment;
+    a {
+      @include primitives.tabs-trigger;
 
-        &.current {
-          @include primitives.pill-segment-active;
-        }
+      // Core pins `.subsubsub a .count` to #50575e; inherit the trigger colour
+      // so the count dims with its label instead of staying fixed grey.
+      .count {
+        @apply font-normal;
+        color: inherit;
+      }
 
-        .count {
-          @apply ml-1;
-        }
+      // Active segment reads as a raised card on the muted track.
+      &.current {
+        @include primitives.tabs-trigger-active;
       }
     }
+  }
+}
+
+// Dark: resting ink → `text-muted-foreground`, active face → `border-input bg-input/30`;
+// the track fill needs no arm (`--attrium-muted` is carrier-swapped).
+body.attrium-mod-tabs #{tokens.$dark-carrier-host} .subsubsub a {
+
+  &:hover {
+    color: var(--attrium-foreground);
+  }
+
+  &.current {
+    border-color: var(--attrium-input);
+    background-color: color-mix(
+      in oklab,
+      var(--attrium-input) 30%,
+      transparent
+    );
+    color: var(--attrium-foreground);
   }
 }

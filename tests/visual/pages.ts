@@ -51,25 +51,6 @@ export const ADMIN_PAGES: AdminPage[] = [
 ]
 
 /**
- * Known coverage gaps, recorded so they are not mistaken for "verified".
- *
- * - `scss/screens/_theme-editor.scss` — the Plugin Editor screen
- *   (plugin-editor.php) shares `_theme-editor.scss`'s markup but points at the
- *   plugin's own file tree; the theme editor itself is now a fixture
- *   (`theme-editor`), so the shared rules are covered under the
- *   `theme-editor-php` body class. `plugin-editor-php` stays unverified because
- *   its tree reflects the attrium plugin's source (build output, node_modules),
- *   which is not deterministic across environments.
- * - `scss/screens/_font-library.scss` (138 lines) — Appearance → Fonts. Gated
- *   with `module('screens')` rather than a body class, and driven entirely by
- *   remapped `--wpds-*` variables on a React app whose class names are
- *   per-build CSS-module hashes. Needs its own spec.
- * - `scss/screens/_options-connectors.scss` (135 lines) — also `module('screens')`
- *   rather than a known core body class, so there is no single URL to add here.
- * - `scss/modules/_tables.scss` → `.column-primary .toggle-row` (~28 lines,
- *   including a hand-drawn CSS triangle for the expand caret). Core hides
- *   `.wp-list-table .toggle-row` outside its own `@media (max-width: 782px)`
- *   block (list-tables.css), and every project here captures at 1440px, so the
- *   rules never render under test. Verifying them needs a narrow-viewport spec,
- *   not another entry in this list.
+ * Known coverage gaps, recorded so they are not mistaken for "verified":
+ * `_theme-editor.scss` (plugin-editor-php undeterministic), `_font-library.scss` (behavioral spec), `_options-connectors.scss` (no URL), ≤782px (narrow.spec.ts).
  */

@@ -1,4 +1,5 @@
 @use 'primitives';
+@use '../tokens' as tokens;
 
 // Composite UI recipes — emit their own top-level blocks. Include these at
 // TOP LEVEL under screen-root(...), never screen(...), whose trailing `&`
@@ -16,27 +17,60 @@
   .wp-filter {
     @include primitives.wp-filter-surface(transparent);
     color: var(--attrium-foreground);
+    // Air between the frame and the tab/search elements.
+    padding: 0.75rem;
   }
 
+  // shadcn Tabs default variant (primitives.tabs-*): the muted track with a raised
+  // active "card", matching `.subsubsub` (modules/_tabs.scss); installers emit no ` | `.
   .filter-links {
-    li > a {
-      @apply border-b-4 border-transparent font-medium opacity-65;
+    @include primitives.tabs-track;
+    @apply m-0 list-none;
 
-      color: var(--attrium-foreground);
-
-      &:hover,
-      &:focus {
-        color: var(--attrium-foreground);
-        @apply opacity-100;
-      }
+    // `contents` drops the `li` box so each `<a>` is a flex item of the track
+    // and sizes to its own label, exactly like the `.subsubsub` segments.
+    li {
+      display: contents;
     }
 
-    .current,
-    .current:hover,
-    .current:focus {
-      @apply shadow-none opacity-100;
-      border-bottom-color: var(--attrium-primary);
-      color: var(--attrium-foreground);
+    li > a {
+      @include primitives.tabs-trigger;
+      // Core gives these anchors a `0 10px` margin; the track owns the spacing.
+      @apply m-0;
+
+      // Active segment reads as a raised card on the muted track.
+      &.current {
+        @include primitives.tabs-trigger-active;
+      }
+    }
+  }
+
+  // Feature Filter gear: core paints the dashicon `:before` grey at rest, the
+  // WP blue on hover/focus, and white while the drawer is open. shadcn icons
+  // inherit the button's color, so pin it to currentColor in every state.
+  .wp-filter .drawer-toggle:before {
+    color: currentColor;
+  }
+
+  // Dark: resting ink to `text-muted-foreground`, active face to `border-input
+  // bg-input/30`, as on `.subsubsub`; `&` is the caller's screen-root gate.
+  & #{tokens.$dark-carrier-host} {
+    .filter-links li > a {
+      color: var(--attrium-muted-foreground);
+
+      &:hover {
+        color: var(--attrium-foreground);
+      }
+
+      &.current {
+        border-color: var(--attrium-input);
+        background-color: color-mix(
+          in oklab,
+          var(--attrium-input) 30%,
+          transparent
+        );
+        color: var(--attrium-foreground);
+      }
     }
   }
 }
@@ -58,29 +92,30 @@
       }
     }
 
-    .filter-group-feature input[type='checkbox'],
-    .filter-group-feature input[type='radio'] {
+    // Radio branch absent — core renders only checkboxes here (theme-install.php),
+    // so `input[type='radio']` would be dead.
+    .filter-group-feature input[type='checkbox'] {
       @apply absolute;
     }
 
     .apply-filters.button {
-      background: var(--attrium-primary);
+      background-color: var(--attrium-primary);
       color: var(--attrium-primary-foreground);
-      border-color: var(--attrium-border);
-      @apply shadow-none;
+      // shadcn's default <Button> keeps a transparent border and clips its fill
+      // to the padding box (the `background` shorthand would reset that).
+      @apply shadow-none bg-clip-padding;
 
       &:hover,
       &:focus {
-        @apply opacity-90;
+        // shadcn's default variant has no fill change on hover; keep the resting
+        // fill so the screen upgrade can't reintroduce the 80% wash.
+        background-color: var(--attrium-primary);
       }
     }
 
-    // The selected-filter count badge lives inside the primary Apply Filters
-    // button (theme.js writes tags.length into `.apply-filters span`), so it
-    // must use the button's own foreground token — `--attrium-foreground`
-    // is dark-on-dark in light mode / light-on-light in dark mode and reads
-    // as invisible on the primary fill. `--attrium-primary-foreground` is
-    // themed to contrast with `--attrium-primary` in both modes.
+    // The count badge lives inside the primary Apply Filters button, so it needs
+    // the button's own foreground token — `--attrium-foreground` is invisible on
+    // the primary fill in both modes.
     .apply-filters.button span {
       @apply opacity-85;
       color: var(--attrium-primary-foreground);
@@ -106,9 +141,11 @@
 
 @mixin transparent-react-shell {
   .boot-layout,
+  .boot-layout-container,
   .boot-layout__surfaces,
   .boot-layout__stage,
-  .admin-ui-page {
+  .admin-ui-page,
+  .admin-ui-navigable-region {
     @apply bg-transparent!;
   }
 }
