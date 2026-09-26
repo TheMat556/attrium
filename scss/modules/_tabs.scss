@@ -14,9 +14,8 @@
     li {
       // `contents` drops the `li` box so its `<a>` is a flex item of the track;
       // 0 font-size + transparent hide core's ` | ` text.
-      display: contents;
+      @apply contents text-[0px];
       color: transparent;
-      font-size: 0;
     }
 
     a {

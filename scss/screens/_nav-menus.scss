@@ -281,7 +281,7 @@
   // ring (not removed: it's the only focus affordance on an icon-only control).
   .item-edit:focus:before {
     box-shadow: 0 0 0 2px var(--attrium-ring);
-    outline: none;
+    @apply outline-none;
   }
 
   // Expanded item form: continue the handle's surface + token border so the row

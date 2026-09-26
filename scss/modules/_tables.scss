@@ -26,12 +26,11 @@
 
 .widefat {
   @include mixins.module('tables') {
-    @apply w-full;
+    @apply w-full overflow-hidden;
 
     // The frame (shadcn's <Card> stand-in) plus the surface the rows sit on.
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
-    overflow: hidden;
     background: var(--attrium-primary-foreground);
     box-shadow: none;
 
@@ -147,7 +146,7 @@
 
         &::before {
           content: '';
-          position: absolute;
+          @apply absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
@@ -317,15 +316,13 @@ p.search-box:not(.wp-filter:has(> .filter-items) p.search-box) {
     @apply flex flex-wrap items-center justify-between gap-2 h-auto mt-0 mb-3;
 
     .alignleft {
-      float: none;
+      @apply float-none;
     }
 
     .actions {
       // Wrap bulk-action/filter controls on narrow screens so the row never pushes past
       // the card; `max-w-full` caps the group and the selects shrink against it.
-      @apply flex max-w-full flex-wrap items-center gap-2;
-      float: none;
-      padding: 0;
+      @apply flex max-w-full flex-wrap items-center gap-2 float-none p-0;
 
       select {
         @apply max-w-full;

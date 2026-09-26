@@ -56,11 +56,10 @@
 }
 
 @mixin btn-base {
-  @apply border border-solid border-transparent bg-clip-padding;
-
   @include btn-shape;
 
-  @apply [&_svg:not([class*=size-])]:size-4
+  @apply border border-solid border-transparent bg-clip-padding
+         [&_svg:not([class*=size-])]:size-4
          [&_svg]:pointer-events-none [&_svg]:shrink-0;
 
   // Core's state rules (`.button:hover/:focus/:active`) use the `background`
@@ -196,9 +195,7 @@
   // Mobile: the track can't stay one `w-fit` line or the segments overflow the
   // card, so let it wrap to as many rows as needed.
   @media (max-width: 782px) {
-    height: auto;
-    max-width: 100%;
-    flex-wrap: wrap;
+    @apply h-auto max-w-full flex-wrap;
   }
 }
 
@@ -335,7 +332,7 @@
 
   // Let the tab row wrap instead of overflowing the card on narrow screens.
   @media (max-width: 782px) {
-    flex-wrap: wrap;
+    @apply flex-wrap;
   }
 
   .#{$tab} {

@@ -30,7 +30,7 @@
     // `contents` drops the `li` box so each `<a>` is a flex item of the track
     // and sizes to its own label, exactly like the `.subsubsub` segments.
     li {
-      display: contents;
+      @apply contents;
     }
 
     li > a {

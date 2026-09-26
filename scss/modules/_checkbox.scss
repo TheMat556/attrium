@@ -10,7 +10,7 @@
 input[type='checkbox'],
 input[type='radio'] {
   @include mixins.module('checkbox') {
-    position: relative;
+    @apply relative;
     border: 1px solid var(--attrium-input);
     background: var(--attrium-background);
     box-shadow: none;
@@ -31,7 +31,7 @@ input[type='checkbox'] {
 // Radio stays a circle; shadcn uses rounded-full.
 input[type='radio'] {
   @include mixins.module('checkbox') {
-    border-radius: 9999px;
+    @apply rounded-full;
   }
 }
 
@@ -46,11 +46,7 @@ input[type='checkbox']:checked {
 
     &::before {
       content: '';
-      position: absolute;
-      inset: 0;
-      margin: 0;
-      height: auto;
-      width: auto;
+      @apply absolute inset-0 m-0 h-auto w-auto;
       @include icons.mask('check', 0.875rem);
     }
   }
@@ -71,7 +67,7 @@ input[type='radio']:checked {
 input[type='checkbox']:focus-visible,
 input[type='radio']:focus-visible {
   @include mixins.module('checkbox') {
-    outline: none;
+    @apply outline-none;
     border-color: var(--attrium-ring);
     @include primitives.focus-ring;
   }

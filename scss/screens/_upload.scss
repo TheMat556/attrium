@@ -12,19 +12,14 @@
   // ---- Toolbar -----------------------------------------------------------------
 
   .media-toolbar {
-    z-index: auto;
+    @apply z-auto;
   }
 
   // Grid-mode toolbar, scoped to .attachments-browser so the media modal's
   // own toolbars (.media-frame-toolbar, modal browsers) keep core's layout.
   .attachments-browser .media-toolbar {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    column-gap: 0.5rem;
-    height: auto;
+    @apply flex flex-nowrap items-center gap-x-2 overflow-auto h-auto;
     min-height: 48px;
-    overflow: auto;
 
     // Surface comes from the shared `.wp-filter` rule below (transparent over
     // the content card), so list and grid toolbars are pixel-identical.
@@ -32,13 +27,7 @@
     // `flex: none` keeps the group's controls from squashing when narrow;
     // `min-width: 0` still yields room to the search group. `gap` owns spacing.
     .media-toolbar-secondary {
-      display: flex;
-      flex: none;
-      flex-wrap: nowrap;
-      align-items: center;
-      column-gap: 0.5rem;
-      height: auto;
-      max-width: none;
+      @apply flex flex-none flex-nowrap items-center gap-x-2 max-w-none h-auto;
     }
 
     // Labels stay in flow (they are the selects' accessible names).
@@ -65,20 +54,14 @@
     // Search group pinned right: absorb the bar's slack and shrink when tight
     // instead of overflowing as core's fixed-width input did.
     .media-toolbar-primary {
-      display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      height: auto;
+      @apply flex flex-nowrap items-center justify-end gap-2 max-w-none h-auto;
       margin: 0 0 0 auto;
-      max-width: none;
     }
 
     // Core's spinner is visibility:hidden; as a flex child it would reserve
     // row width, so pull it out of flow (it only paints while fetching).
     .spinner {
-      position: absolute;
+      @apply absolute;
       top: 50%;
       left: 50%;
       margin: -10px 0 0 -10px;
@@ -87,20 +70,17 @@
     // Mobile: the nowrap row can't fit, so stack both groups full-width — the
     // secondary wraps, the primary keeps label+input on one line.
     @media (max-width: 782px) {
-      flex-wrap: wrap;
-      row-gap: 0.5rem;
+      @apply flex-wrap gap-y-2;
 
       .media-toolbar-secondary {
         flex: 1 1 100%;
-        flex-wrap: wrap;
-        max-width: 100%;
+        @apply flex-wrap max-w-full;
         margin-inline-start: 0;
       }
 
       .media-toolbar-primary {
         flex: 1 1 100%;
-        flex-wrap: nowrap;
-        max-width: 100%;
+        @apply flex-nowrap max-w-full;
         margin-inline-start: 0;
       }
     }
@@ -173,12 +153,9 @@
   // Swap core's dashicons `::before` for a Lucide mask on `::after`. inline-flex
   // keeps the list-mode bar's line layout; the gap separates flush toggles.
   .view-switch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
     // Zero core's vertical pad + inline margins so toggles sit on the same 32px
     // line as the selects and buttons.
-    padding: 0;
+    @apply inline-flex items-center gap-1 p-0;
   }
 
   // Mirrors the shadcn-vue <Toggle> default variant: `rounded-lg` box,
@@ -232,13 +209,12 @@
   // (ul gap would break the JS percentage widths). Direct-child scope leaves the
   // sidebar's nested .attachments on core's layout.
   .attachments-wrapper > .attachments {
-    display: flex;
-    flex-wrap: wrap;
+    @apply flex flex-wrap;
     padding: 2px 0 0;
   }
 
   .attachments-browser .attachment {
-    float: none;
+    @apply float-none;
   }
 
   // ---- Tile chrome ---------------------------------------------------------------
@@ -253,10 +229,9 @@
     padding: 0 8px 0 0;
 
     .attachment-preview {
-      @apply transition-colors duration-150;
+      @apply transition-colors duration-150 overflow-hidden;
       @include primitives.card-surface;
       box-shadow: none; // the border owns the edge, not core's inset vignette
-      overflow: hidden;
     }
 
     // Redundant under the preview's own border.
@@ -286,9 +261,8 @@
     .filename {
       @apply truncate bg-[var(--attrium-secondary)]
              text-[var(--attrium-secondary-foreground)]
-             border-t border-[var(--attrium-border)];
+             border-t border-[var(--attrium-border)] text-start;
       box-shadow: none;
-      text-align: start;
 
       div {
         @apply p-0;
@@ -296,15 +270,13 @@
     }
 
     &::after {
-      @apply truncate;
+      @apply truncate p-0 w-auto;
       border-radius: 0 0 var(--attrium-radius-md) var(--attrium-radius-md);
       // Override core 7.1's left:8px + width trio fully (partial override loses):
       // pin left:0 / right:8px, reset width; bottom:0 because rows are flush.
       bottom: 0;
       left: 0;
       right: 8px;
-      width: auto;
-      padding: 0;
     }
   }
 
@@ -321,12 +293,11 @@
     right: 8px;
 
     .media-modal-icon {
-      position: absolute; // .check is the (absolute) containing block
+      @apply absolute m-0; // .check is the (absolute) containing block
       top: 50%;
       left: 50%;
       width: 0.875rem;
       height: 0.875rem;
-      margin: 0;
       transform: translate(-50%, -50%);
       @include icons.mask('check', 0.875rem);
     }

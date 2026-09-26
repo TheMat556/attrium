@@ -53,7 +53,7 @@
 #the-list {
   @include mixins.screen('plugin-install-php') {
     background: transparent;
-    border: none;
+    @apply border-none;
   }
 }
 
@@ -63,8 +63,7 @@
 .plugin-card {
   @include mixins.screen('plugin-install-php') {
     @include primitives.card-surface;
-    overflow: hidden;
-    @apply transition-colors duration-150;
+    @apply overflow-hidden transition-colors duration-150;
 
     &:hover {
       border-color: var(--attrium-ring);
@@ -144,16 +143,13 @@
     border-bottom: none;
 
     .tag-cloud-link {
-      @apply inline-flex items-center h-6;
-      padding: 0 0.625rem;
+      @apply inline-flex items-center h-6
+             text-xs! font-semibold leading-6 whitespace-nowrap
+             transition-colors duration-150 px-2.5 py-0
+             rounded-full no-underline;
       border: 1px solid var(--attrium-border);
-      border-radius: 9999px;
-      @apply text-xs! font-semibold leading-6;
-      white-space: nowrap;
-      text-decoration: none;
       color: var(--attrium-secondary-foreground);
       background: var(--attrium-secondary);
-      @apply transition-colors duration-150;
 
       // These are real links; replace core's hover underline + blue focus
       // ring with a token border, matching the theme's no-blue treatment.
