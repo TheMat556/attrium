@@ -87,8 +87,8 @@
 .wp-full-overlay {
   @include mixins.screen('theme-install-php') {
     .wp-full-overlay-sidebar {
-      background: var(--attrium-primary-foreground);
       @apply border-r;
+      background: var(--attrium-primary-foreground);
       border-right-color: var(--attrium-border);
     }
 

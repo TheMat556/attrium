@@ -10,10 +10,9 @@
 input[type='checkbox'],
 input[type='radio'] {
   @include mixins.module('checkbox') {
-    @apply relative;
+    @apply relative shadow-none;
     border: 1px solid var(--attrium-input);
     background: var(--attrium-background);
-    box-shadow: none;
     color: var(--attrium-foreground);
   }
 }

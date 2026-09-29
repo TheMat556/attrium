@@ -14,8 +14,7 @@
     li {
       // `contents` drops the `li` box so its `<a>` is a flex item of the track;
       // 0 font-size + transparent hide core's ` | ` text.
-      @apply contents text-[0px];
-      color: transparent;
+      @apply contents text-[0px] text-transparent;
     }
 
     a {
@@ -24,8 +23,7 @@
       // Core pins `.subsubsub a .count` to #50575e; inherit the trigger colour
       // so the count dims with its label instead of staying fixed grey.
       .count {
-        @apply font-normal;
-        color: inherit;
+        @apply font-normal text-inherit;
       }
 
       // Active segment reads as a raised card on the muted track.
