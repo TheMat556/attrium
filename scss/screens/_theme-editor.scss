@@ -21,11 +21,9 @@
   // to mirror the editor pane's left-only rounding, and drop the left border
   // (core does this too) so the panes don't double-stroke.
   #templateside > ul {
-    @apply rounded-r-[var(--attrium-radius-md)] mt-px;
-
     background: var(--attrium-primary-foreground);
     border: 1px solid var(--attrium-border);
-    @apply border-l-0;
+    @apply rounded-r-[var(--attrium-radius-md)] mt-px border-l-0;
   }
 
   #templateside > h2 {

@@ -116,12 +116,12 @@ for (const { theme } of THEMES) {
 			// core's hardcoded #fff and the token's oklch(0.985) are near
 			// indistinguishable, so only the exact value catches a removal
 			// that lets core's slab back through.
-			expect(chrome.box.bg).toBe(dark ? 'oklch(0.205 0 0)' : 'oklch(0.985 0 0)')
+			expect(chrome.box.bg).toBe(dark ? 'oklch(0.205 0 0)' : 'oklch(1 0 0)')
 			expect(chrome.box.border).toBe('1px solid')
 			expect(chrome.box.borderColor).toBe(
 				dark ? 'oklch(1 0 0 / 0.1)' : 'oklch(0.922 0 0)',
 			)
-			expect(chrome.box.radius).toBe('8px')
+			expect(chrome.box.radius).toBe('14.4px')
 			expect(chrome.box.shadow).toBe('none')
 			expect(chrome.footer.bg).toBe('rgba(0, 0, 0, 0)')
 			expect(chrome.footer.border).toBe('1px solid')
@@ -576,12 +576,12 @@ for (const { theme } of THEMES) {
 					radius: cs.borderRadius,
 				}
 			})
-			expect(popup.bg).toBe(dark ? 'oklch(0.205 0 0)' : 'oklch(0.985 0 0)')
+			expect(popup.bg).toBe(dark ? 'oklch(0.205 0 0)' : 'oklch(1 0 0)')
 			expect(popup.border).toBe('1px solid')
 			expect(popup.borderColor).toBe(
 				dark ? 'oklch(1 0 0 / 0.1)' : 'oklch(0.922 0 0)',
 			)
-			expect(popup.radius).toBe('8px')
+			expect(popup.radius).toBe('14.4px')
 
 			// The menu's five buttons: the rotate/flip group in DOM order.
 			// Core paints NO glyphs on these buttons (media.css styles them

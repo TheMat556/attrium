@@ -29,6 +29,9 @@ $light: (
   '--attrium-ring': oklch(0.708 0 0),
   '--attrium-scrollbar-thumb': oklch(0.7 0 0),
   '--attrium-radius-md': 0.5rem,
+  // Matches the shadow-root shadcn `--radius` (0.65rem) so native admin
+  // buttons share the Vue <Button> corner radius.
+  '--attrium-radius-lg': 0.65rem,
 
   // Semantic status colors — notices, badges, status indicators.
   '--attrium-info': #3b82f6,
@@ -143,6 +146,7 @@ $dark: (
 // value.
 $dark-optional: (
   '--attrium-radius-md',
+  '--attrium-radius-lg',
   '--attrium-ignored-background',
   '--attrium-wp-content-foreground',
 );

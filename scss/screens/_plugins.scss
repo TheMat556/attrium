@@ -6,4 +6,27 @@
 // by the shared `.widefat` rules in modules/_tables.scss — nothing to add here.
 @include mixins.screen-root('plugins-php') {
   @include patterns.hide-bottom-bulk-actions;
+
+  // Tabs + search share a line only via core floats but live in separate elements (`ul.subsubsub`
+  // vs `form.search-plugins > p.search-box`); row them with space-between at ≥1201px, no `order`.
+  @media (min-width: 1201px) {
+    .wrap:has(> ul.subsubsub):has(> form.search-plugins) {
+      @apply flex flex-wrap items-center justify-between;
+
+      > h1.wp-heading-inline,
+      > a.page-title-action {
+        @apply self-baseline;
+      }
+
+      > a.page-title-action {
+        @apply mr-auto ml-[0.25em];
+      }
+
+      > :not(h1):not(a.page-title-action):not(ul.subsubsub):not(
+          form.search-plugins
+        ) {
+        @apply basis-full;
+      }
+    }
+  }
 }

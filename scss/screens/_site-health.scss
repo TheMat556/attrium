@@ -54,14 +54,15 @@
       }
 
       &:focus {
-        outline: none;
+        @apply outline-none border-none;
         box-shadow: none;
-        border: none;
         background: var(--attrium-primary-foreground);
       }
 
+      // shadcn <Badge> shape; the tint variants below are the Site Health
+      // status palette laid over the shared base.
       .badge {
-        @apply text-xs font-medium px-2 py-0.5 rounded-full;
+        @include primitives.badge;
       }
 
       .badge.blue {
@@ -94,12 +95,11 @@
       }
 
       .icon {
-        @apply ml-auto static size-2;
+        @apply ml-auto static size-2 pointer-events-none;
         border: solid var(--attrium-foreground);
         border-width: 0 2px 2px 0;
         transform: translateY(-0.125rem) rotate(45deg);
         transition: transform 0.15s;
-        pointer-events: none;
       }
     }
 

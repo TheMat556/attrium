@@ -14,11 +14,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { wpFetch } from '@/lib/api'
 
-// Native Attrium settings view (screen id: toplevel_page_attrium). Manages the
-// list of admin URLs excluded from Attrium's content styling — the shell still
-// wraps those pages, but the embedded WordPress content keeps its native look.
-// It also configures the client health dashboard integrations. Secrets are
-// read from wp-config constants and are never entered or stored here.
+// Native Attrium settings view (toplevel_page_attrium): the admin URLs excluded
+// from content styling and the dashboard integrations. Secrets are read from
+// wp-config constants, never entered or stored here.
 
 const IGNORED_URLS_ENDPOINT = 'attrium/v1/ignored-urls'
 type IgnoredUrlsResponse = { urls: string }

@@ -2,17 +2,8 @@ import { expect, type Locator, test } from '@playwright/test'
 import { applyTheme, stabilize, THEMES } from '../support/theme'
 
 /**
- * Button interaction-state regression.
- *
- * The `scss/modules/_buttons.scss` mixins restyle WordPress admin buttons and
- * define distinct hover (brightness) and active (translateY press) treatments.
- * Those states never appear in a static full-page screenshot, so we capture the
- * button element on its own in each state.
- *
- * Target: the "Update Profile" primary submit on profile.php — always present,
- * a real `.button.button-primary`, and reached without side effects.
- *
- * Each state is captured in light AND dark mode.
+ * Button state regression: normal/hover/active/focus/disabled captured per element
+ * (full-page shots miss them). Target: profile.php `#submit`, in light AND dark.
  */
 
 for (const { theme } of THEMES) {
@@ -60,6 +51,21 @@ for (const { theme } of THEMES) {
 				await page.mouse.move(0, 0)
 				await page.mouse.up()
 			}
+		})
+
+		test('focus', async () => {
+			await button.focus()
+			await expect(button).toHaveScreenshot(`button-primary-focus-${theme}.png`)
+		})
+
+		test('disabled', async ({ page }) => {
+			await page.evaluate(() => {
+				document.querySelector('#submit')?.setAttribute('disabled', '')
+			})
+			await expect(button).toBeVisible()
+			await expect(button).toHaveScreenshot(
+				`button-primary-disabled-${theme}.png`,
+			)
 		})
 	})
 }

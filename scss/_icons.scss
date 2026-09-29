@@ -174,10 +174,9 @@ $_uri-escapes: (
 // around the call.
 @mixin mask-inline($name, $size) {
   content: '';
-  display: inline-block;
+  @apply inline-block align-middle;
   width: $size;
   height: $size;
-  vertical-align: middle;
 
   // The box is exactly $size, so contain would resolve to the same value —
   // pass it explicitly so the helper's `$size` contract holds everywhere.

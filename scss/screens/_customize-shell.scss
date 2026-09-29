@@ -140,11 +140,10 @@
 
   // Close (X) button — 45px bar, token face, Lucide x on `::after`.
   .customize-controls-close {
-    @apply w-7 h-7 m-0 box-border;
+    @apply w-7 h-7 m-0 box-border border-t-0 border-r-0 border-b-0;
 
     border-radius: var(--attrium-radius-md);
     background: var(--attrium-primary-foreground);
-    @apply border-t-0 border-r-0 border-b-0;
     color: var(--attrium-foreground);
 
     &:hover,
@@ -374,13 +373,12 @@
   // standalone "Search themes" labels — the input placeholder carries the
   // affordance and the label only adds row noise.
   .control-panel-themes .themes-filter-bar {
-    @apply justify-between;
+    @apply justify-between pt-1;
 
     // Core paints the bar a fixed #f0f0f1 in both modes — a bright strip in
     // dark mode and a face that swallows the search field's outline. Give it
     // the panel surface so the field below reads as a recessed control.
     background: var(--attrium-primary-foreground);
-    @apply pt-1;
   }
 
   .control-panel-themes .themes-filter-container > label {

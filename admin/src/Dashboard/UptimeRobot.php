@@ -161,25 +161,25 @@ class UptimeRobot {
         $status     = isset($monitor['status']) ? (int) $monitor['status'] : 1;
         $status_map = [
             0 => [
-				'text'     => __('Paused', 'attrium'),
-				'severity' => Severity::WARNING,
-			],
+                'text'     => __('Paused', 'attrium'),
+                'severity' => Severity::WARNING,
+            ],
             1 => [
-				'text'     => __('Waiting for first check', 'attrium'),
-				'severity' => Severity::WARNING,
-			],
+                'text'     => __('Waiting for first check', 'attrium'),
+                'severity' => Severity::WARNING,
+            ],
             2 => [
-				'text'     => __('Up', 'attrium'),
-				'severity' => Severity::HEALTHY,
-			],
+                'text'     => __('Up', 'attrium'),
+                'severity' => Severity::HEALTHY,
+            ],
             8 => [
-				'text'     => __('Looks down', 'attrium'),
-				'severity' => Severity::CRITICAL,
-			],
+                'text'     => __('Looks down', 'attrium'),
+                'severity' => Severity::CRITICAL,
+            ],
             9 => [
-				'text'     => __('Down', 'attrium'),
-				'severity' => Severity::CRITICAL,
-			],
+                'text'     => __('Down', 'attrium'),
+                'severity' => Severity::CRITICAL,
+            ],
         ];
 
         $mapped = isset($status_map[ $status ]) ? $status_map[ $status ] : $status_map[1];
