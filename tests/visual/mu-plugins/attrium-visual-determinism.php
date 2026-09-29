@@ -476,3 +476,264 @@ add_filter(
         return attrium_visual_hot_tags();
     }
 );
+
+/**
+ * ── Client health dashboard ──────────────────────────────────────────
+ *
+ * The dashboard calls three external services (Google Analytics, UptimeRobot,
+ * and UpdraftPlus's stored history). None exist in the disposable install, so
+ * without these stubs every dashboard baseline would render "not connected"
+ * and the traffic chart would be empty. They live in THIS file rather than a
+ * second mu-plugin on purpose: every .php in mu-plugins increments the
+ * Must-Use count, which is visible on plugins.php and would invalidate that
+ * baseline for a test-only reason.
+ */
+
+/**
+ * A throwaway RSA key. It only has to satisfy openssl_pkey_get_private() so the
+ * plugin's JWT signing succeeds; the token exchange itself is stubbed below, so
+ * the key can never authenticate against a real Google endpoint.
+ */
+function attrium_visual_ga4_private_key() {
+    return <<<'PEM'
+-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC+Pnl4l3bW/pFY
+llBj6XsLbUWk6SC7yMrTw01w/lcC35h0St48FkCQuehnz1xXWRAEbOXkC3Ip7k3/
+e8hGl9MVvcim8P0QBcr+bGaehKp3fOEOLgtt5f1nS9QDG5cO6Nxz2oxMaifydqQ/
+BNtH9G1SglV4NRx8loe1X7qJ8x2OS3e4NuiyBwXs13ibjZyTHK7rgj+X9P6GQkJZ
+GTE/VpyrfX9e9ZvCLA2y5hTzRzM6bE/mJj+w1blp9urm9NXkQ8It8JgpW/9P1S/c
+nCsLCQemCq5FsaNT0b1WNEqPL6ZsOnfJks2BE2xO11I0CvSc6PsW7igsjIOaPOBU
+DrXbekX7AgMBAAECggEATfUc4rkyhhxQJByIecC53q9a7B5p/vljgA5WhBh9QFyu
+xOzPD5FQyN2dqjhzTwncgeu78sxr7lnMVYZ8Rc0+PvkDqcEz+iZdjg+Op6OWlRsz
+wBNHNLQbuIH+sX1TU9VBTSo/9qpDj1xlprtPPjefusFU08rzzuwCVWUSdCgPMvjs
+526ebOvpfSEbYGEigdcMpSDmXGrpNkwfYWPKh0KkbluRa/SVy+j7PypKWlCXlAaf
+fywstBV2ViJZweOB33hdfRU5HSsbUKM4FaiJM5vT2nkURjXjQtZK5ENrTQ5SereW
++z0CCVMJMKwXFHTm+asbJMNmKlpk1Bcg5myJUewbiQKBgQD23uZzcPyVy8FG88gI
+E1stl/3tA6ZBiof350RPjbnMUohq6Xm55spU15SbkaW8taXYjlVkyuTlUJHhKQcL
+4hPFivQvVNYrrmwW+DvqOewHl44AMovNhDvewnoEyxpUFMyzcCuNUSNswr2NI8iF
+NjQzaSQff3c6fvLT6+XHdA9q0wKBgQDFR37VwYQ9h8UU9nGCYMUbza4goEI8MBAM
+WFcMdMKeL/8HeH3JTlm8tNl5YCdZER7MgiED2Owq+jstV/AqOtPIvzvHmADrhEFM
+BBvIWACrhQAd0RYGnECePd//LFutCIhLRhrZk4cPQT1BwfbqIt4MR94Io+02x9BG
+kaQi8B5vOQKBgALtR5wsxcHc5ZC6yS9XU2hp+ee6eFkklFIbGtM6oe5LODTUSc4r
+b1CsMaXahzWCjdHQdjC4uxgA6Yna26uHZaac7CI3hkaETeHD1aoEP8kjQdq8vq2U
+GMWeVqYB5nECwh6KgOmvAZWDhY3L08/IgbvuTjBVaYt2/9gFXvcLaDdjAoGAG3Gn
+vlrOZ7TkgNcL0WRe51BEoftJW5AgG2eKrIvtqw3oP4TOktuYdjz+Z/ktYCGWlEKi
+DyP1LsFizBsIqQdIAQxBZ7HIpvreDpIfv04mwbWd34f/tWm1P45CBACKvFaMh1Q4
+Vf5E8qVTvTsbe1TgaPryc2dCj7VaTwbhu46F3VkCgYBcHGsPT8D5nYDqJ8e+VFR6
+7fz5FUiAgdGog4pxKAGs9VGiIRk7MZWboGvKMU9py5bLb1J2NqTYLwwkv6XPFSs0
+UkcZh5V8WJO8CYYWOVxO406agSOJpNizp603jgdBPGbI5wzZOPI8xwqfK0Wf+8DX
+n/X6FgIrAM0HROllCgAZsw==
+-----END PRIVATE KEY-----
+PEM;
+}
+
+if ( ! defined( 'ATTRIUM_GA4_CREDENTIALS_JSON' ) ) {
+    define(
+        'ATTRIUM_GA4_CREDENTIALS_JSON',
+        json_encode(
+            array(
+                'client_email' => 'attrium-visual@attrium-test.iam.gserviceaccount.com',
+                'private_key'  => attrium_visual_ga4_private_key(),
+            )
+        )
+    );
+}
+
+if ( ! defined( 'ATTRIUM_UPTIMEROBOT_API_KEY' ) ) {
+    define( 'ATTRIUM_UPTIMEROBOT_API_KEY', 'visual-uptimerobot-read-only-key' );
+}
+
+/**
+ * Seed the non-secret integration identifiers.
+ *
+ * Idempotent (update_option overwrites) so parallel workers converge on the
+ * same values; this only ever runs in the disposable test install.
+ */
+add_action(
+    'init',
+    static function () {
+        update_option( 'attrium_ga4_property_id', '123456789' );
+        update_option( 'attrium_uptimerobot_monitor_id', '788012345' );
+    }
+);
+
+/**
+ * Make the dashboard's backup adapter see a healthy, recent UpdraftPlus run.
+ *
+ * UpdraftPlus is not installed in the test environment, so `is_available()`
+ * would report it missing. A no-op `updraftplus()` function satisfies the
+ * detection, and the timestamp filter pins "2 days ago" (stable copy) without
+ * touching the plugin.
+ */
+if ( ! function_exists( 'updraftplus' ) ) {
+    function updraftplus() {
+        return null;
+    }
+}
+
+add_filter(
+    'attrium_dashboard_last_backup',
+    static function () {
+        return time() - ( 2 * DAY_IN_SECONDS );
+    },
+    10,
+    1
+);
+
+/**
+ * Build a WP HTTP response array for `pre_http_request`.
+ *
+ * @param array $payload JSON-encodable body.
+ * @return array
+ */
+function attrium_visual_http_response( $payload ) {
+    return array(
+        'headers'  => array(),
+        'body'     => wp_json_encode( $payload ),
+        'response' => array(
+            'code'    => 200,
+            'message' => 'OK',
+        ),
+        'cookies'  => array(),
+        'filename' => null,
+    );
+}
+
+/**
+ * A deterministic GA4 report per requested dimension/metric shape.
+ *
+ * @param array $body Decoded runReport request.
+ * @return array
+ */
+function attrium_visual_ga4_report( $body ) {
+    $dimensions = array();
+
+    if ( isset( $body['dimensions'] ) && is_array( $body['dimensions'] ) ) {
+        foreach ( $body['dimensions'] as $dimension ) {
+            if ( isset( $dimension['name'] ) ) {
+                $dimensions[] = (string) $dimension['name'];
+            }
+        }
+    }
+
+    if ( in_array( 'date', $dimensions, true ) ) {
+        $values = array( 120, 135, 128, 160, 142, 175, 168 );
+        $rows   = array();
+
+        foreach ( $values as $index => $value ) {
+            $rows[] = array(
+                'dimensionValues' => array(
+                    array( 'value' => sprintf( '202601%02d', $index + 1 ) ),
+                ),
+                'metricValues'    => array(
+                    array( 'value' => (string) $value ),
+                    array( 'value' => (string) ( $value * 3 ) ),
+                ),
+            );
+        }
+
+        return array( 'rows' => $rows );
+    }
+
+    if ( in_array( 'pageTitle', $dimensions, true ) ) {
+        $pages = array(
+            'Home'     => 420,
+            'About Us' => 260,
+            'Contact'  => 145,
+            'Blog'     => 98,
+            'Pricing'  => 61,
+        );
+
+        $rows = array();
+
+        foreach ( $pages as $title => $views ) {
+            $rows[] = array(
+                'dimensionValues' => array( array( 'value' => $title ) ),
+                'metricValues'    => array( array( 'value' => (string) $views ) ),
+            );
+        }
+
+        return array( 'rows' => $rows );
+    }
+
+    if ( in_array( 'deviceCategory', $dimensions, true ) ) {
+        return array(
+            'rows' => array(
+                array(
+                    'dimensionValues' => array( array( 'value' => 'mobile' ) ),
+                    'metricValues'    => array( array( 'value' => '512' ) ),
+                ),
+                array(
+                    'dimensionValues' => array( array( 'value' => 'desktop' ) ),
+                    'metricValues'    => array( array( 'value' => '233' ) ),
+                ),
+                array(
+                    'dimensionValues' => array( array( 'value' => 'tablet' ) ),
+                    'metricValues'    => array( array( 'value' => '41' ) ),
+                ),
+            ),
+        );
+    }
+
+    // Totals: current period, then the equivalent previous period.
+    return array(
+        'rows' => array(
+            array(
+                'metricValues' => array(
+                    array( 'value' => '812' ),
+                    array( 'value' => '2410' ),
+                ),
+            ),
+            array(
+                'metricValues' => array(
+                    array( 'value' => '690' ),
+                    array( 'value' => '2010' ),
+                ),
+            ),
+        ),
+    );
+}
+
+/**
+ * Intercept every dashboard HTTP call: Google token, GA4 runReport, UptimeRobot.
+ */
+add_filter(
+    'pre_http_request',
+    static function ( $preempt, $args, $url ) {
+        if ( str_contains( $url, 'oauth2.googleapis.com/token' ) ) {
+            return attrium_visual_http_response(
+                array(
+                    'access_token' => 'attrium-visual-access-token',
+                    'expires_in'   => 3600,
+                )
+            );
+        }
+
+        if ( str_contains( $url, 'analyticsdata.googleapis.com' ) ) {
+            $body = isset( $args['body'] ) ? json_decode( (string) $args['body'], true ) : array();
+
+            return attrium_visual_http_response( attrium_visual_ga4_report( is_array( $body ) ? $body : array() ) );
+        }
+
+        if ( str_contains( $url, 'api.uptimerobot.com' ) ) {
+            return attrium_visual_http_response(
+                array(
+                    'stat'     => 'ok',
+                    'monitors' => array(
+                        array(
+                            'id'                  => 788012345,
+                            'friendly_name'       => 'Example Site',
+                            'url'                 => 'https://example.com',
+                            'status'              => 2,
+                            'custom_uptime_ratio' => '99.98',
+                        ),
+                    ),
+                )
+            );
+        }
+
+        return $preempt;
+    },
+    10,
+    3
+);

@@ -26,3 +26,4 @@ new Attrium\App\Attrium();
 $attrium_module_registry = new Attrium\Modules\ModuleRegistry();
 new Attrium\Modules\CustomizerSupport($attrium_module_registry);
 new Attrium\Settings\Settings();
+new Attrium\Dashboard\Dashboard();

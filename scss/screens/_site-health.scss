@@ -26,8 +26,7 @@
   }
 
   .health-check-header {
-    @apply border-0;
-    background: transparent;
+    @apply border-0 bg-transparent;
   }
 
   .health-check-tabs-wrapper {
@@ -54,52 +53,43 @@
       }
 
       &:focus {
-        outline: none;
-        box-shadow: none;
-        border: none;
+        @apply outline-none border-none shadow-none;
         background: var(--attrium-primary-foreground);
       }
 
+      // Tints = core's badge color classes (edit.css palette) reskinned with
+      // the semantic status tokens, which own the values (and their dark
+      // twins) in _tokens.scss — same tokens notices use.
       .badge {
-        @apply text-xs font-medium px-2 py-0.5 rounded-full;
+        @include primitives.badge;
       }
 
       .badge.blue {
-        background: oklch(0.55 0.12 250 / 20%);
-        color: oklch(0.65 0.15 250);
+        background: color-mix(in oklab, var(--attrium-info) 20%, transparent);
+        color: var(--attrium-info);
       }
 
-      .badge.orange,
-      .badge.security {
-        background: oklch(0.65 0.15 50 / 20%);
-        color: oklch(0.7 0.18 55);
+      .badge.orange {
+        background: color-mix(in oklab, var(--attrium-warning) 20%, transparent);
+        color: var(--attrium-warning);
       }
 
-      .badge.red,
-      .badge.critical {
-        background: oklch(0.6 0.2 30 / 20%);
-        color: oklch(0.7 0.2 30);
+      .badge.red {
+        background: color-mix(in oklab, var(--attrium-error) 20%, transparent);
+        color: var(--attrium-error);
       }
 
-      .badge.green,
-      .badge.performance {
-        background: oklch(0.55 0.12 145 / 20%);
-        color: oklch(0.6 0.15 145);
-      }
-
-      .badge.purple,
-      .badge.seo {
-        background: oklch(0.55 0.12 290 / 20%);
-        color: oklch(0.65 0.15 290);
+      .badge.green {
+        background: color-mix(in oklab, var(--attrium-success) 20%, transparent);
+        color: var(--attrium-success);
       }
 
       .icon {
-        @apply ml-auto static size-2;
+        @apply ml-auto static size-2 pointer-events-none;
         border: solid var(--attrium-foreground);
         border-width: 0 2px 2px 0;
         transform: translateY(-0.125rem) rotate(45deg);
         transition: transform 0.15s;
-        pointer-events: none;
       }
     }
 

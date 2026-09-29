@@ -13,7 +13,7 @@
 // chunk is written, so the light-DOM glyphs and the shell's icons can't
 // silently diverge.
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 const root = path.resolve(import.meta.dir, '..')
@@ -63,31 +63,79 @@ function parseMarkup(markup) {
 
 // ---- lucide side -------------------------------------------------------------
 
+// name / alias → icon module basename, built once by scanning the icon dist.
+// @lucide/vue 1.45+ moves renamed icons to aliases on the canonical file
+// (e.g. trash-2 → trash), so a name may have no file of its own.
+let aliasIndex = null
+
+function getAliasIndex() {
+	if (aliasIndex) {
+		return aliasIndex
+	}
+
+	aliasIndex = {}
+
+	const dir = path.join(root, 'node_modules/@lucide/vue/dist/esm/icons')
+
+	for (const file of readdirSync(dir)) {
+		if (!file.endsWith('.mjs')) {
+			continue
+		}
+
+		const source = readFileSync(path.join(dir, file), 'utf8')
+		const base = file.replace(/\.mjs$/, '')
+		const name = source.match(/name:\s*"([^"]+)"/)
+
+		if (name) {
+			aliasIndex[name[1]] = base
+		}
+
+		const aliases = source.match(/aliases:\s*\[([^\]]*)\]/)
+
+		if (aliases) {
+			for (const [, alias] of aliases[1].matchAll(/"([^"]+)"/g)) {
+				aliasIndex[alias] = base
+			}
+		}
+	}
+
+	return aliasIndex
+}
+
 // name → [{ tag, attrs }] from the per-icon iconNode literal in @lucide/vue's
 // dist, or null when the package has no icon by that name. Attribute values
 // are double-quoted strings; `key` is dropped.
+//
+// @lucide/vue ≤1.x used `const __iconNode = [...]`; from 1.45 it moved to
+// `const __iconData = { …, node: [...] }` and may format the array on one
+// line. Rather than depend on either wrapper, the element tuples are matched
+// directly across the file — the only `["tag", { … }]` data an icon module
+// contains is its node list. A name that is only an alias resolves to its
+// canonical file.
 function readLucideIcon(name) {
-	const file = path.join(
-		root,
-		'node_modules/@lucide/vue/dist/esm/icons',
-		`${name}.mjs`,
-	)
+	const dir = path.join(root, 'node_modules/@lucide/vue/dist/esm/icons')
+	let file = path.join(dir, `${name}.mjs`)
 
 	if (!existsSync(file)) {
-		return null
+		const canonical = getAliasIndex()[name]
+
+		if (!canonical) {
+			return null
+		}
+
+		file = path.join(dir, `${canonical}.mjs`)
+
+		if (!existsSync(file)) {
+			return null
+		}
 	}
 
 	const source = readFileSync(file, 'utf8')
-	const node = source.match(/const __iconNode = \[([\s\S]*?)\];/)
-
-	if (!node) {
-		throw new Error(`check-icons: ${name}.mjs has no __iconNode literal`)
-	}
 
 	const nodes = []
 	const element = /\[\s*"(\w+)"\s*,\s*\{([\s\S]*?)\}\s*\]/g
 
-	for (const [, tag, attrList] of node[1].matchAll(element)) {
+	for (const [, tag, attrList] of source.matchAll(element)) {
 		const attrs = {}
 		const attr = /([\w-]+)\s*:\s*"((?:[^"\\]|\\.)*)"/g
 

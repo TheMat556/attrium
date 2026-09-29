@@ -103,14 +103,26 @@ export async function applyTheme(
  * capture time. `toHaveScreenshot` then waits for two stable frames on its own,
  * so no fixed sleep is needed after this.
  */
-export async function stabilize(page: Page): Promise<void> {
+export async function stabilize(
+	page: Page,
+	options: { expectWpContent?: boolean } = {},
+): Promise<void> {
+	const { expectWpContent = true } = options
+
 	await page.waitForFunction(
 		() => !document.getElementById('attrium-body-hider'),
 	)
 
-	// The shell mounted and swallowed the WordPress content.
+	// The shell mounted.
 	await expect(page.locator(HOST)).toBeAttached()
-	await expect(page.locator(`${HOST} > #wpcontent`)).toBeAttached()
+
+	// On slotted (non-override) screens, WordPress's #wpcontent was reparented
+	// into the shell. Native override screens (Dashboard, Attrium → Appearance)
+	// render no slot and leave #wpcontent in place, so callers there pass
+	// expectWpContent: false rather than weakening this assertion for everyone.
+	if (expectWpContent) {
+		await expect(page.locator(`${HOST} > #wpcontent`)).toBeAttached()
+	}
 
 	// `document.fonts.ready` only waits for the current FontFaceSet to settle;
 	// it does not force a lazily-used font to download. That allowed the shell

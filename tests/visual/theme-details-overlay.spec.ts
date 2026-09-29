@@ -32,15 +32,25 @@ async function openDetailsOverlay(page: Page, theme: Theme): Promise<void> {
 	const card: Locator = page.locator('.theme-browser .theme').first()
 	await card.click()
 	await expect(page.locator('.theme-overlay .theme-header')).toBeVisible()
+
+	// Core's absolutely-positioned bottom bar: `_themes.scss`'s `position: static` reset for the
+	// in-card action row used to hit this bar too (both `.theme-actions` are under `.wrap`), so pin it.
+	const modalBox = await page
+		.locator('.theme-overlay .theme-wrap')
+		.boundingBox()
+	const barBox = await page
+		.locator('.theme-overlay .theme-actions')
+		.boundingBox()
+	expect(barBox).not.toBeNull()
+	expect(modalBox).not.toBeNull()
+	expect(barBox!.y).toBeGreaterThan(modalBox!.y + modalBox!.height / 2)
 }
 
 for (const { theme } of THEMES) {
 	test.describe(`theme: ${theme}`, () => {
 		test('details overlay backdrop dims the shell', async ({ page }) => {
 			await openDetailsOverlay(page, theme)
-			await expect(page).toHaveScreenshot(
-				`theme-details-overlay-${theme}.png`,
-			)
+			await expect(page).toHaveScreenshot(`theme-details-overlay-${theme}.png`)
 		})
 	})
 }
