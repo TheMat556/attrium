@@ -26,13 +26,12 @@
 
 .widefat {
   @include mixins.module('tables') {
-    @apply w-full overflow-hidden;
+    @apply w-full overflow-hidden shadow-none;
 
     // The frame (shadcn's <Card> stand-in) plus the surface the rows sit on.
     border: 1px solid var(--attrium-border);
     border-radius: var(--attrium-radius-md);
     background: var(--attrium-primary-foreground);
-    box-shadow: none;
 
     // Strip core's own table chrome: per-cell backgrounds, plus the inset
     // box-shadow it uses as a faux border.
@@ -41,8 +40,7 @@
     tr,
     th,
     td {
-      background: none;
-      box-shadow: none;
+      @apply shadow-none bg-none bg-transparent;
     }
 
     // Hover belongs to the ROW. Core has no row hover at all — its only
@@ -60,11 +58,11 @@
 
     .check-column label:hover,
     .check-column input:hover + label {
-      background: none;
+      @apply bg-none bg-transparent;
     }
 
     .check-column .label-covers-full-cell:hover + input:not(:disabled) {
-      box-shadow: none;
+      @apply shadow-none;
     }
 
     // Keep shadcn's focus ring visible while hovering: this block otherwise
@@ -145,13 +143,10 @@
         }
 
         &::before {
-          content: '';
-          @apply absolute;
-          top: 50%;
-          left: 50%;
+          @apply content-[''] absolute top-1/2 left-1/2
+             w-0 h-0 border-l-4 border-r-4
+             border-l-transparent border-r-transparent;
           transform: translate(-50%, -50%);
-          width: 0;
-          height: 0;
           border-left: 4px solid transparent;
           border-right: 4px solid transparent;
           border-top: 5px solid var(--attrium-foreground);
@@ -174,10 +169,9 @@
 
       .sorting-indicator.asc,
       .sorting-indicator.desc {
+        @apply w-0 h-0;
         border-left: 3px solid transparent;
         border-right: 3px solid transparent;
-        width: 0;
-        height: 0;
       }
 
       .sorting-indicator.asc {

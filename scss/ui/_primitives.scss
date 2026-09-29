@@ -81,7 +81,7 @@
   &:not(:disabled):not(.disabled):active {
     // Core's `.wrap .page-title-action:hover/:focus/:active` (and `.button` equivalents)
     // repaint the border above the base; re-assert the transparent shadcn border on each state.
-    border-color: transparent;
+    @apply border-transparent;
     transform: translateY(1px);
   }
 
@@ -119,7 +119,7 @@
   }
 
   &:hover {
-    border-color: transparent;
+    @apply border-transparent;
     background-color: var(--attrium-primary);
     color: var(--attrium-primary-foreground);
   }
@@ -139,7 +139,7 @@
   // `hover:bg-secondary/80` mixes with transparent, which only lightens — on a
   // near-white card that is invisible.
   &:hover {
-    border-color: transparent;
+    @apply border-transparent;
     background-color: color-mix(
       in oklab,
       var(--attrium-secondary) 92%,

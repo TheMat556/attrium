@@ -231,12 +231,12 @@
     .attachment-preview {
       @apply transition-colors duration-150 overflow-hidden;
       @include primitives.card-surface;
-      box-shadow: none; // the border owns the edge, not core's inset vignette
+      @apply shadow-none;
     }
 
     // Redundant under the preview's own border.
     .thumbnail::after {
-      box-shadow: none;
+      @apply shadow-none;
     }
 
     // Hover recolors only the border (ring token, per modules/_forms.scss).
@@ -248,7 +248,7 @@
     // adds the second pixel. After the hover arm so hovered+selected keeps it.
     &.selected,
     &.details {
-      box-shadow: none;
+      @apply shadow-none;
 
       .attachment-preview {
         @apply border-[var(--attrium-primary)];
@@ -260,9 +260,8 @@
     // line on the token surface (6.7 non-image tiles; 7.1 uses li::after below).
     .filename {
       @apply truncate bg-[var(--attrium-secondary)]
-             text-[var(--attrium-secondary-foreground)]
-             border-t border-[var(--attrium-border)] text-start;
-      box-shadow: none;
+             text-[var(--attrium-secondary-foreground)] border-t
+             border-[var(--attrium-border)] text-start shadow-none;
 
       div {
         @apply p-0;
@@ -270,13 +269,10 @@
     }
 
     &::after {
-      @apply truncate p-0 w-auto;
+      @apply truncate p-0 w-auto bottom-0 left-0 right-2;
       border-radius: 0 0 var(--attrium-radius-md) var(--attrium-radius-md);
       // Override core 7.1's left:8px + width trio fully (partial override loses):
       // pin left:0 / right:8px, reset width; bottom:0 because rows are flush.
-      bottom: 0;
-      left: 0;
-      right: 8px;
     }
   }
 
@@ -286,18 +282,12 @@
   // card corner (scoped to .attachments so other .media-modal-icon uses keep
   // core's sprite). The selected arm MUST follow the base so it survives hover.
   .attachments-browser .attachments .attachment .check {
-    @apply rounded-[var(--attrium-radius-md)];
+    @apply rounded-[var(--attrium-radius-md)] top-0 right-2;
     // Pin the chip back onto the card corner (core parks it 8px right, under
     // the flush padding).
-    top: 0;
-    right: 8px;
 
     .media-modal-icon {
-      @apply absolute m-0; // .check is the (absolute) containing block
-      top: 50%;
-      left: 50%;
-      width: 0.875rem;
-      height: 0.875rem;
+      @apply absolute m-0 top-1/2 left-1/2 w-3.5 h-3.5; // .check is the (absolute) containing block
       transform: translate(-50%, -50%);
       @include icons.mask('check', 0.875rem);
     }
